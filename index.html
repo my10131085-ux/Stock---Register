@@ -9,9 +9,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-*{
-  box-sizing:border-box;
-}
+*{box-sizing:border-box}
 
 body{
   margin:0;
@@ -50,7 +48,7 @@ h1{
   color:#555;
 }
 
-input,button,select{
+input,button{
   width:100%;
   padding:13px;
   margin:8px 0;
@@ -111,11 +109,23 @@ button:hover{
   margin:5px 0 0;
 }
 
+.logout{
+  width:auto;
+  background:#555;
+  float:right;
+  padding:8px 15px;
+}
+
 .controls{
   background:white;
   padding:15px;
   border-radius:10px;
   margin-bottom:15px;
+}
+
+.add{
+  width:auto;
+  padding:10px 18px;
 }
 
 .table-box{
@@ -127,7 +137,7 @@ button:hover{
 
 table{
   width:100%;
-  min-width:1100px;
+  min-width:1250px;
   border-collapse:collapse;
 }
 
@@ -147,18 +157,6 @@ td input{
   padding:8px;
 }
 
-.logout{
-  width:auto;
-  background:#555;
-  float:right;
-  padding:8px 15px;
-}
-
-.add{
-  width:auto;
-  padding:10px 18px;
-}
-
 .delete{
   width:auto;
   background:#555;
@@ -175,204 +173,190 @@ td input{
 
 <body>
 
-<!-- ================= LOGIN PAGE ================= -->
+<!-- LOGIN -->
 
 <div class="login-page" id="loginPage">
 
-  <div class="login-box">
+<div class="login-box">
 
-    <h1>RHI MAGNESITA</h1>
+<h1>RHI MAGNESITA</h1>
 
-    <div class="subtitle">
-      SPARE STOCK REGISTER
-    </div>
+<div class="subtitle">
+SPARE STOCK REGISTER
+</div>
 
-    <input
-      type="email"
-      id="loginEmail"
-      placeholder="Enter Email ID"
-    >
+<input
+type="email"
+id="loginEmail"
+placeholder="Enter Email ID">
 
-    <input
-      type="password"
-      id="loginPassword"
-      placeholder="Enter Password"
-    >
+<input
+type="password"
+id="loginPassword"
+placeholder="Enter Password">
 
-    <button onclick="login()">
-      LOGIN
-    </button>
+<button onclick="login()">
+LOGIN
+</button>
 
-    <button
-      class="link-button"
-      onclick="showForgot()"
-    >
-      Forgot Password?
-    </button>
+<button
+class="link-button"
+onclick="showForgot()">
+Forgot Password?
+</button>
 
-    <p
-      id="loginMessage"
-      class="message"
-    ></p>
+<p
+id="loginMessage"
+class="message">
+</p>
 
-  </div>
-
+</div>
 </div>
 
 
-<!-- ================= FORGOT PASSWORD ================= -->
+<!-- FORGOT PASSWORD -->
 
 <div class="login-page" id="forgotPage">
 
-  <div class="login-box">
+<div class="login-box">
 
-    <h1>RHI MAGNESITA</h1>
+<h1>RHI MAGNESITA</h1>
 
-    <div class="subtitle">
-      RESET PASSWORD
-    </div>
+<div class="subtitle">
+RESET PASSWORD
+</div>
 
-    <input
-      type="email"
-      id="resetEmail"
-      placeholder="Enter Email ID"
-    >
+<input
+type="email"
+id="resetEmail"
+placeholder="Enter Email ID">
 
-    <button onclick="sendResetLink()">
-      SEND RESET LINK
-    </button>
+<button onclick="sendResetLink()">
+SEND RESET LINK
+</button>
 
-    <button
-      class="link-button"
-      onclick="showLogin()"
-    >
-      Back to Login
-    </button>
+<button
+class="link-button"
+onclick="showLogin()">
+Back to Login
+</button>
 
-    <p
-      id="resetMessage"
-      class="message"
-    ></p>
+<p
+id="resetMessage"
+class="message">
+</p>
 
-  </div>
-
+</div>
 </div>
 
 
-<!-- ================= NEW PASSWORD ================= -->
+<!-- RESET PASSWORD -->
 
 <div class="login-page" id="resetPage">
 
-  <div class="login-box">
+<div class="login-box">
 
-    <h1>RHI MAGNESITA</h1>
+<h1>RHI MAGNESITA</h1>
 
-    <div class="subtitle">
-      SET NEW PASSWORD
-    </div>
+<div class="subtitle">
+SET NEW PASSWORD
+</div>
 
-    <input
-      type="password"
-      id="newPassword"
-      placeholder="Enter New Password"
-    >
+<input
+type="password"
+id="newPassword"
+placeholder="Enter New Password">
 
-    <input
-      type="password"
-      id="confirmPassword"
-      placeholder="Confirm New Password"
-    >
+<input
+type="password"
+id="confirmPassword"
+placeholder="Confirm New Password">
 
-    <button onclick="updatePassword()">
-      UPDATE PASSWORD
-    </button>
+<button onclick="updatePassword()">
+UPDATE PASSWORD
+</button>
 
-    <p
-      id="newPasswordMessage"
-      class="message"
-    ></p>
+<p
+id="newPasswordMessage"
+class="message">
+</p>
 
-  </div>
+</div>
+</div>
+
+
+<!-- MAIN PAGE -->
+
+<div id="mainPage">
+
+<div class="header">
+
+<button
+class="logout"
+onclick="logout()">
+LOGOUT
+</button>
+
+<h1>RHI MAGNESITA</h1>
+
+<p>SPARE STOCK REGISTER</p>
 
 </div>
 
 
-<!-- ================= MAIN PAGE ================= -->
+<div class="controls">
 
-<div id="mainPage">
+<button
+class="add"
+onclick="addRow()">
++ ADD ITEM
+</button>
 
-  <div class="header">
+<input
+type="text"
+id="search"
+placeholder="Search Item / Code..."
+onkeyup="searchItems()">
 
-    <button
-      class="logout"
-      onclick="logout()"
-    >
-      LOGOUT
-    </button>
-
-    <h1>RHI MAGNESITA</h1>
-
-    <p>
-      SPARE STOCK REGISTER
-    </p>
-
-  </div>
+</div>
 
 
-  <div class="controls">
+<div class="table-box">
 
-    <button
-      class="add"
-      onclick="addRow()"
-    >
-      + ADD ITEM
-    </button>
+<table>
 
-    <input
-      type="text"
-      id="search"
-      placeholder="Search Item / Code..."
-      onkeyup="searchItems()"
-    >
+<thead>
 
-  </div>
+<tr>
+<th>SR.NO</th>
+<th>ITEM NAME</th>
+<th>ITEM CODE</th>
+<th>CLOSE STOCK</th>
+<th>OPEN STOCK</th>
+<th>RECEIVED</th>
+<th>RECEIVED DATE</th>
+<th>TOTAL ITEMS</th>
+<th>REMARKS</th>
+<th>ACTION</th>
+</tr>
 
+</thead>
 
-  <div class="table-box">
+<tbody id="stockBody">
+</tbody>
 
-    <table id="stockTable">
+</table>
 
-      <thead>
-
-        <tr>
-          <th>SR.NO</th>
-          <th>ITEM NAME</th>
-          <th>ITEM CODE</th>
-          <th>CLOSE STOCK</th>
-          <th>OPEN STOCK</th>
-          <th>RECEIVED</th>
-          <th>RECEIVED DATE</th>
-          <th>TOTAL ITEMS</th>
-          <th>REMARKS</th>
-          <th>ACTION</th>
-        </tr>
-
-      </thead>
-
-      <tbody id="stockBody"></tbody>
-
-    </table>
-
-  </div>
+</div>
 
 </div>
 
 
 <script>
 
-/* =====================================================
-   SUPABASE CONNECTION
-===================================================== */
+/* =================================================
+SUPABASE
+================================================= */
 
 const SUPABASE_URL =
 "https://mooagaasvythwctcktcx.supabase.co";
@@ -382,579 +366,652 @@ const SUPABASE_KEY =
 
 const supabaseClient =
 supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_KEY
+SUPABASE_URL,
+SUPABASE_KEY
 );
 
 
-/* =====================================================
-   PAGE CONTROL
-===================================================== */
+/* =================================================
+PAGE FUNCTIONS
+================================================= */
 
 function hideAll(){
 
-  document.getElementById("loginPage").style.display="none";
+document.getElementById("loginPage").style.display="none";
 
-  document.getElementById("forgotPage").style.display="none";
+document.getElementById("forgotPage").style.display="none";
 
-  document.getElementById("resetPage").style.display="none";
+document.getElementById("resetPage").style.display="none";
 
-  document.getElementById("mainPage").style.display="none";
+document.getElementById("mainPage").style.display="none";
+
 }
 
 
 function showLogin(){
 
-  hideAll();
+hideAll();
 
-  document.getElementById("loginPage").style.display="flex";
+document.getElementById("loginPage").style.display="flex";
+
 }
 
 
 function showForgot(){
 
-  hideAll();
+hideAll();
 
-  document.getElementById("forgotPage").style.display="flex";
+document.getElementById("forgotPage").style.display="flex";
 
-  document.getElementById("resetMessage").innerText="";
 }
 
 
 function showReset(){
 
-  hideAll();
+hideAll();
 
-  document.getElementById("resetPage").style.display="flex";
+document.getElementById("resetPage").style.display="flex";
+
 }
 
 
 function showMain(){
 
-  hideAll();
+hideAll();
 
-  document.getElementById("mainPage").style.display="block";
+document.getElementById("mainPage").style.display="block";
 
-  loadItems();
+loadItems();
+
 }
 
 
-/* =====================================================
-   LOGIN
-===================================================== */
+/* =================================================
+LOGIN
+================================================= */
 
 async function login(){
 
-  const email =
-    document.getElementById("loginEmail").value.trim();
+const email =
+document.getElementById("loginEmail").value.trim();
 
-  const password =
-    document.getElementById("loginPassword").value;
+const password =
+document.getElementById("loginPassword").value;
 
-  const msg =
-    document.getElementById("loginMessage");
+const msg =
+document.getElementById("loginMessage");
 
+if(!email || !password){
 
-  if(!email || !password){
+msg.innerText="Enter Email and Password.";
 
-    msg.innerText =
-      "Please enter Email and Password.";
+return;
 
-    return;
-  }
+}
 
+msg.innerText="Logging in...";
 
-  msg.innerText =
-    "Logging in...";
+const {error} =
+await supabaseClient.auth.signInWithPassword({
 
+email:email,
 
-  const {data,error} =
-    await supabaseClient.auth.signInWithPassword({
+password:password
 
-      email:email,
+});
 
-      password:password
+if(error){
 
-    });
+msg.innerText=error.message;
 
+return;
 
-  if(error){
+}
 
-    msg.innerText =
-      error.message;
-
-    return;
-  }
-
-
-  msg.innerText =
-    "Login successful.";
-
-
-  setTimeout(function(){
-
-    showMain();
-
-  },500);
+showMain();
 
 }
 
 
-/* =====================================================
-   LOGOUT
-===================================================== */
+/* =================================================
+LOGOUT
+================================================= */
 
 async function logout(){
 
-  await supabaseClient.auth.signOut();
+await supabaseClient.auth.signOut();
 
-  showLogin();
+showLogin();
 
-  document.getElementById("loginPassword").value="";
-
-  document.getElementById("loginMessage").innerText="";
 }
 
 
-/* =====================================================
-   FORGOT PASSWORD
-===================================================== */
+/* =================================================
+FORGOT PASSWORD
+================================================= */
 
 async function sendResetLink(){
 
-  const email =
-    document.getElementById("resetEmail").value.trim();
+const email =
+document.getElementById("resetEmail").value.trim();
 
-  const msg =
-    document.getElementById("resetMessage");
+const msg =
+document.getElementById("resetMessage");
 
+if(!email){
 
-  if(!email){
+msg.innerText="Enter Email ID.";
 
-    msg.innerText =
-      "Please enter Email ID.";
+return;
 
-    return;
-  }
-
-
-  msg.innerText =
-    "Sending reset link...";
-
-
-  const redirectURL =
-    window.location.origin +
-    window.location.pathname;
-
-
-  const {error} =
-    await supabaseClient.auth.resetPasswordForEmail(
-
-      email,
-
-      {
-        redirectTo:redirectURL
-      }
-
-    );
-
-
-  if(error){
-
-    msg.innerText =
-      error.message;
-
-    return;
-  }
-
-
-  msg.innerText =
-    "Reset link sent. Check your Gmail.";
 }
 
+msg.innerText="Sending reset link...";
 
-/* =====================================================
-   UPDATE PASSWORD
-===================================================== */
+const redirectURL =
+window.location.origin +
+window.location.pathname;
 
-async function updatePassword(){
+const {error} =
+await supabaseClient.auth.resetPasswordForEmail(
 
-  const password =
-    document.getElementById("newPassword").value;
+email,
 
-  const confirm =
-    document.getElementById("confirmPassword").value;
-
-  const msg =
-    document.getElementById("newPasswordMessage");
-
-
-  if(password.length < 6){
-
-    msg.innerText =
-      "Password must be at least 6 characters.";
-
-    return;
-  }
-
-
-  if(password !== confirm){
-
-    msg.innerText =
-      "Password does not match.";
-
-    return;
-  }
-
-
-  msg.innerText =
-    "Updating password...";
-
-
-  const {error} =
-    await supabaseClient.auth.updateUser({
-
-      password:password
-
-    });
-
-
-  if(error){
-
-    msg.innerText =
-      error.message;
-
-    return;
-  }
-
-
-  msg.innerText =
-    "Password updated successfully.";
-
-
-  setTimeout(function(){
-
-    showLogin();
-
-  },1500);
+{
+redirectTo:redirectURL
 }
-
-
-/* =====================================================
-   STOCK REGISTER
-   LOCAL STORAGE
-===================================================== */
-
-let stockItems =
-  JSON.parse(
-    localStorage.getItem("rhi_stock_items") || "[]"
-  );
-
-
-function saveItems(){
-
-  localStorage.setItem(
-    "rhi_stock_items",
-    JSON.stringify(stockItems)
-  );
-}
-
-
-function loadItems(){
-
-  stockItems =
-    JSON.parse(
-      localStorage.getItem("rhi_stock_items") || "[]"
-    );
-
-  renderItems();
-}
-
-
-function renderItems(){
-
-  const body =
-    document.getElementById("stockBody");
-
-  body.innerHTML="";
-
-
-  if(stockItems.length===0){
-
-    body.innerHTML =
-      '<tr><td colspan="10" class="empty">No items added yet.</td></tr>';
-
-    return;
-  }
-
-
-  stockItems.forEach(function(item,index){
-
-    const row =
-      document.createElement("tr");
-
-
-    row.innerHTML = `
-
-      <td>${index+1}</td>
-
-      <td>
-        <input
-          type="text"
-          value="${escapeHTML(item.name || "")}"
-          onchange="updateItem(${index},'name',this.value)"
-        >
-      </td>
-
-      <td>
-        <input
-          type="text"
-          value="${escapeHTML(item.code || "")}"
-          onchange="updateItem(${index},'code',this.value)"
-        >
-      </td>
-
-      <td>
-        <input
-          type="number"
-          value="${item.close || 0}"
-          onchange="updateItem(${index},'close',this.value)"
-        >
-      </td>
-
-      <td>
-        <input
-          type="number"
-          value="${item.open || 0}"
-          onchange="updateItem(${index},'open',this.value)"
-        >
-      </td>
-
-      <td>
-        <input
-          type="number"
-          value="${item.received || 0}"
-          onchange="updateItem(${index},'received',this.value)"
-        >
-      </td>
-
-      <td>
-        <input
-          type="date"
-          value="${item.date || ""}"
-          onchange="updateItem(${index},'date',this.value)"
-        >
-      </td>
-
-      <td>
-        ${calculateTotal(item)}
-      </td>
-
-      <td>
-        <input
-          type="text"
-          value="${escapeHTML(item.remarks || "")}"
-          onchange="updateItem(${index},'remarks',this.value)"
-        >
-      </td>
-
-      <td>
-        <button
-          class="delete"
-          onclick="deleteItem(${index})"
-        >
-          DELETE
-        </button>
-      </td>
-
-    `;
-
-
-    body.appendChild(row);
-
-  });
-}
-
-
-function calculateTotal(item){
-
-  const open =
-    Number(item.open) || 0;
-
-  const received =
-    Number(item.received) || 0;
-
-  return open + received;
-}
-
-
-function updateItem(index,field,value){
-
-  stockItems[index][field]=value;
-
-  saveItems();
-
-  renderItems();
-}
-
-
-function addRow(){
-
-  stockItems.push({
-
-    name:"",
-
-    code:"",
-
-    close:0,
-
-    open:0,
-
-    received:0,
-
-    date:"",
-
-    remarks:""
-
-  });
-
-
-  saveItems();
-
-  renderItems();
-}
-
-
-function deleteItem(index){
-
-  if(!confirm("Delete this item?")){
-
-    return;
-  }
-
-
-  stockItems.splice(index,1);
-
-  saveItems();
-
-  renderItems();
-}
-
-
-/* =====================================================
-   SEARCH
-===================================================== */
-
-function searchItems(){
-
-  const search =
-    document
-      .getElementById("search")
-      .value
-      .toLowerCase();
-
-
-  const rows =
-    document.querySelectorAll(
-      "#stockBody tr"
-    );
-
-
-  rows.forEach(function(row){
-
-    const text =
-      row.innerText.toLowerCase();
-
-
-    if(text.includes(search)){
-
-      row.style.display="";
-
-    }else{
-
-      row.style.display="none";
-
-    }
-
-  });
-}
-
-
-/* =====================================================
-   HTML ESCAPE
-===================================================== */
-
-function escapeHTML(value){
-
-  return String(value)
-
-    .replace(/&/g,"&amp;")
-
-    .replace(/</g,"&lt;")
-
-    .replace(/>/g,"&gt;")
-
-    .replace(/"/g,"&quot;")
-
-    .replace(/'/g,"&#039;");
-}
-
-
-/* =====================================================
-   CHECK LOGIN SESSION
-===================================================== */
-
-async function checkSession(){
-
-  const {data} =
-    await supabaseClient.auth.getSession();
-
-
-  if(data.session){
-
-    showMain();
-
-  }else{
-
-    showLogin();
-
-  }
-}
-
-
-/* =====================================================
-   PASSWORD RECOVERY DETECTION
-===================================================== */
-
-supabaseClient.auth.onAuthStateChange(
-
-  function(event,session){
-
-    if(event === "PASSWORD_RECOVERY"){
-
-      showReset();
-
-    }
-
-  }
 
 );
 
+if(error){
 
-/* =====================================================
-   START APP
-===================================================== */
+msg.innerText=error.message;
+
+return;
+
+}
+
+msg.innerText=
+"Reset link sent. Check your Gmail.";
+
+}
+
+
+/* =================================================
+UPDATE PASSWORD
+================================================= */
+
+async function updatePassword(){
+
+const password =
+document.getElementById("newPassword").value;
+
+const confirm =
+document.getElementById("confirmPassword").value;
+
+const msg =
+document.getElementById("newPasswordMessage");
+
+if(password.length<6){
+
+msg.innerText=
+"Password must be at least 6 characters.";
+
+return;
+
+}
+
+if(password!==confirm){
+
+msg.innerText=
+"Password does not match.";
+
+return;
+
+}
+
+msg.innerText="Updating password...";
+
+const {error} =
+await supabaseClient.auth.updateUser({
+
+password:password
+
+});
+
+if(error){
+
+msg.innerText=error.message;
+
+return;
+
+}
+
+msg.innerText=
+"Password updated successfully.";
+
+setTimeout(showLogin,1500);
+
+}
+
+
+/* =================================================
+LOAD STOCK FROM SUPABASE
+================================================= */
+
+async function loadItems(){
+
+const {data,error} =
+await supabaseClient
+
+.from("stock_items")
+
+.select("*")
+
+.order("id",{ascending:true});
+
+if(error){
+
+console.log(error);
+
+document.getElementById("stockBody").innerHTML=
+
+'<tr><td colspan="10" class="empty">'+
+"Database error: "+error.message+
+"</td></tr>";
+
+return;
+
+}
+
+renderItems(data || []);
+
+}
+
+
+/* =================================================
+DISPLAY ITEMS
+================================================= */
+
+function renderItems(items){
+
+const body =
+document.getElementById("stockBody");
+
+body.innerHTML="";
+
+if(items.length===0){
+
+body.innerHTML=
+'<tr><td colspan="10" class="empty">'+
+"No items available."
++
+"</td></tr>";
+
+return;
+
+}
+
+items.forEach(function(item,index){
+
+const row =
+document.createElement("tr");
+
+const total =
+(Number(item.open_stock)||0) +
+(Number(item.received)||0);
+
+row.innerHTML=`
+
+<td>${index+1}</td>
+
+<td>
+<input
+value="${esc(item.item_name)}"
+onchange="updateItem(${item.id},'item_name',this.value)">
+</td>
+
+<td>
+<input
+value="${esc(item.item_code)}"
+onchange="updateItem(${item.id},'item_code',this.value)">
+</td>
+
+<td>
+<input
+type="number"
+value="${item.close_stock ?? 0}"
+onchange="updateItem(${item.id},'close_stock',this.value)">
+</td>
+
+<td>
+<input
+type="number"
+value="${item.open_stock ?? 0}"
+onchange="updateItem(${item.id},'open_stock',this.value)">
+</td>
+
+<td>
+<input
+type="number"
+value="${item.received ?? 0}"
+onchange="updateItem(${item.id},'received',this.value)">
+</td>
+
+<td>
+<input
+type="date"
+value="${item.received_date || ""}"
+onchange="updateItem(${item.id},'received_date',this.value)">
+</td>
+
+<td>
+${total}
+</td>
+
+<td>
+<input
+value="${esc(item.remarks)}"
+onchange="updateItem(${item.id},'remarks',this.value)">
+</td>
+
+<td>
+<button
+class="delete"
+onclick="deleteItem(${item.id})">
+DELETE
+</button>
+</td>
+
+`;
+
+body.appendChild(row);
+
+});
+
+}
+
+
+/* =================================================
+ADD ITEM
+================================================= */
+
+async function addRow(){
+
+const {data,error} =
+await supabaseClient
+
+.from("stock_items")
+
+.insert({
+
+item_name:"",
+item_code:"",
+close_stock:0,
+open_stock:0,
+received:0,
+received_date:null,
+remarks:""
+
+})
+
+.select();
+
+if(error){
+
+alert(error.message);
+
+return;
+
+}
+
+loadItems();
+
+}
+
+
+/* =================================================
+UPDATE ITEM
+================================================= */
+
+async function updateItem(id,field,value){
+
+let updateData={};
+
+if(
+field==="close_stock" ||
+field==="open_stock" ||
+field==="received"
+){
+
+updateData[field]=Number(value)||0;
+
+}else{
+
+updateData[field]=value;
+
+}
+
+const {error} =
+await supabaseClient
+
+.from("stock_items")
+
+.update(updateData)
+
+.eq("id",id);
+
+if(error){
+
+alert(error.message);
+
+return;
+
+}
+
+loadItems();
+
+}
+
+
+/* =================================================
+DELETE ITEM
+================================================= */
+
+async function deleteItem(id){
+
+if(!confirm("Delete this item?")){
+
+return;
+
+}
+
+const {error} =
+await supabaseClient
+
+.from("stock_items")
+
+.delete()
+
+.eq("id",id);
+
+if(error){
+
+alert(error.message);
+
+return;
+
+}
+
+loadItems();
+
+}
+
+
+/* =================================================
+SEARCH
+================================================= */
+
+async function searchItems(){
+
+const search =
+document
+.getElementById("search")
+.value
+.trim()
+.toLowerCase();
+
+const {data,error} =
+await supabaseClient
+
+.from("stock_items")
+
+.select("*")
+
+.order("id",{ascending:true});
+
+if(error){
+
+console.log(error);
+
+return;
+
+}
+
+if(!search){
+
+renderItems(data || []);
+
+return;
+
+}
+
+const filtered =
+(data || []).filter(function(item){
+
+return (
+
+String(item.item_name || "")
+.toLowerCase()
+.includes(search)
+
+||
+
+String(item.item_code || "")
+.toLowerCase()
+.includes(search)
+
+||
+
+String(item.remarks || "")
+.toLowerCase()
+.includes(search)
+
+);
+
+});
+
+renderItems(filtered);
+
+}
+
+
+/* =================================================
+ESCAPE HTML
+================================================= */
+
+function esc(value){
+
+return String(value ?? "")
+
+.replace(/&/g,"&amp;")
+
+.replace(/</g,"&lt;")
+
+.replace(/>/g,"&gt;")
+
+.replace(/"/g,"&quot;")
+
+.replace(/'/g,"&#039;");
+
+}
+
+
+/* =================================================
+CHECK SESSION
+================================================= */
+
+async function checkSession(){
+
+const {data} =
+await supabaseClient.auth.getSession();
+
+if(data.session){
+
+showMain();
+
+}else{
+
+showLogin();
+
+}
+
+}
+
+
+/* =================================================
+PASSWORD RECOVERY
+================================================= */
+
+supabaseClient.auth.onAuthStateChange(
+
+function(event,session){
+
+if(event==="PASSWORD_RECOVERY"){
+
+showReset();
+
+}
+
+});
+
+
+/* =================================================
+AUTO REFRESH
+================================================= */
+
+setInterval(async function(){
+
+const main =
+document.getElementById("mainPage");
+
+if(main.style.display==="block"){
+
+const search =
+document.getElementById("search").value;
+
+if(!search){
+
+await loadItems();
+
+}
+
+}
+
+},5000);
+
+
+/* =================================================
+START
+================================================= */
 
 window.addEventListener(
+"load",
+function(){
 
-  "load",
+checkSession();
 
-  function(){
-
-    checkSession();
-
-  }
-
+}
 );
 
 </script>
