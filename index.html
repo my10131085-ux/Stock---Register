@@ -5,88 +5,192 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RHI MAGNESITA SPARE STOCK REGISTER</title>
 
-<style>
-*{box-sizing:border-box;}
-body{margin:0;font-family:Arial,sans-serif;background:#eef3f8;color:#222;}
-.login-page{min-height:100vh;display:flex;justify-content:center;align-items:center;padding:20px;}
-.login-box{width:95%;max-width:420px;background:white;padding:35px;border-radius:15px;box-shadow:0 5px 25px #999;text-align:center;}
-.login-box h1{margin:0;color:#b00000;font-size:25px;}
-.subtitle{margin:10px 0 25px;font-weight:bold;color:#555;}
-input,button,select{width:100%;padding:12px;margin:8px 0;border:1px solid #bbb;border-radius:7px;font-size:15px;}
-button{background:#b00000;color:white;border:none;font-weight:bold;cursor:pointer;}
-button:hover{background:#850000;}
-#registerPage{display:none;padding:20px;}
-.header{background:#b00000;color:white;padding:18px;border-radius:10px;margin-bottom:15px;}
-.header h1{margin:0;font-size:25px;}
-.header p{margin:5px 0 0;}
-.controls{background:white;padding:15px;border-radius:10px;margin-bottom:15px;display:flex;gap:10px;flex-wrap:wrap;}
-.controls button{width:auto;min-width:150px;}
-.table-box{background:white;padding:10px;border-radius:10px;overflow:auto;}
-table{width:100%;min-width:1250px;border-collapse:collapse;}
-th{background:#333;color:white;padding:10px;border:1px solid #777;white-space:nowrap;}
-td{border:1px solid #aaa;padding:5px;}
-td input{margin:0;width:100%;padding:8px;}
-.sr{text-align:center;font-weight:bold;}
-.logout{background:#555 !important;}
-.link-button{background:none;color:#b00000;border:none;padding:5px;margin-top:2px;font-weight:bold;cursor:pointer;}
-.link-button:hover{background:none;color:#850000;}
-#forgotPage,#newPasswordPage{display:none;}
-</style>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#eef3f8;
+  color:#222;
+}
+.page{
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:20px;
+}
+.box{
+  width:95%;
+  max-width:900px;
+  background:white;
+  padding:25px;
+  border-radius:15px;
+  box-shadow:0 5px 25px #999;
+}
+.login-box{
+  max-width:430px;
+  text-align:center;
+}
+h1{
+  margin:0;
+  color:#b00000;
+  font-size:26px;
+}
+.subtitle{
+  margin:10px 0 25px;
+  font-weight:bold;
+  color:#555;
+}
+input,button,select{
+  width:100%;
+  padding:12px;
+  margin:7px 0;
+  border:1px solid #bbb;
+  border-radius:7px;
+  font-size:15px;
+}
+button{
+  background:#b00000;
+  color:white;
+  border:none;
+  font-weight:bold;
+  cursor:pointer;
+}
+button:hover{background:#850000}
+.link-button{
+  background:none;
+  color:#b00000;
+  padding:5px;
+  margin-top:5px;
+}
+.message{
+  margin-top:10px;
+  font-weight:bold;
+}
+#registerPage,#forgotPage,#newPasswordPage{
+  display:none;
+}
+.header{
+  background:#b00000;
+  color:white;
+  padding:18px;
+  border-radius:10px;
+  margin-bottom:15px;
+}
+.header h1{
+  color:white;
+}
+.controls{
+  background:white;
+  padding:15px;
+  border-radius:10px;
+  margin-bottom:15px;
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.controls button{
+  width:auto;
+}
+.table-box{
+  background:white;
+  padding:10px;
+  border-radius:10px;
+  overflow:auto;
+}
+table{
+  width:100%;
+  min-width:1200px;
+  border-collapse:collapse;
+}
+th{
+  background:#333;
+  color:white;
+  padding:10px;
+  border:1px solid #777;
+  white-space:nowrap;
+}
+td{
+  border:1px solid #aaa;
+  padding:5px;
+}
+td input{
+  margin:0;
+  padding:8px;
+  width:100%;
+}
+.logout{
+  background:#555;
+}
+.small{
+  font-size:13px;
+  color:#666;
+}
+</style>
 </head>
 
 <body>
 
-<div class="login-page" id="loginPage">
-  <div class="login-box">
+<!-- LOGIN -->
+<div class="page" id="loginPage">
+  <div class="box login-box">
     <h1>RHI MAGNESITA</h1>
     <div class="subtitle">SPARE STOCK REGISTER</div>
 
-    <input type="email" id="username" placeholder="Enter Email ID" autocomplete="username">
-    <input type="password" id="password" placeholder="Enter Password" autocomplete="current-password">
+    <input type="email" id="username" placeholder="Enter Email ID">
+    <input type="password" id="password" placeholder="Enter Password">
 
     <button onclick="login()">LOGIN</button>
-    <button class="link-button" onclick="showForgotPassword()">Forgot Password?</button>
-    <p id="loginMessage"></p>
+    <button class="link-button" onclick="showForgot()">Forgot Password?</button>
+
+    <p id="loginMessage" class="message"></p>
   </div>
 </div>
 
-<div class="login-page" id="forgotPage">
-  <div class="login-box">
+<!-- FORGOT PASSWORD -->
+<div class="page" id="forgotPage">
+  <div class="box login-box">
     <h1>RHI MAGNESITA</h1>
     <div class="subtitle">RESET PASSWORD</div>
 
-    <input type="email" id="resetEmail" placeholder="Enter Email ID" autocomplete="email">
+    <input type="email" id="resetEmail" placeholder="Enter Email ID">
+
     <button onclick="sendResetLink()">SEND RESET LINK</button>
     <button class="link-button" onclick="showLogin()">Back to Login</button>
-    <p id="resetMessage"></p>
+
+    <p id="resetMessage" class="message"></p>
   </div>
 </div>
 
-<div class="login-page" id="newPasswordPage">
-  <div class="login-box">
+<!-- NEW PASSWORD -->
+<div class="page" id="newPasswordPage">
+  <div class="box login-box">
     <h1>RHI MAGNESITA</h1>
     <div class="subtitle">SET NEW PASSWORD</div>
 
-    <input type="password" id="newPassword" placeholder="Enter New Password" autocomplete="new-password">
-    <input type="password" id="confirmPassword" placeholder="Confirm New Password" autocomplete="new-password">
+    <input type="password" id="newPassword" placeholder="Enter New Password">
+    <input type="password" id="confirmPassword" placeholder="Confirm New Password">
 
     <button onclick="updatePassword()">UPDATE PASSWORD</button>
-    <p id="newPasswordMessage"></p>
+
+    <p id="newPasswordMessage" class="message"></p>
   </div>
 </div>
 
+<!-- STOCK REGISTER -->
 <div id="registerPage">
+
   <div class="header">
     <h1>RHI MAGNESITA SPARE STOCK REGISTER</h1>
-    <p>Spare Material Management System</p>
   </div>
 
   <div class="controls">
-    <button onclick="saveData()">SAVE STOCK</button>
     <button onclick="addRow()">ADD ROW</button>
-    <button onclick="clearData()">CLEAR DATA</button>
+    <button onclick="saveStock()">SAVE STOCK</button>
+    <button onclick="clearStock()">CLEAR ALL</button>
     <button class="logout" onclick="logout()">LOGOUT</button>
   </div>
 
@@ -94,9 +198,9 @@ td input{margin:0;width:100%;padding:8px;}
     <table>
       <thead>
         <tr>
-          <th>SR. NO.</th>
-          <th>ITEM NAME</th>
-          <th>ITEM CODE</th>
+          <th>SR.NO</th>
+          <th>ITEMS NAME</th>
+          <th>ITEMS CODE</th>
           <th>CLOSE STOCK</th>
           <th>OPEN STOCK</th>
           <th>RECEIVED</th>
@@ -105,41 +209,76 @@ td input{margin:0;width:100%;padding:8px;}
           <th>REMARKS</th>
         </tr>
       </thead>
-      <tbody id="stockTable"></tbody>
+      <tbody id="stockBody"></tbody>
     </table>
   </div>
+
 </div>
 
 <script>
 
-const SUPABASE_URL = "https://mooagaasvythwctcktcx.supabase.co";
+const SUPABASE_URL =
+"https://mooagaasvythwctcktcx.supabase.co";
 
-const SUPABASE_PUBLISHABLE_KEY =
+const SUPABASE_KEY =
 "sb_publishable_Zql7qJbZlj1R5H1ydOoqSg_F0WAdgd0";
 
-const supabaseClient = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_PUBLISHABLE_KEY
-);
-
-const TOTAL_ROWS = 50;
+const supabaseClient =
+supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 
-function hideAllPages(){
-  document.getElementById("loginPage").style.display="none";
+/* ---------- PAGE CONTROL ---------- */
+
+function showLogin(){
+  document.getElementById("loginPage").style.display="flex";
   document.getElementById("forgotPage").style.display="none";
   document.getElementById("newPasswordPage").style.display="none";
   document.getElementById("registerPage").style.display="none";
 }
 
+function showForgot(){
+  document.getElementById("loginPage").style.display="none";
+  document.getElementById("forgotPage").style.display="flex";
+}
 
-function showLogin(){
-  hideAllPages();
-  document.getElementById("loginPage").style.display="flex";
-  document.getElementById("loginMessage").innerHTML="";
+function showRegister(){
+  document.getElementById("loginPage").style.display="none";
+  document.getElementById("forgotPage").style.display="none";
+  document.getElementById("newPasswordPage").style.display="none";
+  document.getElementById("registerPage").style.display="block";
 }
 
 
-function showForgotPassword(){
-  hideAllPages();
-  document.getElementById("forgotPage").style.display="flex";
+/* ---------- LOGIN ---------- */
+
+async function login(){
+
+  const email =
+    document.getElementById("username").value.trim();
+
+  const password =
+    document.getElementById("password").value;
+
+  const msg =
+    document.getElementById("loginMessage");
+
+  msg.textContent="Checking login...";
+
+  const {data,error} =
+    await supabaseClient.auth.signInWithPassword({
+      email:email,
+      password:password
+    });
+
+  if(error){
+    msg.textContent="Login failed: " + error.message;
+    return;
+  }
+
+  msg.textContent="Login successful";
+
+  loadStock();
+
+  setTimeout(()=>{
+    showRegister();
+  },500
