@@ -10,275 +10,106 @@
 <style>
 *{box-sizing:border-box}
 body{
-  margin:0;
-  font-family:Arial,sans-serif;
-  background:#eef3f8;
-  color:#222;
+margin:0;
+font-family:Arial,sans-serif;
+background:#eef3f8;
+color:#222
 }
 .page{
-  min-height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  padding:20px;
+min-height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+padding:20px
 }
 .box{
-  width:95%;
-  max-width:900px;
-  background:white;
-  padding:25px;
-  border-radius:15px;
-  box-shadow:0 5px 25px #999;
-}
-.login-box{
-  max-width:430px;
-  text-align:center;
+width:95%;
+max-width:430px;
+background:white;
+padding:35px;
+border-radius:15px;
+box-shadow:0 5px 25px #999;
+text-align:center
 }
 h1{
-  margin:0;
-  color:#b00000;
-  font-size:26px;
+margin:0;
+color:#b00000;
+font-size:26px
 }
 .subtitle{
-  margin:10px 0 25px;
-  font-weight:bold;
-  color:#555;
+margin:10px 0 25px;
+font-weight:bold;
+color:#555
 }
-input,button,select{
-  width:100%;
-  padding:12px;
-  margin:7px 0;
-  border:1px solid #bbb;
-  border-radius:7px;
-  font-size:15px;
+input{
+width:100%;
+padding:13px;
+margin:8px 0;
+border:1px solid #bbb;
+border-radius:7px;
+font-size:15px
 }
 button{
-  background:#b00000;
-  color:white;
-  border:none;
-  font-weight:bold;
-  cursor:pointer;
+width:100%;
+padding:13px;
+margin:8px 0;
+border:0;
+border-radius:7px;
+background:#b00000;
+color:white;
+font-weight:bold;
+font-size:15px;
+cursor:pointer
 }
 button:hover{background:#850000}
-.link-button{
-  background:none;
-  color:#b00000;
-  padding:5px;
-  margin-top:5px;
+.link{
+background:white;
+color:#b00000
 }
 .message{
-  margin-top:10px;
-  font-weight:bold;
+font-weight:bold;
+margin-top:12px
 }
-#registerPage,#forgotPage,#newPasswordPage{
-  display:none;
+#forgotPage,#newPasswordPage,#registerPage{
+display:none
+}
+#registerPage{
+padding:20px
 }
 .header{
-  background:#b00000;
-  color:white;
-  padding:18px;
-  border-radius:10px;
-  margin-bottom:15px;
+background:#b00000;
+color:white;
+padding:18px;
+border-radius:10px;
+margin-bottom:15px
 }
-.header h1{
-  color:white;
-}
+.header h1{color:white}
 .controls{
-  background:white;
-  padding:15px;
-  border-radius:10px;
-  margin-bottom:15px;
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
+background:white;
+padding:15px;
+border-radius:10px;
+margin-bottom:15px
 }
 .controls button{
-  width:auto;
+width:auto;
+padding:10px 15px
 }
-.table-box{
-  background:white;
-  padding:10px;
-  border-radius:10px;
-  overflow:auto;
+.tablebox{
+background:white;
+padding:10px;
+overflow:auto;
+border-radius:10px
 }
 table{
-  width:100%;
-  min-width:1200px;
-  border-collapse:collapse;
+width:100%;
+min-width:1100px;
+border-collapse:collapse
 }
 th{
-  background:#333;
-  color:white;
-  padding:10px;
-  border:1px solid #777;
-  white-space:nowrap;
+background:#333;
+color:white;
+padding:10px;
+border:1px solid #777
 }
 td{
-  border:1px solid #aaa;
-  padding:5px;
-}
-td input{
-  margin:0;
-  padding:8px;
-  width:100%;
-}
-.logout{
-  background:#555;
-}
-.small{
-  font-size:13px;
-  color:#666;
-}
-</style>
-</head>
-
-<body>
-
-<!-- LOGIN -->
-<div class="page" id="loginPage">
-  <div class="box login-box">
-    <h1>RHI MAGNESITA</h1>
-    <div class="subtitle">SPARE STOCK REGISTER</div>
-
-    <input type="email" id="username" placeholder="Enter Email ID">
-    <input type="password" id="password" placeholder="Enter Password">
-
-    <button onclick="login()">LOGIN</button>
-    <button class="link-button" onclick="showForgot()">Forgot Password?</button>
-
-    <p id="loginMessage" class="message"></p>
-  </div>
-</div>
-
-<!-- FORGOT PASSWORD -->
-<div class="page" id="forgotPage">
-  <div class="box login-box">
-    <h1>RHI MAGNESITA</h1>
-    <div class="subtitle">RESET PASSWORD</div>
-
-    <input type="email" id="resetEmail" placeholder="Enter Email ID">
-
-    <button onclick="sendResetLink()">SEND RESET LINK</button>
-    <button class="link-button" onclick="showLogin()">Back to Login</button>
-
-    <p id="resetMessage" class="message"></p>
-  </div>
-</div>
-
-<!-- NEW PASSWORD -->
-<div class="page" id="newPasswordPage">
-  <div class="box login-box">
-    <h1>RHI MAGNESITA</h1>
-    <div class="subtitle">SET NEW PASSWORD</div>
-
-    <input type="password" id="newPassword" placeholder="Enter New Password">
-    <input type="password" id="confirmPassword" placeholder="Confirm New Password">
-
-    <button onclick="updatePassword()">UPDATE PASSWORD</button>
-
-    <p id="newPasswordMessage" class="message"></p>
-  </div>
-</div>
-
-<!-- STOCK REGISTER -->
-<div id="registerPage">
-
-  <div class="header">
-    <h1>RHI MAGNESITA SPARE STOCK REGISTER</h1>
-  </div>
-
-  <div class="controls">
-    <button onclick="addRow()">ADD ROW</button>
-    <button onclick="saveStock()">SAVE STOCK</button>
-    <button onclick="clearStock()">CLEAR ALL</button>
-    <button class="logout" onclick="logout()">LOGOUT</button>
-  </div>
-
-  <div class="table-box">
-    <table>
-      <thead>
-        <tr>
-          <th>SR.NO</th>
-          <th>ITEMS NAME</th>
-          <th>ITEMS CODE</th>
-          <th>CLOSE STOCK</th>
-          <th>OPEN STOCK</th>
-          <th>RECEIVED</th>
-          <th>RECEIVED DATE</th>
-          <th>TOTAL ITEMS</th>
-          <th>REMARKS</th>
-        </tr>
-      </thead>
-      <tbody id="stockBody"></tbody>
-    </table>
-  </div>
-
-</div>
-
-<script>
-
-const SUPABASE_URL =
-"https://mooagaasvythwctcktcx.supabase.co";
-
-const SUPABASE_KEY =
-"sb_publishable_Zql7qJbZlj1R5H1ydOoqSg_F0WAdgd0";
-
-const supabaseClient =
-supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-
-/* ---------- PAGE CONTROL ---------- */
-
-function showLogin(){
-  document.getElementById("loginPage").style.display="flex";
-  document.getElementById("forgotPage").style.display="none";
-  document.getElementById("newPasswordPage").style.display="none";
-  document.getElementById("registerPage").style.display="none";
-}
-
-function showForgot(){
-  document.getElementById("loginPage").style.display="none";
-  document.getElementById("forgotPage").style.display="flex";
-}
-
-function showRegister(){
-  document.getElementById("loginPage").style.display="none";
-  document.getElementById("forgotPage").style.display="none";
-  document.getElementById("newPasswordPage").style.display="none";
-  document.getElementById("registerPage").style.display="block";
-}
-
-
-/* ---------- LOGIN ---------- */
-
-async function login(){
-
-  const email =
-    document.getElementById("username").value.trim();
-
-  const password =
-    document.getElementById("password").value;
-
-  const msg =
-    document.getElementById("loginMessage");
-
-  msg.textContent="Checking login...";
-
-  const {data,error} =
-    await supabaseClient.auth.signInWithPassword({
-      email:email,
-      password:password
-    });
-
-  if(error){
-    msg.textContent="Login failed: " + error.message;
-    return;
-  }
-
-  msg.textContent="Login successful";
-
-  loadStock();
-
-  setTimeout(()=>{
-    showRegister();
-  },500
+border:1px solid #
