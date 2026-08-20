@@ -1018,3 +1018,247 @@ checkSession();
 
 </body>
 </html>
+/* ================================
+   CONSUMPTION HISTORY
+================================ */
+
+(function () {
+  if (document.getElementById("consumptionSection")) return;
+
+  const section = document.createElement("div");
+  section.id = "consumptionSection";
+  section.style.cssText = `
+    margin:30px 0;
+    padding:20px;
+    background:#fff;
+    border-radius:10px;
+    box-shadow:0 2px 8px rgba(0,0,0,.12);
+  `;
+
+  section.innerHTML = `
+    <h2 style="margin-top:0;color:#8b0000;">CONSUMPTION HISTORY</h2>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;">
+      <input id="consDate" type="date"
+        style="padding:10px;border:1px solid #ccc;border-radius:5px;">
+
+      <select id="consItem"
+        style="padding:10px;border:1px solid #ccc;border-radius:5px;min-width:180px;">
+        <option value="">Select Item</option>
+      </select>
+
+      <input id="consQty" type="number" min="0.01" step="0.01"
+        placeholder="Consumed Qty"
+        style="padding:10px;border:1px solid #ccc;border-radius:5px;">
+
+      <select id="consUnit"
+        style="padding:10px;border:1px solid #ccc;border-radius:5px;">
+        <option value="PCS">PCS</option>
+        <option value="KG">KG</option>
+        <option value="MTR">MTR</option>
+        <option value="LTR">LTR</option>
+        <option value="SET">SET</option>
+        <option value="NOS">NOS</option>
+      </select>
+
+      <button id="saveConsumption"
+        style="padding:10px 18px;background:#8b0000;color:white;border:0;border-radius:5px;cursor:pointer;">
+        SAVE CONSUMPTION
+      </button>
+    </div>
+
+    <div id="consMessage" style="margin-bottom:15px;font-weight:bold;"></div>
+
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;">
+        <thead>
+          <tr style="background:#18233b;color:white;">
+            <th style="padding:10px;">DATE</th>
+            <th style="padding:10px;">ITEM NAME</th>
+            <th style="padding:10px;">ITEM CODE</th>
+            <th style="padding:10px;">CONSUMED QTY</th>
+            <th style="padding:10px;">UNIT</th>
+            <th style="padding:10px;">USER</th>
+          </tr>
+        </thead>
+        <tbody id="consumptionBody">
+          <tr>
+            <td colspan="6" style="padding:15px;text-align:center;">
+              Loading...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div id="consTotal"
+      style="margin-top:15px;font-weight:bold;font-size:18px;">
+      Total Consumed: 0
+    </div>
+  `;
+
+  const main =
+    document.querySelector("main") ||
+    document.querySelector(".container") ||
+    document.body;
+
+  main.appendChild(section);
+
+  const supa =
+    (typeof supabaseClient !== "undefined")
+      ? supabaseClient
+      : null;
+
+  if (!supa) {
+    document.getElementById("consMessage").textContent =
+      "Supabase connection not found.";
+    return;
+  }
+
+  async function loadItems() {
+    const select = document.getElementById("consItem");
+
+    const { data, error } = await supa
+      .from("stock")
+      .select("*")
+      .order("item_name", { ascending: true });
+
+    if (error) {
+      document.getElementById("consMessage").textContent =
+        "Item loading error: " + error.message;
+      return;
+    }
+
+    select.innerHTML = `<option value="">Select Item</option>`;
+
+    (data || []).forEach(item => {
+      const option = document.createElement("option");
+
+      option.value = JSON.stringify({
+        id: item.id,
+        item_name: item.item_name || "",
+        item_code: item.item_code || ""
+      });
+
+      option.textContent =
+        item.item_name +
+        (item.item_code ? " (" + item.item_code + ")" : "");
+
+      select.appendChild(option);
+    });
+  }
+
+  async function loadHistory() {
+    const body = document.getElementById("consumptionBody");
+
+    const { data, error } = await supa
+      .from("consumption_history")
+      .select("*")
+      .order("consumption_date", { ascending: false })
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      body.innerHTML = `
+        <tr>
+          <td colspan="6" style="padding:15px;text-align:center;color:red;">
+            ${error.message}
+          </td>
+        </tr>`;
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      body.innerHTML = `
+        <tr>
+          <td colspan="6" style="padding:15px;text-align:center;">
+            No consumption records available.
+          </td>
+        </tr>`;
+
+      document.getElementById("consTotal").textContent =
+        "Total Consumed: 0";
+      return;
+    }
+
+    let total = 0;
+
+    body.innerHTML = data.map(row => {
+      total += Number(row.consumed_qty || 0);
+
+      return `
+        <tr style="border-bottom:1px solid #ddd;">
+          <td style="padding:10px;">${row.consumption_date || ""}</td>
+          <td style="padding:10px;">${row.item_name || ""}</td>
+          <td style="padding:10px;">${row.item_code || ""}</td>
+          <td style="padding:10px;">${row.consumed_qty || 0}</td>
+          <td style="padding:10px;">${row.unit || ""}</td>
+          <td style="padding:10px;">${row.user_id || ""}</td>
+        </tr>
+      `;
+    }).join("");
+
+    document.getElementById("consTotal").textContent =
+      "Total Consumed: " + total;
+  }
+
+  document.getElementById("saveConsumption")
+    .addEventListener("click", async function () {
+
+      const date = document.getElementById("consDate").value;
+      const itemValue = document.getElementById("consItem").value;
+      const qty = Number(document.getElementById("consQty").value);
+      const unit = document.getElementById("consUnit").value;
+      const msg = document.getElementById("consMessage");
+
+      if (!date) {
+        msg.style.color = "red";
+        msg.textContent = "Please select date.";
+        return;
+      }
+
+      if (!itemValue) {
+        msg.style.color = "red";
+        msg.textContent = "Please select item.";
+        return;
+      }
+
+      if (!qty || qty <= 0) {
+        msg.style.color = "red";
+        msg.textContent = "Please enter consumed quantity.";
+        return;
+      }
+
+      const item = JSON.parse(itemValue);
+
+      const { data: userData } = await supa.auth.getUser();
+
+      const userId = userData?.user?.id || null;
+
+      const { error } = await supa
+        .from("consumption_history")
+        .insert({
+          consumption_date: date,
+          item_name: item.item_name,
+          item_code: item.item_code,
+          consumed_qty: qty,
+          unit: unit,
+          user_id: userId
+        });
+
+      if (error) {
+        msg.style.color = "red";
+        msg.textContent = "Save failed: " + error.message;
+        return;
+      }
+
+      msg.style.color = "green";
+      msg.textContent = "Consumption saved successfully.";
+
+      document.getElementById("consQty").value = "";
+
+      await loadHistory();
+    });
+
+  loadItems();
+  loadHistory();
+})();
