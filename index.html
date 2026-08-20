@@ -1,1 +1,106 @@
-<button id="loginButton" type="button">LOGIN</button>
+<script>
+async function login() {
+
+    const emailInput = document.getElementById("loginEmail");
+    const passwordInput = document.getElementById("loginPassword");
+    const msg = document.getElementById("loginMessage");
+
+    if (!emailInput || !passwordInput) {
+        console.error("Login input fields not found.");
+        return;
+    }
+
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+
+    if (!email || !password) {
+        if (msg) {
+            msg.style.color = "red";
+            msg.textContent = "Enter Email and Password.";
+        }
+        return;
+    }
+
+    if (typeof supabaseClient === "undefined") {
+        if (msg) {
+            msg.style.color = "red";
+            msg.textContent = "Supabase connection not found.";
+        }
+        console.error("supabaseClient is not defined.");
+        return;
+    }
+
+    if (msg) {
+        msg.style.color = "";
+        msg.textContent = "Logging in...";
+    }
+
+    try {
+
+        const { data, error } =
+            await supabaseClient.auth.signInWithPassword({
+                email: email,
+                password: password
+            });
+
+        if (error) {
+            console.error("Login error:", error);
+
+            if (msg) {
+                msg.style.color = "red";
+                msg.textContent = error.message;
+            }
+
+            return;
+        }
+
+        if (data && data.session) {
+
+            if (msg) {
+                msg.style.color = "green";
+                msg.textContent = "Login successful.";
+            }
+
+            if (typeof showMain === "function") {
+                showMain();
+            } else {
+                console.error("showMain() is not defined.");
+            }
+
+        } else {
+
+            if (msg) {
+                msg.style.color = "red";
+                msg.textContent = "Login failed. Please try again.";
+            }
+        }
+
+    } catch (err) {
+
+        console.error("Login exception:", err);
+
+        if (msg) {
+            msg.style.color = "red";
+            msg.textContent = "Login error: " + err.message;
+        }
+    }
+}
+
+/* IMPORTANT:
+   Your HTML button uses onclick="login()"
+   so expose the function globally.
+*/
+window.login = login;
+
+
+/* Also support button with id="loginButton" */
+document.addEventListener("DOMContentLoaded", function () {
+
+    const loginButton = document.getElementById("loginButton");
+
+    if (loginButton) {
+        loginButton.addEventListener("click", login);
+    }
+
+});
+</script>
