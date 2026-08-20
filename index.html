@@ -6,9 +6,7 @@
 <title>RHI MAGNESITA SPARE STOCK REGISTER</title>
 
 <style>
-*{
-  box-sizing:border-box;
-}
+*{box-sizing:border-box}
 
 body{
   margin:0;
@@ -68,8 +66,13 @@ button:hover{
   background:#850000;
 }
 
-#registerPage{
+#registerPage,
+#forgotPage,
+#newPasswordPage{
   display:none;
+}
+
+#registerPage{
   padding:20px;
 }
 
@@ -145,7 +148,24 @@ td input{
 .logout{
   background:#555 !important;
 }
+
+.link-button{
+  background:none;
+  color:#b00000;
+  border:none;
+  padding:5px;
+  margin-top:2px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.link-button:hover{
+  background:none;
+  color:#850000;
+}
 </style>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
 <body>
@@ -162,20 +182,103 @@ td input{
     </div>
 
     <input
-      type="text"
+      type="email"
       id="username"
-      placeholder="Enter Username"
+      placeholder="Enter Email ID"
+      autocomplete="username"
     >
 
     <input
       type="password"
       id="password"
       placeholder="Enter Password"
+      autocomplete="current-password"
     >
 
-    <button onclick="login()">LOGIN</button>
+    <button onclick="login()">
+      LOGIN
+    </button>
+
+    <button
+      class="link-button"
+      onclick="showForgotPassword()"
+    >
+      Forgot Password?
+    </button>
 
     <p id="loginMessage"></p>
+
+  </div>
+
+</div>
+
+
+<!-- FORGOT PASSWORD -->
+<div class="login-page" id="forgotPage">
+
+  <div class="login-box">
+
+    <h1>RHI MAGNESITA</h1>
+
+    <div class="subtitle">
+      RESET PASSWORD
+    </div>
+
+    <input
+      type="email"
+      id="resetEmail"
+      placeholder="Enter Email ID"
+      autocomplete="email"
+    >
+
+    <button onclick="sendResetLink()">
+      SEND RESET LINK
+    </button>
+
+    <button
+      class="link-button"
+      onclick="showLogin()"
+    >
+      Back to Login
+    </button>
+
+    <p id="resetMessage"></p>
+
+  </div>
+
+</div>
+
+
+<!-- NEW PASSWORD -->
+<div class="login-page" id="newPasswordPage">
+
+  <div class="login-box">
+
+    <h1>RHI MAGNESITA</h1>
+
+    <div class="subtitle">
+      SET NEW PASSWORD
+    </div>
+
+    <input
+      type="password"
+      id="newPassword"
+      placeholder="Enter New Password"
+      autocomplete="new-password"
+    >
+
+    <input
+      type="password"
+      id="confirmPassword"
+      placeholder="Confirm New Password"
+      autocomplete="new-password"
+    >
+
+    <button onclick="updatePassword()">
+      UPDATE PASSWORD
+    </button>
+
+    <p id="newPasswordMessage"></p>
 
   </div>
 
@@ -187,9 +290,13 @@ td input{
 
   <div class="header">
 
-    <h1>RHI MAGNESITA SPARE STOCK REGISTER</h1>
+    <h1>
+      RHI MAGNESITA SPARE STOCK REGISTER
+    </h1>
 
-    <p>Spare Material Management System</p>
+    <p>
+      Spare Material Management System
+    </p>
 
   </div>
 
@@ -208,7 +315,10 @@ td input{
       CLEAR DATA
     </button>
 
-    <button class="logout" onclick="logout()">
+    <button
+      class="logout"
+      onclick="logout()"
+    >
       LOGOUT
     </button>
 
@@ -222,22 +332,30 @@ td input{
       <thead>
 
         <tr>
+
           <th>SR. NO.</th>
+
           <th>ITEM NAME</th>
+
           <th>ITEM CODE</th>
+
           <th>CLOSE STOCK</th>
+
           <th>OPEN STOCK</th>
+
           <th>RECEIVED</th>
+
           <th>RECEIVED DATE</th>
+
           <th>TOTAL ITEMS</th>
+
           <th>REMARKS</th>
+
         </tr>
 
       </thead>
 
-      <tbody id="stockTable">
-
-      </tbody>
+      <tbody id="stockTable"></tbody>
 
     </table>
 
@@ -248,291 +366,163 @@ td input{
 
 <script>
 
-const TOTAL_ROWS = 50;
+/* ================================
+   SUPABASE CONNECTION
+================================ */
+
+const SUPABASE_URL =
+"https://mooagaasvythwctcktcx.supabase.co";
+
+const SUPABASE_PUBLISHABLE_KEY =
+"sb_publishable_Zql7qJbZlj1R5H1ydOoqSg_F0WAdgd0";
 
 
-/* LOGIN */
+const supabaseClient =
+window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY
+);
 
-function login(){
 
-  const username =
+/* ================================
+   PAGE CONTROL
+================================ */
+
+function hideAllPages(){
+
+  document.getElementById("loginPage").style.display="none";
+
+  document.getElementById("forgotPage").style.display="none";
+
+  document.getElementById("newPasswordPage").style.display="none";
+
+  document.getElementById("registerPage").style.display="none";
+}
+
+
+function showLogin(){
+
+  hideAllPages();
+
+  document.getElementById("loginPage").style.display="flex";
+
+  document.getElementById("loginMessage").innerHTML="";
+}
+
+
+function showForgotPassword(){
+
+  hideAllPages();
+
+  document.getElementById("forgotPage").style.display="flex";
+
+  document.getElementById("resetMessage").innerHTML="";
+}
+
+
+function showNewPassword(){
+
+  hideAllPages();
+
+  document.getElementById("newPasswordPage").style.display="flex";
+}
+
+
+/* ================================
+   LOGIN
+================================ */
+
+async function login(){
+
+  const email =
     document.getElementById("username").value.trim();
 
   const password =
     document.getElementById("password").value.trim();
 
-  /*
-    Temporary login for testing.
-    Change later when Supabase authentication
-    is connected.
-  */
 
-  if(username === "admin" && password === "admin123"){
-
-    document.getElementById("loginPage").style.display="none";
-
-    document.getElementById("registerPage").style.display="block";
-
-    loadData();
-
-  }else{
+  if(!email || !password){
 
     document.getElementById("loginMessage").innerHTML =
-      "<span style='color:red'>Wrong Username or Password</span>";
-
-  }
-
-}
-
-
-/* LOGOUT */
-
-function logout(){
-
-  document.getElementById("registerPage").style.display="none";
-
-  document.getElementById("loginPage").style.display="flex";
-
-  document.getElementById("username").value="";
-
-  document.getElementById("password").value="";
-
-}
-
-
-/* CREATE 50 ROWS */
-
-function createRows(){
-
-  const table =
-    document.getElementById("stockTable");
-
-  table.innerHTML="";
-
-  for(let i=1;i<=TOTAL_ROWS;i++){
-
-    const row =
-      document.createElement("tr");
-
-    row.innerHTML = `
-
-      <td class="sr">${i}</td>
-
-      <td>
-        <input type="text"
-          id="name_${i}"
-          placeholder="Item Name">
-      </td>
-
-      <td>
-        <input type="text"
-          id="code_${i}"
-          placeholder="Item Code">
-      </td>
-
-      <td>
-        <input type="number"
-          id="close_${i}"
-          min="0">
-      </td>
-
-      <td>
-        <input type="number"
-          id="open_${i}"
-          min="0">
-      </td>
-
-      <td>
-        <input type="number"
-          id="received_${i}"
-          min="0">
-      </td>
-
-      <td>
-        <input type="date"
-          id="date_${i}">
-      </td>
-
-      <td>
-        <input type="number"
-          id="total_${i}"
-          min="0">
-      </td>
-
-      <td>
-        <input type="text"
-          id="remarks_${i}"
-          placeholder="Remarks">
-      </td>
-
-    `;
-
-    table.appendChild(row);
-
-  }
-
-}
-
-
-/* SAVE DATA */
-
-function saveData(){
-
-  const data=[];
-
-  for(let i=1;i<=TOTAL_ROWS;i++){
-
-    data.push({
-
-      name:
-        document.getElementById("name_"+i).value,
-
-      code:
-        document.getElementById("code_"+i).value,
-
-      close:
-        document.getElementById("close_"+i).value,
-
-      open:
-        document.getElementById("open_"+i).value,
-
-      received:
-        document.getElementById("received_"+i).value,
-
-      date:
-        document.getElementById("date_"+i).value,
-
-      total:
-        document.getElementById("total_"+i).value,
-
-      remarks:
-        document.getElementById("remarks_"+i).value
-
-    });
-
-  }
-
-  localStorage.setItem(
-    "RHI_MAGNESITA_STOCK",
-    JSON.stringify(data)
-  );
-
-  alert("Stock data saved successfully.");
-
-}
-
-
-/* LOAD DATA */
-
-function loadData(){
-
-  createRows();
-
-  const saved =
-    localStorage.getItem("RHI_MAGNESITA_STOCK");
-
-  if(!saved) return;
-
-  const data =
-    JSON.parse(saved);
-
-  data.forEach((item,index)=>{
-
-    const i=index+1;
-
-    if(document.getElementById("name_"+i))
-      document.getElementById("name_"+i).value=item.name || "";
-
-    if(document.getElementById("code_"+i))
-      document.getElementById("code_"+i).value=item.code || "";
-
-    if(document.getElementById("close_"+i))
-      document.getElementById("close_"+i).value=item.close || "";
-
-    if(document.getElementById("open_"+i))
-      document.getElementById("open_"+i).value=item.open || "";
-
-    if(document.getElementById("received_"+i))
-      document.getElementById("received_"+i).value=item.received || "";
-
-    if(document.getElementById("date_"+i))
-      document.getElementById("date_"+i).value=item.date || "";
-
-    if(document.getElementById("total_"+i))
-      document.getElementById("total_"+i).value=item.total || "";
-
-    if(document.getElementById("remarks_"+i))
-      document.getElementById("remarks_"+i).value=item.remarks || "";
-
-  });
-
-}
-
-
-/* ADD ROW */
-
-function addRow(){
-
-  const table =
-    document.getElementById("stockTable");
-
-  const number =
-    table.rows.length + 1;
-
-  if(number > 100){
-
-    alert("Maximum 100 rows allowed.");
+      "<span style='color:red'>Please enter Email and Password</span>";
 
     return;
   }
 
-  const row =
-    document.createElement("tr");
 
-  row.innerHTML = `
+  const { error } =
+    await supabaseClient.auth.signInWithPassword({
 
-    <td class="sr">${number}</td>
+      email:email,
 
-    <td><input type="text" id="name_${number}"></td>
+      password:password
 
-    <td><input type="text" id="code_${number}"></td>
-
-    <td><input type="number" id="close_${number}"></td>
-
-    <td><input type="number" id="open_${number}"></td>
-
-    <td><input type="number" id="received_${number}"></td>
-
-    <td><input type="date" id="date_${number}"></td>
-
-    <td><input type="number" id="total_${number}"></td>
-
-    <td><input type="text" id="remarks_${number}"></td>
-
-  `;
-
-  table.appendChild(row);
-
-}
+    });
 
 
-/* CLEAR DATA */
+  if(error){
 
-function clearData(){
+    document.getElementById("loginMessage").innerHTML =
+      "<span style='color:red'>"
+      + error.message +
+      "</span>";
 
-  if(confirm("Are you sure you want to clear all stock data?")){
-
-    localStorage.removeItem(
-      "RHI_MAGNESITA_STOCK"
-    );
-
-    createRows();
-
+    return;
   }
 
+
+  hideAllPages();
+
+  document.getElementById("registerPage").style.display="block";
+
+  loadData();
 }
 
-</script>
 
-</body>
-</html>
+/* ================================
+   FORGOT PASSWORD
+================================ */
+
+async function sendResetLink(){
+
+  const email =
+    document.getElementById("resetEmail").value.trim();
+
+
+  if(!email){
+
+    document.getElementById("resetMessage").innerHTML =
+      "<span style='color:red'>Please enter your Email ID</span>";
+
+    return;
+  }
+
+
+  const redirectUrl =
+    window.location.origin +
+    window.location.pathname;
+
+
+  const { error } =
+    await supabaseClient.auth.resetPasswordForEmail(
+      email,
+      {
+        redirectTo:redirectUrl
+      }
+    );
+
+
+  if(error){
+
+    document.getElementById("resetMessage").innerHTML =
+      "<span style='color:red'>"
+      + error.message +
+      "</span>";
+
+    return;
+  }
+
+
+  document.getElementById("resetMessage").innerHTML =
+    "<span style='color:green'>"
+    + "Password reset link
