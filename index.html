@@ -271,3 +271,457 @@ td select{
 
 
 <!-- ================= RESET PASSWORD
+<script>
+const SUPABASE_URL="https://mooagaasvythwctcktcx.supabase.co";
+const SUPABASE_KEY="sb_publishable_Zql7qJbZlj1R5H1ydOoqSg_F0WAdgd0";
+const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+function hideAll(){
+ document.getElementById("loginPage").style.display="none";
+ document.getElementById("forgotPage").style.display="none";
+ document.getElementById("resetPage").style.display="none";
+ document.getElementById("mainPage").style.display="none";
+}
+
+function showLogin(){
+ hideAll();
+ document.getElementById("loginPage").style.display="flex";
+}
+
+function showForgot(){
+ hideAll();
+ document.getElementById("forgotPage").style.display="flex";
+}
+
+function showReset(){
+ hideAll();
+ document.getElementById("resetPage").style.display="flex";
+}
+
+function showMain(){
+ hideAll();
+ document.getElementById("mainPage").style.display="block";
+ loadItems();
+ loadConsumptionItems();
+ loadHistory();
+}
+
+async function login(){
+ const email=document.getElementById("loginEmail").value.trim();
+ const password=document.getElementById("loginPassword").value;
+ const msg=document.getElementById("loginMessage");
+
+ if(!email || !password){
+   msg.style.color="red";
+   msg.textContent="Enter Email and Password.";
+   return;
+ }
+
+ msg.textContent="Logging in...";
+
+ const {error}=await supabaseClient.auth.signInWithPassword({
+   email:email,
+   password:password
+ });
+
+ if(error){
+   msg.style.color="red";
+   msg.textContent=error.message;
+   return;
+ }
+
+ msg.style.color="green";
+ msg.textContent="Login successful.";
+ showMain();
+}
+
+async function logout(){
+ await supabaseClient.auth.signOut();
+ showLogin();
+}
+
+async function sendResetLink(){
+ const email=document.getElementById("resetEmail").value.trim();
+ const msg=document.getElementById("resetMessage");
+
+ if(!email){
+   msg.style.color="red";
+   msg.textContent="Enter Email ID.";
+   return;
+ }
+
+ const {error}=await supabaseClient.auth.resetPasswordForEmail(email,{
+   redirectTo:window.location.origin+window.location.pathname
+ });
+
+ if(error){
+   msg.style.color="red";
+   msg.textContent=error.message;
+   return;
+ }
+
+ msg.style.color="green";
+ msg.textContent="Reset link sent. Check your Gmail.";
+}
+
+async function updatePassword(){
+ const password=document.getElementById("newPassword").value;
+ const confirm=document.getElementById("confirmPassword").value;
+ const msg=document.getElementById("newPasswordMessage");
+
+ if(password.length<6){
+   msg.textContent="Password must be at least 6 characters.";
+   return;
+ }
+
+ if(password!==confirm){
+   msg.textContent="Password does not match.";
+   return;
+ }
+
+ const {error}=await supabaseClient.auth.updateUser({
+   password:password
+ });
+
+ if(error){
+   msg.textContent=error.message;
+   return;
+ }
+
+ msg.style.color="green";
+ msg.textContent="Password updated successfully.";
+ setTimeout(showLogin,1500);
+}
+
+async function loadItems(){
+ const {data,error}=await supabaseClient
+ .from("stock_items")
+ .select("*")
+ .order("id",{ascending:true});
+
+ if(error){
+   document.getElementById("stockBody").innerHTML=
+   '<tr><td colspan="10" class="empty">'+error.message+'</td></tr>';
+   return;
+ }
+
+ renderItems(data||[]);
+}
+
+function renderItems(items){
+ const body=document.getElementById("stockBody");
+ body.innerHTML="";
+
+ if(!items.length){
+   body.innerHTML='<tr><td colspan="10" class="empty">No items available.</td></tr>';
+   return;
+ }
+
+ items.forEach(function(item,index){
+
+   const total=(Number(item.open_stock)||0)+(Number(item.received)||0);
+
+   const row=document.createElement("tr");
+
+   row.innerHTML=`
+   <td>${index+1}</td>
+
+   <td>
+   <input value="${esc(item.item_name)}"
+   onchange="updateItem(${item.id},'item_name',this.value)">
+   </td>
+
+   <td>
+   <input value="${esc(item.item_code)}"
+   onchange="updateItem(${item.id},'item_code',this.value)">
+   </td>
+
+   <td>
+   <input type="number" value="${item.close_stock||0}"
+   onchange="updateItem(${item.id},'close_stock',this.value)">
+   </td>
+
+   <td>
+   <input type="number" value="${item.open_stock||0}"
+   onchange="updateItem(${item.id},'open_stock',this.value)">
+   </td>
+
+   <td>
+   <input type="number" value="${item.received||0}"
+   onchange="updateItem(${item.id},'received',this.value)">
+   </td>
+
+   <td>
+   <input type="date" value="${item.received_date||""}"
+   onchange="updateItem(${item.id},'received_date',this.value)">
+   </td>
+
+   <td>${total}</td>
+
+   <td>
+   <input value="${esc(item.remarks)}"
+   onchange="updateItem(${item.id},'remarks',this.value)">
+   </td>
+
+   <td>
+   <button class="delete" onclick="deleteItem(${item.id})">
+   DELETE
+   </button>
+   </td>
+   `;
+
+   body.appendChild(row);
+ });
+}
+
+async function addRow(){
+ const {error}=await supabaseClient
+ .from("stock_items")
+ .insert({
+   item_name:"",
+   item_code:"",
+   close_stock:0,
+   open_stock:0,
+   received:0,
+   received_date:null,
+   remarks:""
+ });
+
+ if(error){
+   alert(error.message);
+   return;
+ }
+
+ loadItems();
+ loadConsumptionItems();
+}
+
+async function updateItem(id,field,value){
+
+ const numeric=["close_stock","open_stock","received"];
+ const updateData={};
+
+ updateData[field]=numeric.includes(field)
+ ? Number(value)||0
+ : value;
+
+ const {error}=await supabaseClient
+ .from("stock_items")
+ .update(updateData)
+ .eq("id",id);
+
+ if(error){
+   alert(error.message);
+   return;
+ }
+
+ loadItems();
+ loadConsumptionItems();
+}
+
+async function deleteItem(id){
+
+ if(!confirm("Delete this item?")) return;
+
+ const {error}=await supabaseClient
+ .from("stock_items")
+ .delete()
+ .eq("id",id);
+
+ if(error){
+   alert(error.message);
+   return;
+ }
+
+ loadItems();
+ loadConsumptionItems();
+}
+
+async function searchItems(){
+
+ const q=document.getElementById("search").value.trim().toLowerCase();
+
+ const {data,error}=await supabaseClient
+ .from("stock_items")
+ .select("*")
+ .order("id",{ascending:true});
+
+ if(error)return;
+
+ if(!q){
+   renderItems(data||[]);
+   return;
+ }
+
+ const filtered=(data||[]).filter(function(item){
+   return String(item.item_name||"").toLowerCase().includes(q) ||
+          String(item.item_code||"").toLowerCase().includes(q) ||
+          String(item.remarks||"").toLowerCase().includes(q);
+ });
+
+ renderItems(filtered);
+}
+
+async function loadConsumptionItems(){
+
+ const select=document.getElementById("consItem");
+
+ const {data,error}=await supabaseClient
+ .from("stock_items")
+ .select("id,item_name,item_code")
+ .order("item_name",{ascending:true});
+
+ if(error)return;
+
+ select.innerHTML='<option value="">Select Item</option>';
+
+ (data||[]).forEach(function(item){
+
+   if(!item.item_name)return;
+
+   const option=document.createElement("option");
+
+   option.value=JSON.stringify({
+     id:item.id,
+     item_name:item.item_name,
+     item_code:item.item_code||""
+   });
+
+   option.textContent=item.item_name+
+   (item.item_code ? " ("+item.item_code+")" : "");
+
+   select.appendChild(option);
+ });
+}
+
+async function saveConsumption(){
+
+ const date=document.getElementById("consDate").value;
+ const itemValue=document.getElementById("consItem").value;
+ const qty=Number(document.getElementById("consQty").value);
+ const unit=document.getElementById("consUnit").value;
+ const msg=document.getElementById("consMessage");
+
+ if(!date){
+   msg.style.color="red";
+   msg.textContent="Please select date.";
+   return;
+ }
+
+ if(!itemValue){
+   msg.style.color="red";
+   msg.textContent="Please select item.";
+   return;
+ }
+
+ if(!qty || qty<=0){
+   msg.style.color="red";
+   msg.textContent="Please enter consumed quantity.";
+   return;
+ }
+
+ const item=JSON.parse(itemValue);
+
+ const {data:userData}=await supabaseClient.auth.getUser();
+
+ const {error}=await supabaseClient
+ .from("consumption_history")
+ .insert({
+   consumption_date:date,
+   item_name:item.item_name,
+   item_code:item.item_code,
+   consumed_qty:qty,
+   unit:unit,
+   user_id:userData?.user?.id||null
+ });
+
+ if(error){
+   msg.style.color="red";
+   msg.textContent="Save failed: "+error.message;
+   return;
+ }
+
+ msg.style.color="green";
+ msg.textContent="Consumption saved successfully.";
+
+ document.getElementById("consQty").value="";
+
+ loadHistory();
+}
+
+async function loadHistory(){
+
+ const body=document.getElementById("consumptionBody");
+
+ const {data,error}=await supabaseClient
+ .from("consumption_history")
+ .select("*")
+ .order("consumption_date",{ascending:false});
+
+ if(error){
+   body.innerHTML='<tr><td colspan="6" class="empty">'+error.message+'</td></tr>';
+   return;
+ }
+
+ if(!data || !data.length){
+   body.innerHTML='<tr><td colspan="6" class="empty">No consumption records available.</td></tr>';
+   document.getElementById("consTotal").innerHTML="<b>Total Consumed: 0</b>";
+   return;
+ }
+
+ let total=0;
+
+ body.innerHTML=data.map(function(row){
+
+   total+=Number(row.consumed_qty||0);
+
+   return `
+   <tr>
+   <td>${esc(row.consumption_date)}</td>
+   <td>${esc(row.item_name)}</td>
+   <td>${esc(row.item_code)}</td>
+   <td>${esc(row.consumed_qty)}</td>
+   <td>${esc(row.unit)}</td>
+   <td>${esc(row.user_id)}</td>
+   </tr>
+   `;
+
+ }).join("");
+
+ document.getElementById("consTotal").innerHTML=
+ "<b>Total Consumed: "+total+"</b>";
+}
+
+function esc(value){
+ return String(value??"")
+ .replace(/&/g,"&amp;")
+ .replace(/</g,"&lt;")
+ .replace(/>/g,"&gt;")
+ .replace(/"/g,"&quot;")
+ .replace(/'/g,"&#039;");
+}
+
+async function checkSession(){
+
+ const {data}=await supabaseClient.auth.getSession();
+
+ if(data.session){
+   showMain();
+ }else{
+   showLogin();
+ }
+}
+
+supabaseClient.auth.onAuthStateChange(function(event){
+
+ if(event==="PASSWORD_RECOVERY"){
+   showReset();
+ }
+
+});
+
+window.addEventListener("load",function(){
+ checkSession();
+});
+
+</script>
