@@ -3,12 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>RHI MAGNESITA - SPARE STOCK REGISTER</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-*{box-sizing:border-box}
+*{
+  box-sizing:border-box;
+}
 
 body{
   margin:0;
@@ -79,11 +82,16 @@ button:hover{
   font-weight:bold;
 }
 
-#registerPage,
+#loginPage,
 #forgotPage,
-#resetPage,
+#resetPage{
+  display:none;
+}
+
 #mainPage{
   display:none;
+  min-height:100vh;
+  padding:20px;
 }
 
 .header{
@@ -97,6 +105,10 @@ button:hover{
 .header h1{
   color:white;
   font-size:25px;
+}
+
+.header p{
+  margin:5px 0 0;
 }
 
 .controls{
@@ -130,6 +142,11 @@ td{
   padding:8px;
 }
 
+td input{
+  margin:0;
+  padding:8px;
+}
+
 .logout{
   width:auto;
   background:#555;
@@ -142,130 +159,220 @@ td{
   padding:10px 18px;
 }
 
-.hidden{
-  display:none;
+.delete{
+  width:auto;
+  background:#555;
+  padding:7px 12px;
+}
+
+.empty{
+  text-align:center;
+  padding:20px;
+  color:#777;
 }
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN -->
+<!-- ================= LOGIN PAGE ================= -->
+
 <div class="login-page" id="loginPage">
-<div class="login-box">
 
-<h1>RHI MAGNESITA</h1>
-<div class="subtitle">SPARE STOCK REGISTER</div>
+  <div class="login-box">
 
-<input type="email" id="loginEmail"
-placeholder="Enter Email ID">
+    <h1>RHI MAGNESITA</h1>
 
-<input type="password" id="loginPassword"
-placeholder="Enter Password">
+    <div class="subtitle">
+      SPARE STOCK REGISTER
+    </div>
 
-<button onclick="login()">LOGIN</button>
+    <input
+      type="email"
+      id="loginEmail"
+      placeholder="Enter Email ID"
+    >
 
-<button class="link-button" onclick="showForgot()">
-Forgot Password?
-</button>
+    <input
+      type="password"
+      id="loginPassword"
+      placeholder="Enter Password"
+    >
 
-<p id="loginMessage" class="message"></p>
+    <button onclick="login()">
+      LOGIN
+    </button>
+
+    <button
+      class="link-button"
+      onclick="showForgot()"
+    >
+      Forgot Password?
+    </button>
+
+    <p
+      id="loginMessage"
+      class="message"
+    ></p>
+
+  </div>
 
 </div>
-</div>
 
 
-<!-- FORGOT PASSWORD -->
+<!-- ================= FORGOT PASSWORD ================= -->
+
 <div class="login-page" id="forgotPage">
-<div class="login-box">
 
-<h1>RHI MAGNESITA</h1>
-<div class="subtitle">RESET PASSWORD</div>
+  <div class="login-box">
 
-<input type="email" id="resetEmail"
-placeholder="Enter Email ID">
+    <h1>RHI MAGNESITA</h1>
 
-<button onclick="sendResetLink()">SEND RESET LINK</button>
+    <div class="subtitle">
+      RESET PASSWORD
+    </div>
 
-<button class="link-button" onclick="showLogin()">
-Back to Login
-</button>
+    <input
+      type="email"
+      id="resetEmail"
+      placeholder="Enter Email ID"
+    >
 
-<p id="resetMessage" class="message"></p>
+    <button onclick="sendResetLink()">
+      SEND RESET LINK
+    </button>
+
+    <button
+      class="link-button"
+      onclick="showLogin()"
+    >
+      Back to Login
+    </button>
+
+    <p
+      id="resetMessage"
+      class="message"
+    ></p>
+
+  </div>
 
 </div>
-</div>
 
 
-<!-- NEW PASSWORD -->
+<!-- ================= NEW PASSWORD ================= -->
+
 <div class="login-page" id="resetPage">
-<div class="login-box">
 
-<h1>RHI MAGNESITA</h1>
-<div class="subtitle">SET NEW PASSWORD</div>
+  <div class="login-box">
 
-<input type="password" id="newPassword"
-placeholder="Enter New Password">
+    <h1>RHI MAGNESITA</h1>
 
-<input type="password" id="confirmPassword"
-placeholder="Confirm New Password">
+    <div class="subtitle">
+      SET NEW PASSWORD
+    </div>
 
-<button onclick="updatePassword()">UPDATE PASSWORD</button>
+    <input
+      type="password"
+      id="newPassword"
+      placeholder="Enter New Password"
+    >
 
-<p id="newPasswordMessage" class="message"></p>
+    <input
+      type="password"
+      id="confirmPassword"
+      placeholder="Confirm New Password"
+    >
+
+    <button onclick="updatePassword()">
+      UPDATE PASSWORD
+    </button>
+
+    <p
+      id="newPasswordMessage"
+      class="message"
+    ></p>
+
+  </div>
 
 </div>
-</div>
 
 
-<!-- MAIN PAGE -->
+<!-- ================= MAIN PAGE ================= -->
+
 <div id="mainPage">
 
-<div class="header">
-<button class="logout" onclick="logout()">LOGOUT</button>
-<h1>RHI MAGNESITA</h1>
-<p>SPARE STOCK REGISTER</p>
-</div>
+  <div class="header">
 
-<div class="controls">
+    <button
+      class="logout"
+      onclick="logout()"
+    >
+      LOGOUT
+    </button>
 
-<button class="add" onclick="addRow()">+ ADD ITEM</button>
+    <h1>RHI MAGNESITA</h1>
 
-<input
-type="text"
-id="search"
-placeholder="Search Item / Code..."
-onkeyup="searchItems()">
+    <p>
+      SPARE STOCK REGISTER
+    </p>
 
-</div>
+  </div>
 
-<div class="table-box">
 
-<table id="stockTable">
+  <div class="controls">
 
-<thead>
-<tr>
-<th>SR.NO</th>
-<th>ITEM NAME</th>
-<th>ITEM CODE</th>
-<th>CLOSE STOCK</th>
-<th>OPEN STOCK</th>
-<th>RECEIVED</th>
-<th>RECEIVED DATE</th>
-<th>TOTAL ITEMS</th>
-<th>REMARKS</th>
-</tr>
-</thead>
+    <button
+      class="add"
+      onclick="addRow()"
+    >
+      + ADD ITEM
+    </button>
 
-<tbody id="stockBody"></tbody>
+    <input
+      type="text"
+      id="search"
+      placeholder="Search Item / Code..."
+      onkeyup="searchItems()"
+    >
 
-</table>
+  </div>
 
-</div>
+
+  <div class="table-box">
+
+    <table id="stockTable">
+
+      <thead>
+
+        <tr>
+          <th>SR.NO</th>
+          <th>ITEM NAME</th>
+          <th>ITEM CODE</th>
+          <th>CLOSE STOCK</th>
+          <th>OPEN STOCK</th>
+          <th>RECEIVED</th>
+          <th>RECEIVED DATE</th>
+          <th>TOTAL ITEMS</th>
+          <th>REMARKS</th>
+          <th>ACTION</th>
+        </tr>
+
+      </thead>
+
+      <tbody id="stockBody"></tbody>
+
+    </table>
+
+  </div>
+
 </div>
 
 
 <script>
+
+/* =====================================================
+   SUPABASE CONNECTION
+===================================================== */
 
 const SUPABASE_URL =
 "https://mooagaasvythwctcktcx.supabase.co";
@@ -280,140 +387,577 @@ supabase.createClient(
 );
 
 
-// PAGE FUNCTIONS
+/* =====================================================
+   PAGE CONTROL
+===================================================== */
 
 function hideAll(){
+
   document.getElementById("loginPage").style.display="none";
+
   document.getElementById("forgotPage").style.display="none";
+
   document.getElementById("resetPage").style.display="none";
+
   document.getElementById("mainPage").style.display="none";
 }
 
+
 function showLogin(){
+
   hideAll();
+
   document.getElementById("loginPage").style.display="flex";
 }
 
+
 function showForgot(){
+
   hideAll();
+
   document.getElementById("forgotPage").style.display="flex";
+
+  document.getElementById("resetMessage").innerText="";
 }
 
 
-// LOGIN
+function showReset(){
+
+  hideAll();
+
+  document.getElementById("resetPage").style.display="flex";
+}
+
+
+function showMain(){
+
+  hideAll();
+
+  document.getElementById("mainPage").style.display="block";
+
+  loadItems();
+}
+
+
+/* =====================================================
+   LOGIN
+===================================================== */
 
 async function login(){
 
   const email =
-  document.getElementById("loginEmail").value.trim();
+    document.getElementById("loginEmail").value.trim();
 
   const password =
-  document.getElementById("loginPassword").value;
+    document.getElementById("loginPassword").value;
 
   const msg =
-  document.getElementById("loginMessage");
+    document.getElementById("loginMessage");
 
-  msg.innerText="Logging in...";
 
-  const {data,error} =
-  await supabaseClient.auth.signInWithPassword({
-    email:email,
-    password:password
-  });
+  if(!email || !password){
 
-  if(error){
-    msg.innerText=error.message;
+    msg.innerText =
+      "Please enter Email and Password.";
+
     return;
   }
 
-  msg.innerText="Login successful";
 
-  showMain();
+  msg.innerText =
+    "Logging in...";
+
+
+  const {data,error} =
+    await supabaseClient.auth.signInWithPassword({
+
+      email:email,
+
+      password:password
+
+    });
+
+
+  if(error){
+
+    msg.innerText =
+      error.message;
+
+    return;
+  }
+
+
+  msg.innerText =
+    "Login successful.";
+
+
+  setTimeout(function(){
+
+    showMain();
+
+  },500);
 
 }
 
 
-// FORGOT PASSWORD
+/* =====================================================
+   LOGOUT
+===================================================== */
+
+async function logout(){
+
+  await supabaseClient.auth.signOut();
+
+  showLogin();
+
+  document.getElementById("loginPassword").value="";
+
+  document.getElementById("loginMessage").innerText="";
+}
+
+
+/* =====================================================
+   FORGOT PASSWORD
+===================================================== */
 
 async function sendResetLink(){
 
   const email =
-  document.getElementById("resetEmail").value.trim();
+    document.getElementById("resetEmail").value.trim();
 
   const msg =
-  document.getElementById("resetMessage");
+    document.getElementById("resetMessage");
+
 
   if(!email){
-    msg.innerText="Enter Email ID";
+
+    msg.innerText =
+      "Please enter Email ID.";
+
     return;
   }
 
-  msg.innerText="Sending reset link...";
+
+  msg.innerText =
+    "Sending reset link...";
+
 
   const redirectURL =
     window.location.origin +
     window.location.pathname;
 
+
   const {error} =
-  await supabaseClient.auth.resetPasswordForEmail(
-    email,
-    {
-      redirectTo:redirectURL
-    }
-  );
+    await supabaseClient.auth.resetPasswordForEmail(
+
+      email,
+
+      {
+        redirectTo:redirectURL
+      }
+
+    );
+
 
   if(error){
-    msg.innerText=error.message;
+
+    msg.innerText =
+      error.message;
+
     return;
   }
 
-  msg.innerText=
-  "Reset link sent. Please check your Gmail.";
+
+  msg.innerText =
+    "Reset link sent. Check your Gmail.";
 }
 
 
-// UPDATE PASSWORD
+/* =====================================================
+   UPDATE PASSWORD
+===================================================== */
 
 async function updatePassword(){
 
   const password =
-  document.getElementById("newPassword").value;
+    document.getElementById("newPassword").value;
 
   const confirm =
-  document.getElementById("confirmPassword").value;
+    document.getElementById("confirmPassword").value;
 
   const msg =
-  document.getElementById("newPasswordMessage");
+    document.getElementById("newPasswordMessage");
+
 
   if(password.length < 6){
-    msg.innerText=
-    "Password must be at least 6 characters.";
+
+    msg.innerText =
+      "Password must be at least 6 characters.";
+
     return;
   }
+
 
   if(password !== confirm){
-    msg.innerText=
-    "Password does not match.";
+
+    msg.innerText =
+      "Password does not match.";
+
     return;
   }
+
+
+  msg.innerText =
+    "Updating password...";
+
 
   const {error} =
-  await supabaseClient.auth.updateUser({
-    password:password
-  });
+    await supabaseClient.auth.updateUser({
+
+      password:password
+
+    });
+
 
   if(error){
-    msg.innerText=error.message;
+
+    msg.innerText =
+      error.message;
+
     return;
   }
 
-  msg.innerText=
-  "Password updated successfully.";
 
-  setTimeout(showLogin,1500):
+  msg.innerText =
+    "Password updated successfully.";
+
+
+  setTimeout(function(){
+
+    showLogin();
+
+  },1500);
+}
+
+
+/* =====================================================
+   STOCK REGISTER
+   LOCAL STORAGE
+===================================================== */
+
+let stockItems =
+  JSON.parse(
+    localStorage.getItem("rhi_stock_items") || "[]"
+  );
+
+
+function saveItems(){
+
+  localStorage.setItem(
+    "rhi_stock_items",
+    JSON.stringify(stockItems)
+  );
+}
+
+
+function loadItems(){
+
+  stockItems =
+    JSON.parse(
+      localStorage.getItem("rhi_stock_items") || "[]"
+    );
+
+  renderItems();
+}
+
+
+function renderItems(){
+
+  const body =
+    document.getElementById("stockBody");
+
+  body.innerHTML="";
+
+
+  if(stockItems.length===0){
+
+    body.innerHTML =
+      '<tr><td colspan="10" class="empty">No items added yet.</td></tr>';
+
+    return;
   }
 
+
+  stockItems.forEach(function(item,index){
+
+    const row =
+      document.createElement("tr");
+
+
+    row.innerHTML = `
+
+      <td>${index+1}</td>
+
+      <td>
+        <input
+          type="text"
+          value="${escapeHTML(item.name || "")}"
+          onchange="updateItem(${index},'name',this.value)"
+        >
+      </td>
+
+      <td>
+        <input
+          type="text"
+          value="${escapeHTML(item.code || "")}"
+          onchange="updateItem(${index},'code',this.value)"
+        >
+      </td>
+
+      <td>
+        <input
+          type="number"
+          value="${item.close || 0}"
+          onchange="updateItem(${index},'close',this.value)"
+        >
+      </td>
+
+      <td>
+        <input
+          type="number"
+          value="${item.open || 0}"
+          onchange="updateItem(${index},'open',this.value)"
+        >
+      </td>
+
+      <td>
+        <input
+          type="number"
+          value="${item.received || 0}"
+          onchange="updateItem(${index},'received',this.value)"
+        >
+      </td>
+
+      <td>
+        <input
+          type="date"
+          value="${item.date || ""}"
+          onchange="updateItem(${index},'date',this.value)"
+        >
+      </td>
+
+      <td>
+        ${calculateTotal(item)}
+      </td>
+
+      <td>
+        <input
+          type="text"
+          value="${escapeHTML(item.remarks || "")}"
+          onchange="updateItem(${index},'remarks',this.value)"
+        >
+      </td>
+
+      <td>
+        <button
+          class="delete"
+          onclick="deleteItem(${index})"
+        >
+          DELETE
+        </button>
+      </td>
+
+    `;
+
+
+    body.appendChild(row);
+
+  });
+}
+
+
+function calculateTotal(item){
+
+  const open =
+    Number(item.open) || 0;
+
+  const received =
+    Number(item.received) || 0;
+
+  return open + received;
+}
+
+
+function updateItem(index,field,value){
+
+  stockItems[index][field]=value;
+
+  saveItems();
+
+  renderItems();
+}
+
+
+function addRow(){
+
+  stockItems.push({
+
+    name:"",
+
+    code:"",
+
+    close:0,
+
+    open:0,
+
+    received:0,
+
+    date:"",
+
+    remarks:""
+
+  });
+
+
+  saveItems();
+
+  renderItems();
+}
+
+
+function deleteItem(index){
+
+  if(!confirm("Delete this item?")){
+
+    return;
+  }
+
+
+  stockItems.splice(index,1);
+
+  saveItems();
+
+  renderItems();
+}
+
+
+/* =====================================================
+   SEARCH
+===================================================== */
+
+function searchItems(){
+
+  const search =
+    document
+      .getElementById("search")
+      .value
+      .toLowerCase();
+
+
+  const rows =
+    document.querySelectorAll(
+      "#stockBody tr"
+    );
+
+
+  rows.forEach(function(row){
+
+    const text =
+      row.innerText.toLowerCase();
+
+
+    if(text.includes(search)){
+
+      row.style.display="";
+
+    }else{
+
+      row.style.display="none";
+
+    }
+
+  });
+}
+
+
+/* =====================================================
+   HTML ESCAPE
+===================================================== */
+
+function escapeHTML(value){
+
+  return String(value)
+
+    .replace(/&/g,"&amp;")
+
+    .replace(/</g,"&lt;")
+
+    .replace(/>/g,"&gt;")
+
+    .replace(/"/g,"&quot;")
+
+    .replace(/'/g,"&#039;");
+}
+
+
+/* =====================================================
+   CHECK LOGIN SESSION
+===================================================== */
+
+async function checkSession(){
+
+  const {data} =
+    await supabaseClient.auth.getSession();
+
+
+  if(data.session){
+
+    showMain();
+
+  }else{
+
+    showLogin();
+
+  }
+}
+
+
+/* =====================================================
+   PASSWORD RECOVERY DETECTION
+===================================================== */
+
+supabaseClient.auth.onAuthStateChange(
+
+  function(event,session){
+
+    if(event === "PASSWORD_RECOVERY"){
+
+      showReset();
+
+    }
+
+  }
+
+);
+
+
+/* =====================================================
+   START APP
+===================================================== */
+
+window.addEventListener(
+
+  "load",
+
+  function(){
+
+    checkSession();
+
+  }
+
+);
+
 </script>
+
 </body>
 </html>
-
