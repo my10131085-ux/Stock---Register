@@ -1,100 +1,538 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RHI MAGNESITA SPARE STOCK REGISTER</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RHI MAGNESITA SPARE STOCK REGISTER</title>
 
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f2f4f7;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-    }
+<style>
+*{
+  box-sizing:border-box;
+}
 
-    .login-box {
-      width: 90%;
-      max-width: 400px;
-      background: white;
-      padding: 30px;
-      border-radius: 15px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-      text-align: center;
-    }
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#eef3f8;
+  color:#222;
+}
 
-    h1 {
-      font-size: 22px;
-      margin-bottom: 8px;
-      color: #1f2937;
-    }
+.login-page{
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:20px;
+}
 
-    .subtitle {
-      color: #6b7280;
-      margin-bottom: 25px;
-    }
+.login-box{
+  width:95%;
+  max-width:420px;
+  background:white;
+  padding:35px;
+  border-radius:15px;
+  box-shadow:0 5px 25px #999;
+  text-align:center;
+}
 
-    input {
-      width: 100%;
-      padding: 13px;
-      margin: 8px 0;
-      box-sizing: border-box;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 16px;
-    }
+.login-box h1{
+  margin:0;
+  color:#b00000;
+  font-size:25px;
+}
 
-    button {
-      width: 100%;
-      padding: 13px;
-      margin-top: 15px;
-      border: none;
-      border-radius: 8px;
-      background: #166534;
-      color: white;
-      font-size: 17px;
-      cursor: pointer;
-    }
+.subtitle{
+  margin:10px 0 25px;
+  font-weight:bold;
+  color:#555;
+}
 
-    button:hover {
-      background: #14532d;
-    }
+input,button,select{
+  width:100%;
+  padding:12px;
+  margin:8px 0;
+  border:1px solid #bbb;
+  border-radius:7px;
+  font-size:15px;
+}
 
-    .footer {
-      margin-top: 20px;
-      font-size: 12px;
-      color: #777;
-    }
-  </style>
+button{
+  background:#b00000;
+  color:white;
+  border:none;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+button:hover{
+  background:#850000;
+}
+
+#registerPage{
+  display:none;
+  padding:20px;
+}
+
+.header{
+  background:#b00000;
+  color:white;
+  padding:18px;
+  border-radius:10px;
+  margin-bottom:15px;
+}
+
+.header h1{
+  margin:0;
+  font-size:25px;
+}
+
+.header p{
+  margin:5px 0 0;
+}
+
+.controls{
+  background:white;
+  padding:15px;
+  border-radius:10px;
+  margin-bottom:15px;
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.controls button{
+  width:auto;
+  min-width:150px;
+}
+
+.table-box{
+  background:white;
+  padding:10px;
+  border-radius:10px;
+  overflow:auto;
+}
+
+table{
+  width:100%;
+  min-width:1250px;
+  border-collapse:collapse;
+}
+
+th{
+  background:#333;
+  color:white;
+  padding:10px;
+  border:1px solid #777;
+  white-space:nowrap;
+}
+
+td{
+  border:1px solid #aaa;
+  padding:5px;
+}
+
+td input{
+  margin:0;
+  width:100%;
+  padding:8px;
+}
+
+.sr{
+  text-align:center;
+  font-weight:bold;
+}
+
+.logout{
+  background:#555 !important;
+}
+</style>
 </head>
 
 <body>
 
+<!-- LOGIN PAGE -->
+<div class="login-page" id="loginPage">
+
   <div class="login-box">
 
     <h1>RHI MAGNESITA</h1>
-    <div class="subtitle">SPARE STOCK REGISTER</div>
 
-    <input type="text" id="username" placeholder="Enter Username">
+    <div class="subtitle">
+      SPARE STOCK REGISTER
+    </div>
 
-    <input type="password" id="password" placeholder="Enter Password">
+    <input
+      type="text"
+      id="username"
+      placeholder="Enter Username"
+    >
+
+    <input
+      type="password"
+      id="password"
+      placeholder="Enter Password"
+    >
 
     <button onclick="login()">LOGIN</button>
 
-    <div class="footer">
-      RHI Magnesita Spare Stock Management System
-    </div>
+    <p id="loginMessage"></p>
 
   </div>
 
-  <script>
-    function login() {
-      alert("Login system will be connected to Supabase in the next step.");
-    }
-  </script>
+</div>
+
+
+<!-- STOCK REGISTER -->
+<div id="registerPage">
+
+  <div class="header">
+
+    <h1>RHI MAGNESITA SPARE STOCK REGISTER</h1>
+
+    <p>Spare Material Management System</p>
+
+  </div>
+
+
+  <div class="controls">
+
+    <button onclick="saveData()">
+      SAVE STOCK
+    </button>
+
+    <button onclick="addRow()">
+      ADD ROW
+    </button>
+
+    <button onclick="clearData()">
+      CLEAR DATA
+    </button>
+
+    <button class="logout" onclick="logout()">
+      LOGOUT
+    </button>
+
+  </div>
+
+
+  <div class="table-box">
+
+    <table>
+
+      <thead>
+
+        <tr>
+          <th>SR. NO.</th>
+          <th>ITEM NAME</th>
+          <th>ITEM CODE</th>
+          <th>CLOSE STOCK</th>
+          <th>OPEN STOCK</th>
+          <th>RECEIVED</th>
+          <th>RECEIVED DATE</th>
+          <th>TOTAL ITEMS</th>
+          <th>REMARKS</th>
+        </tr>
+
+      </thead>
+
+      <tbody id="stockTable">
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+</div>
+
+
+<script>
+
+const TOTAL_ROWS = 50;
+
+
+/* LOGIN */
+
+function login(){
+
+  const username =
+    document.getElementById("username").value.trim();
+
+  const password =
+    document.getElementById("password").value.trim();
+
+  /*
+    Temporary login for testing.
+    Change later when Supabase authentication
+    is connected.
+  */
+
+  if(username === "admin" && password === "admin123"){
+
+    document.getElementById("loginPage").style.display="none";
+
+    document.getElementById("registerPage").style.display="block";
+
+    loadData();
+
+  }else{
+
+    document.getElementById("loginMessage").innerHTML =
+      "<span style='color:red'>Wrong Username or Password</span>";
+
+  }
+
+}
+
+
+/* LOGOUT */
+
+function logout(){
+
+  document.getElementById("registerPage").style.display="none";
+
+  document.getElementById("loginPage").style.display="flex";
+
+  document.getElementById("username").value="";
+
+  document.getElementById("password").value="";
+
+}
+
+
+/* CREATE 50 ROWS */
+
+function createRows(){
+
+  const table =
+    document.getElementById("stockTable");
+
+  table.innerHTML="";
+
+  for(let i=1;i<=TOTAL_ROWS;i++){
+
+    const row =
+      document.createElement("tr");
+
+    row.innerHTML = `
+
+      <td class="sr">${i}</td>
+
+      <td>
+        <input type="text"
+          id="name_${i}"
+          placeholder="Item Name">
+      </td>
+
+      <td>
+        <input type="text"
+          id="code_${i}"
+          placeholder="Item Code">
+      </td>
+
+      <td>
+        <input type="number"
+          id="close_${i}"
+          min="0">
+      </td>
+
+      <td>
+        <input type="number"
+          id="open_${i}"
+          min="0">
+      </td>
+
+      <td>
+        <input type="number"
+          id="received_${i}"
+          min="0">
+      </td>
+
+      <td>
+        <input type="date"
+          id="date_${i}">
+      </td>
+
+      <td>
+        <input type="number"
+          id="total_${i}"
+          min="0">
+      </td>
+
+      <td>
+        <input type="text"
+          id="remarks_${i}"
+          placeholder="Remarks">
+      </td>
+
+    `;
+
+    table.appendChild(row);
+
+  }
+
+}
+
+
+/* SAVE DATA */
+
+function saveData(){
+
+  const data=[];
+
+  for(let i=1;i<=TOTAL_ROWS;i++){
+
+    data.push({
+
+      name:
+        document.getElementById("name_"+i).value,
+
+      code:
+        document.getElementById("code_"+i).value,
+
+      close:
+        document.getElementById("close_"+i).value,
+
+      open:
+        document.getElementById("open_"+i).value,
+
+      received:
+        document.getElementById("received_"+i).value,
+
+      date:
+        document.getElementById("date_"+i).value,
+
+      total:
+        document.getElementById("total_"+i).value,
+
+      remarks:
+        document.getElementById("remarks_"+i).value
+
+    });
+
+  }
+
+  localStorage.setItem(
+    "RHI_MAGNESITA_STOCK",
+    JSON.stringify(data)
+  );
+
+  alert("Stock data saved successfully.");
+
+}
+
+
+/* LOAD DATA */
+
+function loadData(){
+
+  createRows();
+
+  const saved =
+    localStorage.getItem("RHI_MAGNESITA_STOCK");
+
+  if(!saved) return;
+
+  const data =
+    JSON.parse(saved);
+
+  data.forEach((item,index)=>{
+
+    const i=index+1;
+
+    if(document.getElementById("name_"+i))
+      document.getElementById("name_"+i).value=item.name || "";
+
+    if(document.getElementById("code_"+i))
+      document.getElementById("code_"+i).value=item.code || "";
+
+    if(document.getElementById("close_"+i))
+      document.getElementById("close_"+i).value=item.close || "";
+
+    if(document.getElementById("open_"+i))
+      document.getElementById("open_"+i).value=item.open || "";
+
+    if(document.getElementById("received_"+i))
+      document.getElementById("received_"+i).value=item.received || "";
+
+    if(document.getElementById("date_"+i))
+      document.getElementById("date_"+i).value=item.date || "";
+
+    if(document.getElementById("total_"+i))
+      document.getElementById("total_"+i).value=item.total || "";
+
+    if(document.getElementById("remarks_"+i))
+      document.getElementById("remarks_"+i).value=item.remarks || "";
+
+  });
+
+}
+
+
+/* ADD ROW */
+
+function addRow(){
+
+  const table =
+    document.getElementById("stockTable");
+
+  const number =
+    table.rows.length + 1;
+
+  if(number > 100){
+
+    alert("Maximum 100 rows allowed.");
+
+    return;
+  }
+
+  const row =
+    document.createElement("tr");
+
+  row.innerHTML = `
+
+    <td class="sr">${number}</td>
+
+    <td><input type="text" id="name_${number}"></td>
+
+    <td><input type="text" id="code_${number}"></td>
+
+    <td><input type="number" id="close_${number}"></td>
+
+    <td><input type="number" id="open_${number}"></td>
+
+    <td><input type="number" id="received_${number}"></td>
+
+    <td><input type="date" id="date_${number}"></td>
+
+    <td><input type="number" id="total_${number}"></td>
+
+    <td><input type="text" id="remarks_${number}"></td>
+
+  `;
+
+  table.appendChild(row);
+
+}
+
+
+/* CLEAR DATA */
+
+function clearData(){
+
+  if(confirm("Are you sure you want to clear all stock data?")){
+
+    localStorage.removeItem(
+      "RHI_MAGNESITA_STOCK"
+    );
+
+    createRows();
+
+  }
+
+}
+
+</script>
 
 </body>
 </html>
