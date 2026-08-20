@@ -31,14 +31,14 @@ body{
 .login-box{
   width:95%;
   max-width:420px;
-  background:#fff;
+  background:white;
   padding:35px;
   border-radius:15px;
   box-shadow:0 5px 25px #999;
   text-align:center;
 }
 
-.login-box h1{
+h1{
   margin:0;
   color:#b00000;
   font-size:27px;
@@ -61,7 +61,7 @@ input,button,select{
 
 button{
   background:#b00000;
-  color:#fff;
+  color:white;
   border:0;
   font-weight:bold;
   cursor:pointer;
@@ -74,10 +74,12 @@ button:hover{
 .link{
   background:none;
   color:#b00000;
+  padding:5px;
 }
 
 .msg{
   font-weight:bold;
+  min-height:20px;
 }
 
 .page{
@@ -88,15 +90,14 @@ button:hover{
 
 .header{
   background:#b00000;
-  color:#fff;
+  color:white;
   padding:18px;
   border-radius:10px;
   margin-bottom:15px;
 }
 
 .header h1{
-  margin:0;
-  color:#fff;
+  color:white;
   font-size:25px;
 }
 
@@ -113,7 +114,7 @@ button:hover{
 
 .controls,
 .section{
-  background:#fff;
+  background:white;
   padding:15px;
   border-radius:10px;
   margin-bottom:15px;
@@ -125,7 +126,7 @@ button:hover{
 }
 
 .table-box{
-  background:#fff;
+  background:white;
   padding:10px;
   border-radius:10px;
   overflow:auto;
@@ -139,7 +140,7 @@ table{
 
 th{
   background:#333;
-  color:#fff;
+  color:white;
   padding:10px;
   white-space:nowrap;
 }
@@ -178,7 +179,7 @@ td select{
 }
 
 .cons-controls button{
-  max-width:250px;
+  max-width:220px;
 }
 
 .small-table{
@@ -193,6 +194,14 @@ td select{
   text-align:center;
   padding:20px;
   color:#777;
+}
+
+.success{
+  color:green;
+}
+
+.error{
+  color:red;
 }
 </style>
 </head>
@@ -214,32 +223,35 @@ td select{
     <input
       type="email"
       id="loginEmail"
-      placeholder="Enter Email ID">
+      placeholder="Enter Email ID"
+      autocomplete="email"
+    >
 
     <input
       type="password"
       id="loginPassword"
-      placeholder="Enter Password">
+      placeholder="Enter Password"
+      autocomplete="current-password"
+    >
 
-    <button onclick="login()">
+    <button id="loginBtn">
       LOGIN
     </button>
 
-    <button
-      class="link"
-      onclick="showForgot()">
+    <button class="link" id="forgotBtn">
       Forgot Password?
     </button>
 
     <p id="loginMessage" class="msg"></p>
 
   </div>
+
 </div>
 
 
 <!-- ================= FORGOT PASSWORD ================= -->
 
-<div class="login-page" id="forgotPage" style="display:none;">
+<div class="login-page" id="forgotPage">
 
   <div class="login-box">
 
@@ -252,476 +264,1127 @@ td select{
     <input
       type="email"
       id="resetEmail"
-      placeholder="Enter Email ID">
+      placeholder="Enter Email ID"
+    >
 
-    <button onclick="sendResetLink()">
+    <button id="sendResetBtn">
       SEND RESET LINK
     </button>
 
-    <button
-      class="link"
-      onclick="showLogin()">
+    <button class="link" id="backLoginBtn">
       Back to Login
     </button>
 
     <p id="resetMessage" class="msg"></p>
 
   </div>
+
 </div>
 
 
-<!-- ================= RESET PASSWORD
+<!-- ================= NEW PASSWORD ================= -->
+
+<div class="login-page" id="resetPage">
+
+  <div class="login-box">
+
+    <h1>RHI MAGNESITA</h1>
+
+    <div class="subtitle">
+      SET NEW PASSWORD
+    </div>
+
+    <input
+      type="password"
+      id="newPassword"
+      placeholder="Enter New Password"
+    >
+
+    <input
+      type="password"
+      id="confirmPassword"
+      placeholder="Confirm New Password"
+    >
+
+    <button id="updatePasswordBtn">
+      UPDATE PASSWORD
+    </button>
+
+    <p id="newPasswordMessage" class="msg"></p>
+
+  </div>
+
+</div>
+
+
+<!-- ================= MAIN PAGE ================= -->
+
+<div class="page" id="mainPage">
+
+  <div class="header">
+
+    <button
+      class="logout"
+      id="logoutBtn">
+      LOGOUT
+    </button>
+
+    <h1>RHI MAGNESITA</h1>
+
+    <p>SPARE STOCK REGISTER</p>
+
+  </div>
+
+
+  <div class="controls">
+
+    <button
+      class="add"
+      id="addItemBtn">
+      + ADD ITEM
+    </button>
+
+    <input
+      id="search"
+      placeholder="Search Item / Code..."
+    >
+
+  </div>
+
+
+  <!-- ================= STOCK ================= -->
+
+  <div class="table-box">
+
+    <table>
+
+      <thead>
+
+        <tr>
+          <th>SR.NO</th>
+          <th>ITEM NAME</th>
+          <th>ITEM CODE</th>
+          <th>CLOSE STOCK</th>
+          <th>OPEN STOCK</th>
+          <th>RECEIVED</th>
+          <th>RECEIVED DATE</th>
+          <th>TOTAL ITEMS</th>
+          <th>REMARKS</th>
+          <th>ACTION</th>
+        </tr>
+
+      </thead>
+
+      <tbody id="stockBody"></tbody>
+
+    </table>
+
+  </div>
+
+
+  <!-- ================= CONSUMPTION ================= -->
+
+  <div class="section">
+
+    <h2>
+      CONSUMPTION HISTORY
+    </h2>
+
+    <div class="cons-controls">
+
+      <input
+        type="date"
+        id="consDate"
+      >
+
+      <select id="consItem">
+
+        <option value="">
+          Select Item
+        </option>
+
+      </select>
+
+      <input
+        type="number"
+        id="consQty"
+        min="0.01"
+        step="0.01"
+        placeholder="Consumed Qty"
+      >
+
+      <select id="consUnit">
+
+        <option value="PCS">PCS</option>
+        <option value="KG">KG</option>
+        <option value="MTR">MTR</option>
+        <option value="LTR">LTR</option>
+        <option value="SET">SET</option>
+        <option value="NOS">NOS</option>
+
+      </select>
+
+      <button id="saveConsumptionBtn">
+        SAVE CONSUMPTION
+      </button>
+
+    </div>
+
+    <p id="consMessage" class="msg"></p>
+
+
+    <div class="table-box">
+
+      <table class="small-table">
+
+        <thead>
+
+          <tr>
+            <th>DATE</th>
+            <th>ITEM NAME</th>
+            <th>ITEM CODE</th>
+            <th>CONSUMED QTY</th>
+            <th>UNIT</th>
+            <th>USER</th>
+          </tr>
+
+        </thead>
+
+        <tbody id="consumptionBody"></tbody>
+
+      </table>
+
+    </div>
+
+    <div id="consTotal">
+      <b>Total Consumed: 0</b>
+    </div>
+
+  </div>
+
+</div>
+
+
 <script>
-const SUPABASE_URL="https://mooagaasvythwctcktcx.supabase.co";
-const SUPABASE_KEY="sb_publishable_Zql7qJbZlj1R5H1ydOoqSg_F0WAdgd0";
-const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+/* =====================================================
+   SUPABASE CONNECTION
+===================================================== */
+
+const SUPABASE_URL =
+"https://mooagaasvythwctcktcx.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_Zql7qJbZlj1R5H1ydOoqSg_F0WAdgd0";
+
+const supabaseClient =
+window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+
+/* =====================================================
+   PAGE CONTROL
+===================================================== */
 
 function hideAll(){
- document.getElementById("loginPage").style.display="none";
- document.getElementById("forgotPage").style.display="none";
- document.getElementById("resetPage").style.display="none";
- document.getElementById("mainPage").style.display="none";
+
+  document.getElementById("loginPage").style.display="none";
+
+  document.getElementById("forgotPage").style.display="none";
+
+  document.getElementById("resetPage").style.display="none";
+
+  document.getElementById("mainPage").style.display="none";
+
 }
+
 
 function showLogin(){
- hideAll();
- document.getElementById("loginPage").style.display="flex";
+
+  hideAll();
+
+  document.getElementById("loginPage").style.display="flex";
+
 }
+
 
 function showForgot(){
- hideAll();
- document.getElementById("forgotPage").style.display="flex";
+
+  hideAll();
+
+  document.getElementById("forgotPage").style.display="flex";
+
 }
+
 
 function showReset(){
- hideAll();
- document.getElementById("resetPage").style.display="flex";
+
+  hideAll();
+
+  document.getElementById("resetPage").style.display="flex";
+
 }
 
-function showMain(){
- hideAll();
- document.getElementById("mainPage").style.display="block";
- loadItems();
- loadConsumptionItems();
- loadHistory();
+
+async function showMain(){
+
+  hideAll();
+
+  document.getElementById("mainPage").style.display="block";
+
+  await loadItems();
+
+  await loadConsumptionItems();
+
+  await loadHistory();
+
 }
 
-async function login(){
- const email=document.getElementById("loginEmail").value.trim();
- const password=document.getElementById("loginPassword").value;
- const msg=document.getElementById("loginMessage");
 
- if(!email || !password){
-   msg.style.color="red";
-   msg.textContent="Enter Email and Password.";
-   return;
- }
+/* =====================================================
+   LOGIN
+===================================================== */
 
- msg.textContent="Logging in...";
+async function doLogin(){
 
- const {error}=await supabaseClient.auth.signInWithPassword({
-   email:email,
-   password:password
- });
+  const email =
+    document.getElementById("loginEmail").value.trim();
 
- if(error){
-   msg.style.color="red";
-   msg.textContent=error.message;
-   return;
- }
+  const password =
+    document.getElementById("loginPassword").value;
 
- msg.style.color="green";
- msg.textContent="Login successful.";
- showMain();
+  const msg =
+    document.getElementById("loginMessage");
+
+  msg.className="msg";
+
+  if(!email || !password){
+
+    msg.classList.add("error");
+
+    msg.textContent=
+      "Enter Email and Password.";
+
+    return;
+
+  }
+
+  msg.textContent="Logging in...";
+
+
+  const result =
+    await supabaseClient.auth.signInWithPassword({
+
+      email:email,
+
+      password:password
+
+    });
+
+
+  if(result.error){
+
+    msg.classList.add("error");
+
+    msg.textContent=
+      result.error.message;
+
+    console.error(
+      "LOGIN ERROR:",
+      result.error
+    );
+
+    return;
+
+  }
+
+
+  msg.classList.add("success");
+
+  msg.textContent=
+    "Login successful.";
+
+  await showMain();
+
 }
 
-async function logout(){
- await supabaseClient.auth.signOut();
- showLogin();
+
+/* =====================================================
+   LOGOUT
+===================================================== */
+
+async function doLogout(){
+
+  await supabaseClient.auth.signOut();
+
+  showLogin();
+
 }
+
+
+/* =====================================================
+   FORGOT PASSWORD
+===================================================== */
 
 async function sendResetLink(){
- const email=document.getElementById("resetEmail").value.trim();
- const msg=document.getElementById("resetMessage");
 
- if(!email){
-   msg.style.color="red";
-   msg.textContent="Enter Email ID.";
-   return;
- }
+  const email =
+    document.getElementById("resetEmail").value.trim();
 
- const {error}=await supabaseClient.auth.resetPasswordForEmail(email,{
-   redirectTo:window.location.origin+window.location.pathname
- });
+  const msg =
+    document.getElementById("resetMessage");
 
- if(error){
-   msg.style.color="red";
-   msg.textContent=error.message;
-   return;
- }
+  if(!email){
 
- msg.style.color="green";
- msg.textContent="Reset link sent. Check your Gmail.";
+    msg.className="msg error";
+
+    msg.textContent=
+      "Enter Email ID.";
+
+    return;
+
+  }
+
+  msg.className="msg";
+
+  msg.textContent=
+    "Sending reset link...";
+
+
+  const result =
+    await supabaseClient.auth.resetPasswordForEmail(
+
+      email,
+
+      {
+        redirectTo:
+          window.location.origin +
+          window.location.pathname
+      }
+
+    );
+
+
+  if(result.error){
+
+    msg.className="msg error";
+
+    msg.textContent=
+      result.error.message;
+
+    return;
+
+  }
+
+
+  msg.className="msg success";
+
+  msg.textContent=
+    "Reset link sent. Check your Gmail.";
+
 }
+
+
+/* =====================================================
+   UPDATE PASSWORD
+===================================================== */
 
 async function updatePassword(){
- const password=document.getElementById("newPassword").value;
- const confirm=document.getElementById("confirmPassword").value;
- const msg=document.getElementById("newPasswordMessage");
 
- if(password.length<6){
-   msg.textContent="Password must be at least 6 characters.";
-   return;
- }
+  const password =
+    document.getElementById("newPassword").value;
 
- if(password!==confirm){
-   msg.textContent="Password does not match.";
-   return;
- }
+  const confirm =
+    document.getElementById("confirmPassword").value;
 
- const {error}=await supabaseClient.auth.updateUser({
-   password:password
- });
+  const msg =
+    document.getElementById(
+      "newPasswordMessage"
+    );
 
- if(error){
-   msg.textContent=error.message;
-   return;
- }
 
- msg.style.color="green";
- msg.textContent="Password updated successfully.";
- setTimeout(showLogin,1500);
+  if(password.length < 6){
+
+    msg.className="msg error";
+
+    msg.textContent=
+      "Password must be at least 6 characters.";
+
+    return;
+
+  }
+
+
+  if(password !== confirm){
+
+    msg.className="msg error";
+
+    msg.textContent=
+      "Password does not match.";
+
+    return;
+
+  }
+
+
+  const result =
+    await supabaseClient.auth.updateUser({
+
+      password:password
+
+    });
+
+
+  if(result.error){
+
+    msg.className="msg error";
+
+    msg.textContent=
+      result.error.message;
+
+    return;
+
+  }
+
+
+  msg.className="msg success";
+
+  msg.textContent=
+    "Password updated successfully.";
+
+  setTimeout(
+    showLogin,
+    1500
+  );
+
 }
+
+
+/* =====================================================
+   LOAD STOCK
+===================================================== */
 
 async function loadItems(){
- const {data,error}=await supabaseClient
- .from("stock_items")
- .select("*")
- .order("id",{ascending:true});
 
- if(error){
-   document.getElementById("stockBody").innerHTML=
-   '<tr><td colspan="10" class="empty">'+error.message+'</td></tr>';
-   return;
- }
+  const result =
+    await supabaseClient
+      .from("stock_items")
+      .select("*")
+      .order(
+        "id",
+        {ascending:true}
+      );
 
- renderItems(data||[]);
+
+  if(result.error){
+
+    document.getElementById(
+      "stockBody"
+    ).innerHTML=
+
+      '<tr><td colspan="10" class="empty error">'+
+      esc(result.error.message)+
+      '</td></tr>';
+
+    console.error(
+      "STOCK ERROR:",
+      result.error
+    );
+
+    return;
+
+  }
+
+
+  renderItems(
+    result.data || []
+  );
+
 }
+
+
+/* =====================================================
+   RENDER STOCK
+===================================================== */
 
 function renderItems(items){
- const body=document.getElementById("stockBody");
- body.innerHTML="";
 
- if(!items.length){
-   body.innerHTML='<tr><td colspan="10" class="empty">No items available.</td></tr>';
-   return;
- }
+  const body =
+    document.getElementById(
+      "stockBody"
+    );
 
- items.forEach(function(item,index){
+  body.innerHTML="";
 
-   const total=(Number(item.open_stock)||0)+(Number(item.received)||0);
 
-   const row=document.createElement("tr");
+  if(!items.length){
 
-   row.innerHTML=`
-   <td>${index+1}</td>
+    body.innerHTML=
+      '<tr><td colspan="10" class="empty">'+
+      'No items available.'+
+      '</td></tr>';
 
-   <td>
-   <input value="${esc(item.item_name)}"
-   onchange="updateItem(${item.id},'item_name',this.value)">
-   </td>
+    return;
 
-   <td>
-   <input value="${esc(item.item_code)}"
-   onchange="updateItem(${item.id},'item_code',this.value)">
-   </td>
+  }
 
-   <td>
-   <input type="number" value="${item.close_stock||0}"
-   onchange="updateItem(${item.id},'close_stock',this.value)">
-   </td>
 
-   <td>
-   <input type="number" value="${item.open_stock||0}"
-   onchange="updateItem(${item.id},'open_stock',this.value)">
-   </td>
+  items.forEach(
+    function(item,index){
 
-   <td>
-   <input type="number" value="${item.received||0}"
-   onchange="updateItem(${item.id},'received',this.value)">
-   </td>
+      const total =
+        (Number(item.open_stock)||0) +
+        (Number(item.received)||0);
 
-   <td>
-   <input type="date" value="${item.received_date||""}"
-   onchange="updateItem(${item.id},'received_date',this.value)">
-   </td>
 
-   <td>${total}</td>
+      const row =
+        document.createElement("tr");
 
-   <td>
-   <input value="${esc(item.remarks)}"
-   onchange="updateItem(${item.id},'remarks',this.value)">
-   </td>
 
-   <td>
-   <button class="delete" onclick="deleteItem(${item.id})">
-   DELETE
-   </button>
-   </td>
-   `;
+      row.innerHTML=`
 
-   body.appendChild(row);
- });
+        <td>
+          ${index+1}
+        </td>
+
+        <td>
+          <input
+            value="${esc(item.item_name)}"
+            data-id="${item.id}"
+            data-field="item_name"
+            class="stock-input"
+          >
+        </td>
+
+        <td>
+          <input
+            value="${esc(item.item_code)}"
+            data-id="${item.id}"
+            data-field="item_code"
+            class="stock-input"
+          >
+        </td>
+
+        <td>
+          <input
+            type="number"
+            value="${item.close_stock ?? 0}"
+            data-id="${item.id}"
+            data-field="close_stock"
+            class="stock-input"
+          >
+        </td>
+
+        <td>
+          <input
+            type="number"
+            value="${item.open_stock ?? 0}"
+            data-id="${item.id}"
+            data-field="open_stock"
+            class="stock-input"
+          >
+        </td>
+
+        <td>
+          <input
+            type="number"
+            value="${item.received ?? 0}"
+            data-id="${item.id}"
+            data-field="received"
+            class="stock-input"
+          >
+        </td>
+
+        <td>
+          <input
+            type="date"
+            value="${item.received_date || ""}"
+            data-id="${item.id}"
+            data-field="received_date"
+            class="stock-input"
+          >
+        </td>
+
+        <td>
+          ${total}
+        </td>
+
+        <td>
+          <input
+            value="${esc(item.remarks)}"
+            data-id="${item.id}"
+            data-field="remarks"
+            class="stock-input"
+          >
+        </td>
+
+        <td>
+          <button
+            class="delete delete-btn"
+            data-id="${item.id}"
+          >
+            DELETE
+          </button>
+        </td>
+
+      `;
+
+
+      body.appendChild(row);
+
+    }
+  );
+
+
+  document
+    .querySelectorAll(".stock-input")
+    .forEach(
+      function(input){
+
+        input.addEventListener(
+          "change",
+          function(){
+
+            updateItem(
+              input.dataset.id,
+              input.dataset.field,
+              input.value
+            );
+
+          }
+        );
+
+      }
+    );
+
+
+  document
+    .querySelectorAll(".delete-btn")
+    .forEach(
+      function(button){
+
+        button.addEventListener(
+          "click",
+          function(){
+
+            deleteItem(
+              button.dataset.id
+            );
+
+          }
+        );
+
+      }
+    );
+
 }
 
-async function addRow(){
- const {error}=await supabaseClient
- .from("stock_items")
- .insert({
-   item_name:"",
-   item_code:"",
-   close_stock:0,
-   open_stock:0,
-   received:0,
-   received_date:null,
-   remarks:""
- });
 
- if(error){
-   alert(error.message);
-   return;
- }
+/* =====================================================
+   ADD ITEM
+===================================================== */
 
- loadItems();
- loadConsumptionItems();
+async function addItem(){
+
+  const result =
+    await supabaseClient
+      .from("stock_items")
+      .insert({
+
+        item_name:"",
+        item_code:"",
+        close_stock:0,
+        open_stock:0,
+        received:0,
+        received_date:null,
+        remarks:""
+
+      });
+
+
+  if(result.error){
+
+    alert(
+      result.error.message
+    );
+
+    return;
+
+  }
+
+
+  await loadItems();
+
+  await loadConsumptionItems();
+
 }
 
-async function updateItem(id,field,value){
 
- const numeric=["close_stock","open_stock","received"];
- const updateData={};
+/* =====================================================
+   UPDATE ITEM
+===================================================== */
 
- updateData[field]=numeric.includes(field)
- ? Number(value)||0
- : value;
+async function updateItem(
+  id,
+  field,
+  value
+){
 
- const {error}=await supabaseClient
- .from("stock_items")
- .update(updateData)
- .eq("id",id);
+  const numericFields=[
+    "close_stock",
+    "open_stock",
+    "received"
+  ];
 
- if(error){
-   alert(error.message);
-   return;
- }
 
- loadItems();
- loadConsumptionItems();
+  const updateData={};
+
+
+  if(
+    numericFields.includes(field)
+  ){
+
+    updateData[field]=
+      Number(value)||0;
+
+  }else{
+
+    updateData[field]=value;
+
+  }
+
+
+  const result =
+    await supabaseClient
+      .from("stock_items")
+      .update(updateData)
+      .eq("id",id);
+
+
+  if(result.error){
+
+    alert(
+      result.error.message
+    );
+
+    return;
+
+  }
+
+
+  await loadItems();
+
+  await loadConsumptionItems();
+
 }
+
+
+/* =====================================================
+   DELETE ITEM
+===================================================== */
 
 async function deleteItem(id){
 
- if(!confirm("Delete this item?")) return;
+  if(
+    !confirm(
+      "Delete this item?"
+    )
+  ){
 
- const {error}=await supabaseClient
- .from("stock_items")
- .delete()
- .eq("id",id);
+    return;
 
- if(error){
-   alert(error.message);
-   return;
- }
+  }
 
- loadItems();
- loadConsumptionItems();
+
+  const result =
+    await supabaseClient
+      .from("stock_items")
+      .delete()
+      .eq("id",id);
+
+
+  if(result.error){
+
+    alert(
+      result.error.message
+    );
+
+    return;
+
+  }
+
+
+  await loadItems();
+
+  await loadConsumptionItems();
+
 }
+
+
+/* =====================================================
+   SEARCH
+===================================================== */
 
 async function searchItems(){
 
- const q=document.getElementById("search").value.trim().toLowerCase();
+  const q =
+    document
+      .getElementById("search")
+      .value
+      .trim()
+      .toLowerCase();
 
- const {data,error}=await supabaseClient
- .from("stock_items")
- .select("*")
- .order("id",{ascending:true});
 
- if(error)return;
+  const result =
+    await supabaseClient
+      .from("stock_items")
+      .select("*")
+      .order(
+        "id",
+        {ascending:true}
+      );
 
- if(!q){
-   renderItems(data||[]);
-   return;
- }
 
- const filtered=(data||[]).filter(function(item){
-   return String(item.item_name||"").toLowerCase().includes(q) ||
-          String(item.item_code||"").toLowerCase().includes(q) ||
-          String(item.remarks||"").toLowerCase().includes(q);
- });
+  if(result.error){
 
- renderItems(filtered);
+    return;
+
+  }
+
+
+  const data =
+    result.data || [];
+
+
+  if(!q){
+
+    renderItems(data);
+
+    return;
+
+  }
+
+
+  const filtered =
+    data.filter(
+      function(item){
+
+        return (
+
+          String(
+            item.item_name || ""
+          )
+          .toLowerCase()
+          .includes(q)
+
+          ||
+
+          String(
+            item.item_code || ""
+          )
+          .toLowerCase()
+          .includes(q)
+
+          ||
+
+          String(
+            item.remarks || ""
+          )
+          .toLowerCase()
+          .includes(q)
+
+        );
+
+      }
+    );
+
+
+  renderItems(filtered);
+
 }
+
+
+/* =====================================================
+   CONSUMPTION ITEMS
+===================================================== */
 
 async function loadConsumptionItems(){
 
- const select=document.getElementById("consItem");
+  const select =
+    document.getElementById(
+      "consItem"
+    );
 
- const {data,error}=await supabaseClient
- .from("stock_items")
- .select("id,item_name,item_code")
- .order("item_name",{ascending:true});
 
- if(error)return;
+  const result =
+    await supabaseClient
+      .from("stock_items")
+      .select(
+        "id,item_name,item_code"
+      )
+      .order(
+        "item_name",
+        {ascending:true}
+      );
 
- select.innerHTML='<option value="">Select Item</option>';
 
- (data||[]).forEach(function(item){
+  if(result.error){
 
-   if(!item.item_name)return;
+    document.getElementById(
+      "consMessage"
+    ).textContent=
+      "Item loading error: "+
+      result.error.message;
 
-   const option=document.createElement("option");
+    return;
 
-   option.value=JSON.stringify({
-     id:item.id,
-     item_name:item.item_name,
-     item_code:item.item_code||""
-   });
+  }
 
-   option.textContent=item.item_name+
-   (item.item_code ? " ("+item.item_code+")" : "");
 
-   select.appendChild(option);
- });
+  select.innerHTML=
+    '<option value="">Select Item</option>';
+
+
+  (result.data || [])
+    .forEach(
+      function(item){
+
+        if(!item.item_name){
+
+          return;
+
+        }
+
+
+        const option =
+          document.createElement(
+            "option"
+          );
+
+
+        option.value=
+          JSON.stringify({
+
+            id:item.id,
+
+            item_name:
+              item.item_name,
+
+            item_code:
+              item.item_code || ""
+
+          });
+
+
+        option.textContent=
+          item.item_name +
+          (
+            item.item_code
+            ?
+            " ("+
+            item.item_code+
+            ")"
+            :
+            ""
+          );
+
+
+        select.appendChild(
+          option
+        );
+
+      }
+    );
+
 }
+
+
+/* =====================================================
+   SAVE CONSUMPTION
+===================================================== */
 
 async function saveConsumption(){
 
- const date=document.getElementById("consDate").value;
- const itemValue=document.getElementById("consItem").value;
- const qty=Number(document.getElementById("consQty").value);
- const unit=document.getElementById("consUnit").value;
- const msg=document.getElementById("consMessage");
+  const date =
+    document.getElementById(
+      "consDate"
+    ).value;
 
- if(!date){
-   msg.style.color="red";
-   msg.textContent="Please select date.";
-   return;
- }
 
- if(!itemValue){
-   msg.style.color="red";
-   msg.textContent="Please select item.";
-   return;
- }
+  const itemValue =
+    document.getElementById(
+      "consItem"
+    ).value;
 
- if(!qty || qty<=0){
-   msg.style.color="red";
-   msg.textContent="Please enter consumed quantity.";
-   return;
- }
 
- const item=JSON.parse(itemValue);
+  const qty =
+    Number(
+      document.getElementById(
+        "consQty"
+      ).value
+    );
 
- const {data:userData}=await supabaseClient.auth.getUser();
 
- const {error}=await supabaseClient
- .from("consumption_history")
- .insert({
-   consumption_date:date,
-   item_name:item.item_name,
-   item_code:item.item_code,
-   consumed_qty:qty,
-   unit:unit,
-   user_id:userData?.user?.id||null
- });
+  const unit =
+    document.getElementById(
+      "consUnit"
+    ).value;
 
- if(error){
-   msg.style.color="red";
-   msg.textContent="Save failed: "+error.message;
-   return;
- }
 
- msg.style.color="green";
- msg.textContent="Consumption saved successfully.";
+  const msg =
+    document.getElementById(
+      "consMessage"
+    );
 
- document.getElementById("consQty").value="";
 
- loadHistory();
-}
+  if(!date){
 
-async function loadHistory(){
+    msg.className="msg error";
 
- const body=document.getElementById("consumptionBody");
+    msg.textContent=
+      "Please select date.";
 
- const {data,error}=await supabaseClient
- .from("consumption_history")
- .select("*")
- .order("consumption_date",{ascending:false});
+    return;
 
- if(error){
-   body.innerHTML='<tr><td colspan="6" class="empty">'+error.message+'</td></tr>';
-   return;
- }
+  }
 
- if(!data || !data.length){
-   body.innerHTML='<tr><td colspan="6" class="empty">No consumption records available.</td></tr>';
-   document.getElementById("consTotal").innerHTML="<b>Total Consumed: 0</b>";
-   return;
- }
 
- let total=0;
+  if(!itemValue){
 
- body.innerHTML=data.map(function(row){
+    msg.className="msg error";
 
-   total+=Number(row.consumed_qty||0);
+    msg.textContent=
+      "Please select item.";
 
-   return `
-   <tr>
-   <td>${esc(row.consumption_date)}</td>
-   <td>${esc(row.item_name)}</td>
-   <td>${esc(row.item_code)}</td>
-   <td>${esc(row.consumed_qty)}</td>
-   <td>${esc(row.unit)}</td>
-   <td>${esc(row.user_id)}</td>
-   </tr>
-   `;
+    return;
 
- }).join("");
+  }
 
- document.getElementById("consTotal").innerHTML=
- "<b>Total Consumed: "+total+"</b>";
-}
 
-function esc(value){
- return String(value??"")
- .replace(/&/g,"&amp;")
- .replace(/</g,"&lt;")
- .replace(/>/g,"&gt;")
- .replace(/"/g,"&quot;")
- .replace(/'/g,"&#039;");
-}
+  if(!qty || qty<=0){
 
-async function checkSession(){
+    msg.className="msg error";
 
- const {data}=await supabaseClient.auth.getSession();
+    msg.textContent=
+      "Please enter consumed quantity.";
 
- if(data.session){
-   showMain();
- }else{
-   showLogin();
- }
-}
+    return;
 
-supabaseClient.auth.onAuthStateChange(function(event){
+  }
 
- if(event==="PASSWORD_RECOVERY"){
-   showReset();
- }
 
-});
+  const item =
+    JSON.parse(itemValue);
 
-window.addEventListener("load",function(){
- checkSession();
-});
 
-</script>
+  const userResult =
+    await supabaseClient
+      .auth
+      .getUser();
+
+
+  const userId =
+    userResult.data?.user?.id ||
+    null;
