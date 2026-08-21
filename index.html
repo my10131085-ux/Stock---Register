@@ -1,106 +1,1159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>RHI MAGNESITA - Spare Stock Register</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f2f5f7;
+    color: #222;
+}
+
+header {
+    background: #8b0000;
+    color: white;
+    padding: 18px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 24px;
+}
+
+header button {
+    background: white;
+    color: #8b0000;
+    border: none;
+    padding: 9px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.container {
+    max-width: 1100px;
+    margin: 35px auto;
+    padding: 20px;
+}
+
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 3px 15px rgba(0,0,0,0.12);
+    margin-bottom: 25px;
+}
+
+.login-card {
+    max-width: 430px;
+    margin: 70px auto;
+}
+
+.logo-title {
+    text-align: center;
+    color: #8b0000;
+    font-size: 27px;
+    font-weight: bold;
+}
+
+.subtitle {
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 25px;
+}
+
+label {
+    display: block;
+    margin-top: 14px;
+    margin-bottom: 6px;
+    font-weight: bold;
+}
+
+input,
+select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 15px;
+}
+
+button.primary {
+    width: 100%;
+    padding: 13px;
+    margin-top: 20px;
+    background: #8b0000;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+button.primary:hover {
+    background: #650000;
+}
+
+.link-button {
+    background: none;
+    border: none;
+    color: #8b0000;
+    cursor: pointer;
+    display: block;
+    margin: 15px auto 0;
+}
+
+.message {
+    text-align: center;
+    margin-top: 15px;
+    min-height: 20px;
+    font-weight: bold;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.actions button {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.add-btn {
+    background: #198754;
+    color: white;
+}
+
+.clear-btn {
+    background: #777;
+    color: white;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th,
+td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+}
+
+th {
+    background: #8b0000;
+    color: white;
+}
+
+.delete-btn {
+    background: #c62828;
+    color: white;
+    border: none;
+    padding: 7px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.status {
+    padding: 10px;
+    background: #f7f7f7;
+    border-radius: 6px;
+    margin-top: 10px;
+}
+
+@media(max-width:700px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    table {
+        font-size: 12px;
+    }
+
+    .container {
+        padding: 10px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- ================= LOGIN PAGE ================= -->
+
+<div id="loginPage">
+
+    <div class="card login-card">
+
+        <div class="logo-title">
+            RHI MAGNESITA
+        </div>
+
+        <div class="subtitle">
+            SPARE STOCK REGISTER
+        </div>
+
+        <label for="loginEmail">Email</label>
+
+        <input
+            type="email"
+            id="loginEmail"
+            placeholder="Enter email"
+        >
+
+        <label for="loginPassword">Password</label>
+
+        <input
+            type="password"
+            id="loginPassword"
+            placeholder="Enter password"
+        >
+
+        <button
+            type="button"
+            id="loginButton"
+            class="primary"
+        >
+            LOGIN
+        </button>
+
+        <button
+            type="button"
+            id="forgotButton"
+            class="link-button"
+        >
+            Forgot Password?
+        </button>
+
+        <div id="loginMessage" class="message"></div>
+
+    </div>
+
+</div>
+
+
+<!-- ================= MAIN PAGE ================= -->
+
+<div id="mainPage" class="hidden">
+
+    <header>
+
+        <h1>
+            RHI MAGNESITA - Spare Stock Register
+        </h1>
+
+        <button
+            type="button"
+            id="logoutButton"
+        >
+            LOGOUT
+        </button>
+
+    </header>
+
+
+    <div class="container">
+
+        <!-- ADD STOCK -->
+
+        <div class="card">
+
+            <h2>Add Spare Stock</h2>
+
+            <div class="grid">
+
+                <div>
+                    <label for="itemName">
+                        Item Name
+                    </label>
+
+                    <input
+                        id="itemName"
+                        type="text"
+                        placeholder="Enter item name"
+                    >
+                </div>
+
+
+                <div>
+                    <label for="itemCode">
+                        Item Code
+                    </label>
+
+                    <input
+                        id="itemCode"
+                        type="text"
+                        placeholder="Enter item code"
+                    >
+                </div>
+
+
+                <div>
+                    <label for="quantity">
+                        Quantity
+                    </label>
+
+                    <input
+                        id="quantity"
+                        type="number"
+                        min="0"
+                        placeholder="Enter quantity"
+                    >
+                </div>
+
+
+                <div>
+                    <label for="location">
+                        Location
+                    </label>
+
+                    <input
+                        id="location"
+                        type="text"
+                        placeholder="Enter location"
+                    >
+                </div>
+
+
+                <div>
+                    <label for="remarks">
+                        Remarks
+                    </label>
+
+                    <input
+                        id="remarks"
+                        type="text"
+                        placeholder="Remarks"
+                    >
+                </div>
+
+            </div>
+
+
+            <div class="actions">
+
+                <button
+                    type="button"
+                    id="addStockButton"
+                    class="add-btn"
+                >
+                    ADD STOCK
+                </button>
+
+                <button
+                    type="button"
+                    id="clearButton"
+                    class="clear-btn"
+                >
+                    CLEAR
+                </button>
+
+            </div>
+
+            <div
+                id="stockMessage"
+                class="message"
+            ></div>
+
+        </div>
+
+
+        <!-- STOCK LIST -->
+
+        <div class="card">
+
+            <h2>Stock Register</h2>
+
+            <div
+                id="userStatus"
+                class="status"
+            >
+                Checking login...
+            </div>
+
+            <div style="overflow-x:auto;">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+                            <th>Item Name</th>
+                            <th>Item Code</th>
+                            <th>Quantity</th>
+                            <th>Location</th>
+                            <th>Remarks</th>
+                            <th>Action</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="stockTableBody">
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            <div
+                id="emptyMessage"
+                class="message"
+            >
+                No stock records found.
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
 <script>
+
+/* =========================================================
+   SUPABASE CONFIGURATION
+   ========================================================= */
+
+/*
+   IMPORTANT:
+   Yahan apne Supabase Project ka URL aur ANON/PUBLISHABLE KEY
+   paste karo.
+
+   Example:
+
+   const SUPABASE_URL = "https://xxxxxxxx.supabase.co";
+
+   const SUPABASE_ANON_KEY = "eyJhbGciOi...";
+*/
+
+const SUPABASE_URL = "YOUR_SUPABASE_URL";
+
+const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+
+
+/* =========================================================
+   CREATE SUPABASE CLIENT
+   ========================================================= */
+
+let supabaseClient = null;
+
+try {
+
+    if (
+        SUPABASE_URL.startsWith("http") &&
+        SUPABASE_ANON_KEY !== "YOUR_SUPABASE_ANON_KEY"
+    ) {
+
+        supabaseClient =
+            window.supabase.createClient(
+                SUPABASE_URL,
+                SUPABASE_ANON_KEY
+            );
+
+    }
+
+} catch (error) {
+
+    console.error(
+        "Supabase initialization error:",
+        error
+    );
+
+}
+
+
+/* =========================================================
+   ELEMENTS
+   ========================================================= */
+
+const loginPage =
+    document.getElementById("loginPage");
+
+const mainPage =
+    document.getElementById("mainPage");
+
+const loginEmail =
+    document.getElementById("loginEmail");
+
+const loginPassword =
+    document.getElementById("loginPassword");
+
+const loginButton =
+    document.getElementById("loginButton");
+
+const forgotButton =
+    document.getElementById("forgotButton");
+
+const logoutButton =
+    document.getElementById("logoutButton");
+
+const loginMessage =
+    document.getElementById("loginMessage");
+
+const stockMessage =
+    document.getElementById("stockMessage");
+
+const stockTableBody =
+    document.getElementById("stockTableBody");
+
+const emptyMessage =
+    document.getElementById("emptyMessage");
+
+const userStatus =
+    document.getElementById("userStatus");
+
+
+/* =========================================================
+   MESSAGE FUNCTION
+   ========================================================= */
+
+function showLoginMessage(text, color) {
+
+    loginMessage.textContent = text;
+
+    loginMessage.style.color = color || "red";
+
+}
+
+
+function showStockMessage(text, color) {
+
+    stockMessage.textContent = text;
+
+    stockMessage.style.color = color || "red";
+
+}
+
+
+/* =========================================================
+   SHOW LOGIN
+   ========================================================= */
+
+function showLogin() {
+
+    loginPage.classList.remove("hidden");
+
+    mainPage.classList.add("hidden");
+
+}
+
+
+/* =========================================================
+   SHOW MAIN
+   ========================================================= */
+
+async function showMain() {
+
+    loginPage.classList.add("hidden");
+
+    mainPage.classList.remove("hidden");
+
+    await loadUser();
+
+    await loadStock();
+
+}
+
+
+/* =========================================================
+   LOGIN
+   ========================================================= */
+
 async function login() {
 
-    const emailInput = document.getElementById("loginEmail");
-    const passwordInput = document.getElementById("loginPassword");
-    const msg = document.getElementById("loginMessage");
+    const email =
+        loginEmail.value.trim();
 
-    if (!emailInput || !passwordInput) {
-        console.error("Login input fields not found.");
-        return;
-    }
-
-    const email = emailInput.value.trim();
-    const password = passwordInput.value;
+    const password =
+        loginPassword.value;
 
     if (!email || !password) {
-        if (msg) {
-            msg.style.color = "red";
-            msg.textContent = "Enter Email and Password.";
-        }
+
+        showLoginMessage(
+            "Enter Email and Password.",
+            "red"
+        );
+
         return;
     }
 
-    if (typeof supabaseClient === "undefined") {
-        if (msg) {
-            msg.style.color = "red";
-            msg.textContent = "Supabase connection not found.";
-        }
-        console.error("supabaseClient is not defined.");
+
+    if (!supabaseClient) {
+
+        showLoginMessage(
+            "Supabase configuration is missing. Add SUPABASE_URL and SUPABASE_ANON_KEY.",
+            "red"
+        );
+
         return;
     }
 
-    if (msg) {
-        msg.style.color = "";
-        msg.textContent = "Logging in...";
-    }
+
+    showLoginMessage(
+        "Logging in...",
+        "#555"
+    );
+
 
     try {
 
-        const { data, error } =
+        const result =
             await supabaseClient.auth.signInWithPassword({
+
                 email: email,
+
                 password: password
+
             });
 
-        if (error) {
-            console.error("Login error:", error);
 
-            if (msg) {
-                msg.style.color = "red";
-                msg.textContent = error.message;
-            }
+        const data = result.data;
+
+        const error = result.error;
+
+
+        if (error) {
+
+            console.error(
+                "Login error:",
+                error
+            );
+
+            showLoginMessage(
+                error.message,
+                "red"
+            );
 
             return;
         }
 
+
         if (data && data.session) {
 
-            if (msg) {
-                msg.style.color = "green";
-                msg.textContent = "Login successful.";
-            }
+            showLoginMessage(
+                "Login successful.",
+                "green"
+            );
 
-            if (typeof showMain === "function") {
-                showMain();
-            } else {
-                console.error("showMain() is not defined.");
-            }
+            await showMain();
 
         } else {
 
-            if (msg) {
-                msg.style.color = "red";
-                msg.textContent = "Login failed. Please try again.";
-            }
+            showLoginMessage(
+                "Login failed. Please try again.",
+                "red"
+            );
+
         }
 
-    } catch (err) {
 
-        console.error("Login exception:", err);
+    } catch (error) {
 
-        if (msg) {
-            msg.style.color = "red";
-            msg.textContent = "Login error: " + err.message;
-        }
+        console.error(
+            "Login exception:",
+            error
+        );
+
+        showLoginMessage(
+            "Login error: " + error.message,
+            "red"
+        );
+
     }
+
 }
 
-/* IMPORTANT:
-   Your HTML button uses onclick="login()"
-   so expose the function globally.
-*/
+
+/* =========================================================
+   IMPORTANT GLOBAL LOGIN FUNCTION
+   ========================================================= */
+
 window.login = login;
 
 
-/* Also support button with id="loginButton" */
-document.addEventListener("DOMContentLoaded", function () {
+/* =========================================================
+   LOGOUT
+   ========================================================= */
 
-    const loginButton = document.getElementById("loginButton");
+async function logout() {
 
-    if (loginButton) {
-        loginButton.addEventListener("click", login);
+    if (!supabaseClient) {
+
+        showLogin();
+
+        return;
+
     }
 
-});
-</script>
+
+    try {
+
+        await supabaseClient.auth.signOut();
+
+    } catch (error) {
+
+        console.error(
+            "Logout error:",
+            error
+        );
+
+    }
+
+
+    showLogin();
+
+    loginEmail.value = "";
+
+    loginPassword.value = "";
+
+    showLoginMessage(
+        "Logged out.",
+        "#555"
+    );
+
+}
+
+
+/* =========================================================
+   FORGOT PASSWORD
+   ========================================================= */
+
+async function forgotPassword() {
+
+    const email =
+        loginEmail.value.trim();
+
+
+    if (!email) {
+
+        showLoginMessage(
+            "First enter your email address.",
+            "red"
+        );
+
+        return;
+    }
+
+
+    if (!supabaseClient) {
+
+        showLoginMessage(
+            "Supabase configuration is missing.",
+            "red"
+        );
+
+        return;
+    }
+
+
+    try {
+
+        const { error } =
+            await supabaseClient.auth.resetPasswordForEmail(
+                email,
+                {
+                    redirectTo:
+                        window.location.origin +
+                        window.location.pathname
+                }
+            );
+
+
+        if (error) {
+
+            showLoginMessage(
+                error.message,
+                "red"
+            );
+
+            return;
+        }
+
+
+        showLoginMessage(
+            "Password reset link sent to your email.",
+            "green"
+        );
+
+
+    } catch (error) {
+
+        showLoginMessage(
+            "Reset error: " + error.message,
+            "red"
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   CHECK SESSION
+   ========================================================= */
+
+async function checkSession() {
+
+    if (!supabaseClient) {
+
+        showLogin();
+
+        showLoginMessage(
+            "Add your Supabase URL and Anon/Publishable Key first.",
+            "red"
+        );
+
+        return;
+    }
+
+
+    try {
+
+        const {
+            data,
+            error
+        } =
+            await supabaseClient.auth.getSession();
+
+
+        if (error) {
+
+            console.error(
+                "Session error:",
+                error
+            );
+
+            showLogin();
+
+            return;
+        }
+
+
+        if (
+            data &&
+            data.session
+        ) {
+
+            await showMain();
+
+        } else {
+
+            showLogin();
+
+        }
+
+
+    } catch (error) {
+
+        console.error(
+            "Session exception:",
+            error
+        );
+
+        showLogin();
+
+    }
+
+}
+
+
+/* =========================================================
+   LOAD USER
+   ========================================================= */
+
+async function loadUser() {
+
+    if (!supabaseClient) {
+
+        return;
+    }
+
+
+    try {
+
+        const {
+            data,
+            error
+        } =
+            await supabaseClient.auth.getUser();
+
+
+        if (error) {
+
+            console.error(
+                "User error:",
+                error
+            );
+
+            return;
+        }
+
+
+        if (
+            data &&
+            data.user
+        ) {
+
+            userStatus.textContent =
+                "Logged in as: " +
+                data.user.email;
+
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Get user error:",
+            error
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   LOAD STOCK
+   ========================================================= */
+
+async function loadStock() {
+
+    stockTableBody.innerHTML = "";
+
+    emptyMessage.textContent =
+        "Loading stock...";
+
+
+    if (!supabaseClient) {
+
+        emptyMessage.textContent =
+            "Supabase is not configured.";
+
+        return;
+    }
+
+
+    try {
+
+        const {
+            data,
+            error
+        } =
+            await supabaseClient
+            .from("stock_register")
+            .select("*")
+            .order("created_at", {
+                ascending: false
+            });
+
+
+        if (error) {
+
+            console.error(
+                "Load stock error:",
+                error
+            );
+
+            emptyMessage.textContent =
+                "Could not load stock: " +
+                error.message;
+
+            return;
+        }
+
+
+        if (
+            !data ||
+            data.length === 0
+        ) {
+
+            emptyMessage.textContent =
+                "No stock records found.";
+
+            return;
+        }
+
+
+        emptyMessage.textContent = "";
+
+
+        data.forEach(function(item) {
+
+            addRowToTable(item);
+
+        });
+
+
+    } catch (error) {
+
+        console.error(
+            "Stock exception:",
+            error
+        );
+
+        emptyMessage.textContent =
+            "Error loading stock.";
+
+    }
+
+}
+
+
+/* =========================================================
+   ADD ROW
+   ========================================================= */
+
+function addRowToTable(item) {
+
+    const row =
+        document.createElement("tr");
+
+
+    row.innerHTML = `
+
+        <td>${escapeHtml(item.item_name || "")}</td>
+
+        <td>${escapeHtml(item.item_code || "")}</td>
+
+        <td>${escapeHtml(String(item.quantity ?? ""))}</td>
+
+        <td>${escapeHtml(item.location || "")}</td>
+
+        <td>${escapeHtml(item.remarks || "")}</td>
+
+        <td>
+            <button
+                type="button"
+                class="delete-btn"
+                data-id="${item.id}"
+            >
+                DELETE
+            </button>
+        </td>
+
+    `;
+
+
+    stockTableBody.appendChild(row);
+
+}
+
+
+/* =========================================================
+   ESCAPE HTML
+   ========================================================= */
+
+function escapeHtml(value) {
+
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+
+}
+
+
+/* =========================================================
+   ADD STOCK
+   ========================================================= */
+
+async function addStock() {
+
+    const itemName =
+        document
+        .getElementById("itemName")
+        .value
+        .trim();
+
+
+    const itemCode =
+        document
+        .getElementById("itemCode")
+        .value
+        .trim();
+
+
+    const quantity =
+        Number(
+            document
+            .getElementById("quantity")
+            .value
+        );
+
+
+    const location =
+        document
+        .getElementById("location")
+        .value
+        .trim();
+
+
+    const remarks =
+        document
+        .getElementById("remarks")
+        .value
+        .trim();
+
+
+    if (!itemName) {
+
+        showStockMessage(
+            "Please enter item name.",
+            "red"
+        );
+
+        return;
+    }
+
+
+    if (!itemCode) {
+
+        showStockMessage(
+            "Please enter item code.",
+            "red"
+        );
+
+        return;
+    }
+
+
+    if (
+        Number.isNaN(quantity) ||
+        quant
