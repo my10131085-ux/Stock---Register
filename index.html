@@ -3,38 +3,75 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>RHI MAGNESITA - Spare Stock Register</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-*{box-sizing:border-box}
+*{
+    box-sizing:border-box;
+}
+
 body{
     margin:0;
     font-family:Arial,sans-serif;
     background:#f5f5f5;
     color:#222;
 }
+
 .container{
-    max-width:1000px;
-    margin:30px auto;
-    padding:20px;
+    width:98%;
+    max-width:1500px;
+    margin:25px auto;
+    padding:10px;
 }
+
 .card{
-    background:white;
+    background:#fff;
     padding:25px;
     border-radius:12px;
     box-shadow:0 3px 15px #ccc;
 }
-h1,h2{text-align:center}
+
+.header{
+    position:relative;
+    text-align:center;
+    padding:5px 160px 10px 160px;
+}
+
+.header h1{
+    margin:0 0 12px 0;
+    font-size:30px;
+}
+
+.header h2{
+    margin:0;
+    font-size:24px;
+}
+
+.logout{
+    position:absolute;
+    right:0;
+    top:0;
+    width:140px;
+    padding:12px;
+    background:#555;
+}
+
+h1,h2{
+    text-align:center;
+}
+
 input,button{
     width:100%;
-    padding:12px;
-    margin:7px 0;
-    border-radius:6px;
+    padding:11px;
+    margin:6px 0;
+    border-radius:5px;
     border:1px solid #ccc;
-    font-size:16px;
+    font-size:15px;
 }
+
 button{
     background:#b00000;
     color:white;
@@ -42,32 +79,145 @@ button{
     cursor:pointer;
     font-weight:bold;
 }
-button:hover{background:#800000}
-.hidden{display:none}
+
+button:hover{
+    background:#800000;
+}
+
+.hidden{
+    display:none;
+}
+
 .msg{
     text-align:center;
     margin:10px 0;
     font-weight:bold;
 }
+
+/* ADD STOCK FORM */
+
+.stock-form{
+    display:grid;
+    grid-template-columns:
+        1.4fr 1fr 1fr 1fr 1fr 1.2fr 1.5fr;
+    gap:8px;
+    align-items:end;
+}
+
+.field label{
+    display:block;
+    font-size:13px;
+    font-weight:bold;
+    margin-bottom:2px;
+}
+
+/* TABLE */
+
+.table-wrap{
+    width:100%;
+    overflow-x:auto;
+}
+
 table{
     width:100%;
+    min-width:1250px;
     border-collapse:collapse;
-    margin-top:20px;
+    margin-top:15px;
+    table-layout:fixed;
 }
+
 th,td{
     border:1px solid #ddd;
-    padding:10px;
+    padding:10px 7px;
+    text-align:center;
+    vertical-align:middle;
+    overflow-wrap:anywhere;
+}
+
+th{
+    background:#b00000;
+    color:#fff;
+    font-size:13px;
+    white-space:normal;
+}
+
+td{
+    font-size:14px;
+}
+
+th:nth-child(1),
+td:nth-child(1){
+    width:60px;
+}
+
+th:nth-child(2),
+td:nth-child(2){
+    width:170px;
     text-align:left;
 }
-th{background:#b00000;color:white}
-.logout{
-    background:#555;
-    max-width:150px;
-    float:right;
+
+th:nth-child(3),
+td:nth-child(3){
+    width:120px;
 }
-.small-btn{
-    width:auto;
-    padding:8px 12px;
+
+th:nth-child(4),
+td:nth-child(4),
+th:nth-child(5),
+td:nth-child(5),
+th:nth-child(6),
+td:nth-child(6),
+th:nth-child(8),
+td:nth-child(8),
+th:nth-child(9),
+td:nth-child(9){
+    width:110px;
+}
+
+th:nth-child(7),
+td:nth-child(7){
+    width:130px;
+}
+
+th:nth-child(10),
+td:nth-child(10){
+    width:180px;
+    text-align:left;
+}
+
+@media(max-width:800px){
+
+    .container{
+        width:100%;
+        margin:10px auto;
+        padding:5px;
+    }
+
+    .card{
+        padding:15px;
+    }
+
+    .header{
+        padding:55px 0 10px 0;
+    }
+
+    .header h1{
+        font-size:24px;
+    }
+
+    .header h2{
+        font-size:19px;
+    }
+
+    .logout{
+        right:0;
+        top:0;
+        width:110px;
+    }
+
+    .stock-form{
+        grid-template-columns:1fr;
+    }
 }
 </style>
 </head>
@@ -77,7 +227,9 @@ th{background:#b00000;color:white}
 <div class="container">
 
 <!-- LOGIN -->
+
 <div id="loginPage" class="card">
+
     <h1>RHI MAGNESITA</h1>
     <h2>SPARE STOCK REGISTER</h2>
 
@@ -98,44 +250,93 @@ th{background:#b00000;color:white}
     </button>
 
     <div id="loginMessage" class="msg"></div>
+
 </div>
 
 
-<!-- MAIN -->
+<!-- MAIN PAGE -->
+
 <div id="mainPage" class="card hidden">
 
-    <button
-        id="logoutButton"
-        class="logout"
-        type="button">
-        LOGOUT
-    </button>
+    <div class="header">
 
-    <h1>RHI MAGNESITA</h1>
-    <h2>SPARE STOCK REGISTER</h2>
+        <button
+            id="logoutButton"
+            class="logout"
+            type="button">
+            LOGOUT
+        </button>
+
+        <h1>RHI MAGNESITA</h1>
+        <h2>SPARE STOCK REGISTER</h2>
+
+    </div>
 
     <hr>
 
-    <h3>Add Stock</h3>
+    <h3>ADD STOCK</h3>
 
-    <input
-        type="text"
-        id="itemName"
-        placeholder="Item Name"
-    >
+    <div class="stock-form">
 
-    <input
-        type="text"
-        id="itemCode"
-        placeholder="Item Code"
-    >
+        <div class="field">
+            <label>ITEM NAME</label>
+            <input
+                type="text"
+                id="itemName"
+                placeholder="Item Name">
+        </div>
 
-    <input
-        type="number"
-        id="quantity"
-        placeholder="Quantity"
-        min="1"
-    >
+        <div class="field">
+            <label>ITEM CODE</label>
+            <input
+                type="text"
+                id="itemCode"
+                placeholder="Item Code">
+        </div>
+
+        <div class="field">
+            <label>OPEN STOCK</label>
+            <input
+                type="number"
+                id="openStock"
+                placeholder="0"
+                min="0">
+        </div>
+
+        <div class="field">
+            <label>RECEIVED</label>
+            <input
+                type="number"
+                id="received"
+                placeholder="0"
+                min="0">
+        </div>
+
+        <div class="field">
+            <label>CLOSE STOCK</label>
+            <input
+                type="number"
+                id="closeStock"
+                placeholder="0"
+                min="0">
+        </div>
+
+        <div class="field">
+            <label>RECEIVED DATE</label>
+            <input
+                type="date"
+                id="receivedDate">
+        </div>
+
+        <div class="field">
+            <label>REMARKS</label>
+            <input
+                type="text"
+                id="remarks"
+                placeholder="Remarks">
+        </div>
+
+    </div>
 
     <button id="addButton" type="button">
         ADD STOCK
@@ -145,20 +346,33 @@ th{background:#b00000;color:white}
 
     <hr>
 
-    <h3>Current Stock</h3>
+    <h3>STOCK REGISTER</h3>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Item Name</th>
-                <th>Item Code</th>
-                <th>Quantity</th>
-            </tr>
-        </thead>
+    <div class="table-wrap">
 
-        <tbody id="stockTable">
-        </tbody>
-    </table>
+        <table>
+
+            <thead>
+                <tr>
+                    <th>SR.NO</th>
+                    <th>ITEM NAME</th>
+                    <th>ITEM CODE</th>
+                    <th>CLOSE STOCK</th>
+                    <th>OPEN STOCK</th>
+                    <th>RECEIVED</th>
+                    <th>RECEIVED DATE</th>
+                    <th>CONSUMPTION</th>
+                    <th>TOTAL STOCK</th>
+                    <th>REMARKS</th>
+                </tr>
+            </thead>
+
+            <tbody id="stockTable">
+            </tbody>
+
+        </table>
+
+    </div>
 
 </div>
 
@@ -167,127 +381,115 @@ th{background:#b00000;color:white}
 
 <script>
 
-/* =====================================================
-   SUPABASE SETTINGS
-   =====================================================
+/* ==========================
+   SUPABASE
+========================== */
 
-   IMPORTANT:
-   Neeche apna Supabase URL aur ANON KEY lagana hai.
-*/
+const SUPABASE_URL =
+"https://mooagaasvythwctcktcx.supabase.co";
 
-const SUPABASE_URL = "https://mooagaasvythwctcktcx.supabase.co";
-
-const SUPABASE_ANON_KEY = "sb_publishable_Zql7qJbZlj1R5H1ydOoqSg_F0WAdgd0";
-
-
-/* Supabase connection */
+const SUPABASE_ANON_KEY =
+"sb_publishable_Zql7qJbZlj1R5H1ydOoqSg_F0WAdgd0";
 
 const supabaseClient =
-    window.supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_ANON_KEY
-    );
+window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+);
 
 
-/* =====================================================
+/* ==========================
    ELEMENTS
-   ===================================================== */
+========================== */
 
 const loginPage =
-    document.getElementById("loginPage");
+document.getElementById("loginPage");
 
 const mainPage =
-    document.getElementById("mainPage");
+document.getElementById("mainPage");
 
 const loginButton =
-    document.getElementById("loginButton");
+document.getElementById("loginButton");
 
 const logoutButton =
-    document.getElementById("logoutButton");
+document.getElementById("logoutButton");
 
 const loginMessage =
-    document.getElementById("loginMessage");
+document.getElementById("loginMessage");
 
 const stockMessage =
-    document.getElementById("stockMessage");
+document.getElementById("stockMessage");
 
 const stockTable =
-    document.getElementById("stockTable");
+document.getElementById("stockTable");
 
 
-/* =====================================================
+/* ==========================
    LOGIN
-   ===================================================== */
+========================== */
 
 async function login(){
 
     const email =
-        document.getElementById("loginEmail")
-        .value.trim();
+    document.getElementById("loginEmail")
+    .value.trim();
 
     const password =
-        document.getElementById("loginPassword")
-        .value;
+    document.getElementById("loginPassword")
+    .value;
 
     if(!email || !password){
 
         loginMessage.style.color="red";
 
         loginMessage.textContent =
-            "Enter Email and Password.";
+        "Enter Email and Password.";
 
         return;
     }
 
     loginMessage.style.color="#333";
-
-    loginMessage.textContent =
-        "Logging in...";
+    loginMessage.textContent="Logging in...";
 
     try{
 
         const result =
-            await supabaseClient.auth.signInWithPassword({
-                email:email,
-                password:password
-            });
+        await supabaseClient.auth
+        .signInWithPassword({
+            email:email,
+            password:password
+        });
 
         if(result.error){
 
             loginMessage.style.color="red";
 
             loginMessage.textContent =
-                result.error.message;
+            result.error.message;
 
             return;
         }
 
-        loginMessage.style.color="green";
-
-        loginMessage.textContent =
-            "Login successful.";
-
         loginPage.classList.add("hidden");
-
         mainPage.classList.remove("hidden");
+
+        loginMessage.textContent="";
 
         loadStock();
 
     }catch(error){
 
-        console.error(error);
-
         loginMessage.style.color="red";
 
         loginMessage.textContent =
-            "Login error: " + error.message;
+        "Login error: " + error.message;
     }
 }
 
 
-/* =====================================================
+/* ==========================
    LOGOUT
-   ===================================================== */
+========================== */
 
 async function logout(){
 
@@ -297,35 +499,64 @@ async function logout(){
 
     loginPage.classList.remove("hidden");
 
-    document.getElementById("loginPassword").value="";
+    document.getElementById(
+        "loginPassword"
+    ).value="";
 
     loginMessage.textContent="";
 }
 
 
-/* =====================================================
+/* ==========================
    ADD STOCK
-   ===================================================== */
+========================== */
 
 async function addStock(){
 
     const name =
-        document.getElementById("itemName")
-        .value.trim();
+    document.getElementById("itemName")
+    .value.trim();
 
     const code =
-        document.getElementById("itemCode")
-        .value.trim();
+    document.getElementById("itemCode")
+    .value.trim();
 
-    const qty =
-        Number(
-            document.getElementById("quantity").value
-        );
+    const openStock =
+    Number(
+        document.getElementById(
+            "openStock"
+        ).value || 0
+    );
+
+    const received =
+    Number(
+        document.getElementById(
+            "received"
+        ).value || 0
+    );
+
+    const closeStock =
+    Number(
+        document.getElementById(
+            "closeStock"
+        ).value || 0
+    );
+
+    const receivedDate =
+    document.getElementById(
+        "receivedDate"
+    ).value;
+
+    const remarks =
+    document.getElementById(
+        "remarks"
+    ).value.trim();
+
 
     if(!name){
 
         showMessage(
-            "Please enter item name.",
+            "Please enter Item Name.",
             "red"
         );
 
@@ -335,17 +566,34 @@ async function addStock(){
     if(!code){
 
         showMessage(
-            "Please enter item code.",
+            "Please enter Item Code.",
             "red"
         );
 
         return;
     }
 
-    if(!qty || qty <= 0){
+    if(
+        openStock < 0 ||
+        received < 0 ||
+        closeStock < 0
+    ){
 
         showMessage(
-            "Please enter valid quantity.",
+            "Stock cannot be negative.",
+            "red"
+        );
+
+        return;
+    }
+
+    const available =
+        openStock + received;
+
+    if(closeStock > available){
+
+        showMessage(
+            "Close Stock cannot be more than Open Stock + Received.",
             "red"
         );
 
@@ -359,19 +607,23 @@ async function addStock(){
 
     try{
 
-        /*
-          IMPORTANT:
-          Ye table Supabase mein baad mein banayenge.
-        */
-
         const {error} =
-            await supabaseClient
-            .from("stock_items")
-            .insert({
-                item_name:name,
-                item_code:code,
-                quantity:qty
-            });
+        await supabaseClient
+        .from("stock_items")
+        .insert({
+
+            item_name:name,
+            item_code:code,
+
+            open_stock:openStock,
+            received:received,
+            close_stock:closeStock,
+
+            received_date:
+                receivedDate || null,
+
+            remarks:remarks
+        });
 
         if(error){
 
@@ -390,9 +642,7 @@ async function addStock(){
             "green"
         );
 
-        document.getElementById("itemName").value="";
-        document.getElementById("itemCode").value="";
-        document.getElementById("quantity").value="";
+        clearForm();
 
         loadStock();
 
@@ -408,9 +658,45 @@ async function addStock(){
 }
 
 
-/* =====================================================
+/* ==========================
+   CLEAR FORM
+========================== */
+
+function clearForm(){
+
+    document.getElementById(
+        "itemName"
+    ).value="";
+
+    document.getElementById(
+        "itemCode"
+    ).value="";
+
+    document.getElementById(
+        "openStock"
+    ).value="";
+
+    document.getElementById(
+        "received"
+    ).value="";
+
+    document.getElementById(
+        "closeStock"
+    ).value="";
+
+    document.getElementById(
+        "receivedDate"
+    ).value="";
+
+    document.getElementById(
+        "remarks"
+    ).value="";
+}
+
+
+/* ==========================
    LOAD STOCK
-   ===================================================== */
+========================== */
 
 async function loadStock(){
 
@@ -419,17 +705,20 @@ async function loadStock(){
     try{
 
         const {data,error} =
-            await supabaseClient
-            .from("stock_items")
-            .select("*")
-            .order("id",{ascending:false});
+        await supabaseClient
+        .from("stock_items")
+        .select("*")
+        .order(
+            "id",
+            {ascending:true}
+        );
 
         if(error){
 
             console.error(error);
 
             stockTable.innerHTML =
-                "<tr><td colspan='3'>Unable to load stock.</td></tr>";
+            "<tr><td colspan='10'>Unable to load stock.</td></tr>";
 
             return;
         }
@@ -437,20 +726,70 @@ async function loadStock(){
         if(!data || data.length===0){
 
             stockTable.innerHTML =
-                "<tr><td colspan='3'>No stock found.</td></tr>";
+            "<tr><td colspan='10'>No stock found.</td></tr>";
 
             return;
         }
 
-        data.forEach(item=>{
+        data.forEach((item,index)=>{
+
+            const openStock =
+                Number(item.open_stock || 0);
+
+            const received =
+                Number(item.received || 0);
+
+            const closeStock =
+                Number(item.close_stock || 0);
+
+            const consumption =
+                openStock +
+                received -
+                closeStock;
+
+            const totalStock =
+                closeStock;
 
             const row =
-                document.createElement("tr");
+            document.createElement("tr");
 
             row.innerHTML = `
-                <td>${escapeHtml(item.item_name)}</td>
-                <td>${escapeHtml(item.item_code)}</td>
-                <td>${item.quantity}</td>
+
+                <td>${index + 1}</td>
+
+                <td>
+                    ${escapeHtml(
+                        item.item_name || ""
+                    )}
+                </td>
+
+                <td>
+                    ${escapeHtml(
+                        item.item_code || ""
+                    )}
+                </td>
+
+                <td>${closeStock}</td>
+
+                <td>${openStock}</td>
+
+                <td>${received}</td>
+
+                <td>
+                    ${formatDate(
+                        item.received_date
+                    )}
+                </td>
+
+                <td>${consumption}</td>
+
+                <td>${totalStock}</td>
+
+                <td>
+                    ${escapeHtml(
+                        item.remarks || ""
+                    )}
+                </td>
             `;
 
             stockTable.appendChild(row);
@@ -461,14 +800,39 @@ async function loadStock(){
         console.error(error);
 
         stockTable.innerHTML =
-            "<tr><td colspan='3'>Error loading stock.</td></tr>";
+        "<tr><td colspan='10'>Error loading stock.</td></tr>";
     }
 }
 
 
-/* =====================================================
+/* ==========================
+   DATE
+========================== */
+
+function formatDate(date){
+
+    if(!date){
+        return "";
+    }
+
+    const parts =
+    date.split("-");
+
+    if(parts.length !== 3){
+        return date;
+    }
+
+    return (
+        parts[2] + "-" +
+        parts[1] + "-" +
+        parts[0]
+    );
+}
+
+
+/* ==========================
    MESSAGE
-   ===================================================== */
+========================== */
 
 function showMessage(text,color){
 
@@ -478,24 +842,25 @@ function showMessage(text,color){
 }
 
 
-/* =====================================================
+/* ==========================
    SECURITY
-   ===================================================== */
+========================== */
 
 function escapeHtml(value){
 
     return String(value)
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
+
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
 }
 
 
-/* =====================================================
-   BUTTON EVENTS
-   ===================================================== */
+/* ==========================
+   BUTTONS
+========================== */
 
 loginButton.addEventListener(
     "click",
@@ -507,46 +872,54 @@ logoutButton.addEventListener(
     logout
 );
 
-document.getElementById("addButton")
-    .addEventListener(
-        "click",
-        addStock
-    );
+document.getElementById(
+    "addButton"
+)
+.addEventListener(
+    "click",
+    addStock
+);
 
 
-/* =====================================================
-   ENTER KEY LOGIN
-   ===================================================== */
+/* ==========================
+   ENTER LOGIN
+========================== */
 
-document.getElementById("loginPassword")
-    .addEventListener(
-        "keydown",
-        function(event){
+document.getElementById(
+    "loginPassword"
+)
+.addEventListener(
+    "keydown",
+    function(event){
 
-            if(event.key==="Enter"){
-                login();
-            }
-
+        if(event.key==="Enter"){
+            login();
         }
-    );
+    }
+);
 
 
-/* =====================================================
-   CHECK EXISTING SESSION
-   ===================================================== */
+/* ==========================
+   SESSION
+========================== */
 
 async function checkSession(){
 
     try{
 
         const {data} =
-            await supabaseClient.auth.getSession();
+        await supabaseClient.auth
+        .getSession();
 
         if(data && data.session){
 
-            loginPage.classList.add("hidden");
+            loginPage.classList.add(
+                "hidden"
+            );
 
-            mainPage.classList.remove("hidden");
+            mainPage.classList.remove(
+                "hidden"
+            );
 
             loadStock();
         }
@@ -556,7 +929,6 @@ async function checkSession(){
         console.error(error);
     }
 }
-
 
 checkSession();
 
