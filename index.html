@@ -981,86 +981,353 @@ await loadAll();
 }
 
 
-/* HISTORY */
+/* EDIT STOCK */
 
-async function loadHistory(){
+async function editStock(id){
 
-historyTable.innerHTML="";
+    const {data,error} =
+    await supabaseClient
+    .from("stock_items")
+    .select("*")
+    .eq("id",id)
+    .single();
 
-const {data,error} =
-await supabaseClient
-.from("consumption_history")
-.select("*")
-.order(
-"consumption_date",
-{ascending:false}
+    if(error){
+
+        alert(error.message);
+        return;
+    }
+
+    const name =
+    prompt(
+        "Item Name:",
+        data.item_name || ""
+    );
+
+    if(name===null)return;
+
+    const code =
+    prompt(
+        "Item Code:",
+        data.item_code || ""
+    );
+
+    if(code===null)return;
+
+    const stock =
+    prompt(
+        "Stock:",
+        data.open_stock || 0
+    );
+
+    if(stock===null)return;
+
+    const received =
+    prompt(
+        "Received:",
+        data.received || 0
+    );
+
+    if(received===null)return;
+
+    const newStock =
+    Number(stock) || 0;
+
+    const newReceived =
+    Number(received) || 0;
+
+    const oldTotal =
+    Number(data.quantity || 0);
+
+    const oldBase =
+    Number(data.open_stock || 0) +
+    Number(data.received || 0);
+
+    const used =
+    Math.max(
+        0,
+        oldBase - oldTotal
+    );
+
+    const newTotal =
+    Math.max(
+        0,
+        newStock +
+        newReceived -
+        used
+    );
+
+    const {error:updateError} =
+    await supabaseClient
+    .from("stock_items")
+    .update({
+
+        item_name:name.trim(),
+
+        item_code:code.trim(),
+
+        open_stock:newStock,
+
+        received:newReceived,
+
+        quantity:newTotal
+
+    })
+    .eq("id",id);
+
+    if(updateError){
+
+        alert(updateError.message);
+        return;
+    }
+
+    alert(
+        "Stock updated successfully."
+    );
+
+    await loadAll();
+
+}
+
+
+/* DELETE STOCK */
+
+async function deleteStock(id){
+
+    const yes =
+    confirm(
+        "Are you sure you want to delete this item?"
+    );
+
+    if(!yes)return;
+
+    await supabaseClient
+    .from("consumption_history")
+    .delete()
+    .eq("stock_item_id",id);
+
+    const {error} =
+    await supabaseClient
+    .from("stock_items")
+    .delete()
+    .eq("id",id);
+
+    if(error){
+
+        alert(error.message);
+        return;
+    }
+
+    alert(
+        "Stock deleted successfully."
+    );
+
+    await loadAll();
+
+}
+
+
+/* CLEAR FORM */
+
+function clearForm(){
+
+    document.getElementById(
+        "itemName"
+    ).value="";
+
+    document.getElementById(
+        "itemCode"
+    ).value="";
+
+    document.getElementById(
+        "stock"
+    ).value="";
+
+    document.getElementById(
+        "received"
+    ).value="";
+
+    document.getElementById(
+        "receivedDate"
+    ).value="";
+
+    document.getElementById(
+        "remarks"
+    ).value="";
+
+}
+
+
+/* MESSAGE */
+
+function showStockMessage(
+    text,
+    color
+){
+
+    stockMessage.style.color =
+    color;
+
+    stockMessage.textContent =
+    text;
+
+}
+
+
+/* ESCAPE HTML */
+
+function escapeHtml(value){
+
+    return String(value ?? "")
+
+    .replaceAll("&","&amp;")
+
+    .replaceAll("<","&lt;")
+
+    .replaceAll(">","&gt;")
+
+    .replaceAll('"',"&quot;")
+
+    .replaceAll("'","&#039;");
+
+}
+
+
+/* BUTTON EVENTS */
+
+document.getElementById(
+    "loginButton"
+)
+.addEventListener(
+    "click",
+    login
 );
 
-if(error){
+document.getElementById(
+    "forgotButton"
+)
+.addEventListener(
+    "click",
+    forgotPassword
+);
 
-historyTable.innerHTML=
-`<tr>
-<td colspan="5">
-${escapeHtml(error.message)}
-</td>
-</tr>`;
+document.getElementById(
+    "resetButton"
+)
+.addEventListener(
+    "click",
+    resetPassword
+);
 
-return;
+document.getElementById(
+    "logoutButton"
+)
+.addEventListener(
+    "click",
+    logout
+);
+
+document.getElementById(
+    "addButton"
+)
+.addEventListener(
+    "click",
+    addStock
+);
+
+document.getElementById(
+    "saveConsumptionButton"
+)
+.addEventListener(
+    "click",
+    saveConsumption
+);
+
+document.getElementById(
+    "cancelConsumptionButton"
+)
+.addEventListener(
+    "click",
+    function(){
+
+        consumptionBox.classList.add(
+            "hidden"
+        );
+
+    }
+);
+
+
+/* ENTER KEY LOGIN */
+
+document.getElementById(
+    "loginPassword"
+)
+.addEventListener(
+    "keydown",
+    function(event){
+
+        if(event.key==="Enter"){
+
+            login();
+
+        }
+
+    }
+);
+
+
+/* PASSWORD RECOVERY */
+
+supabaseClient.auth.onAuthStateChange(
+    function(event,session){
+
+        if(event==="PASSWORD_RECOVERY"){
+
+            loginPage.classList.add(
+                "hidden"
+            );
+
+            mainPage.classList.add(
+                "hidden"
+            );
+
+            resetPage.classList.remove(
+                "hidden"
+            );
+
+        }
+
+    }
+);
+
+
+/* CHECK SESSION */
+
+async function checkSession(){
+
+    const {data} =
+    await supabaseClient
+    .auth
+    .getSession();
+
+    if(data && data.session){
+
+        loginPage.classList.add(
+            "hidden"
+        );
+
+        mainPage.classList.remove(
+            "hidden"
+        );
+
+        await loadAll();
+
+    }
+
 }
 
-if(!data || data.length===0){
 
-historyTable.innerHTML=
-`<tr>
-<td colspan="5">
-No consumption history.
-</td>
-</tr>`;
-
-return;
-}
-
-data.forEach(item=>{
-
-const row =
-document.createElement("tr");
-
-const date =
-item.consumption_date
-?
-new Date(
-item.consumption_date
-).toLocaleDateString("en-IN")
-:
-"";
-
-row.innerHTML=`
-
-<td>${date}</td>
-
-<td>
-${escapeHtml(item.item_name||"")}
-</td>
-
-<td>
-${escapeHtml(item.item_code||"")}
-</td>
-
-<td>
-<b>${Number(item.quantity||0)}</b>
-</td>
-
-<td>
-${escapeHtml(item.remarks||"")}
-</td>
-
-`;
-
-historyTable.appendChild(row);
-
-});
-
-}
     /* EDIT STOCK */
 
 async function editStock(id){
