@@ -9,160 +9,168 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-
-*{
-box-sizing:border-box;
-}
+*{box-sizing:border-box}
 
 body{
-margin:0;
-font-family:Arial,sans-serif;
-background:#f3f3f3;
-color:#222;
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:#f3f3f3;
+    color:#222;
 }
 
 .container{
-max-width:1200px;
-margin:20px auto;
-padding:15px;
+    max-width:1200px;
+    margin:20px auto;
+    padding:15px;
 }
 
 .card{
-background:#fff;
-padding:20px;
-border-radius:12px;
-box-shadow:0 3px 15px #ccc;
+    background:#fff;
+    padding:20px;
+    border-radius:12px;
+    box-shadow:0 3px 15px #ccc;
 }
 
 h1,h2{
-text-align:center;
+    text-align:center;
+    margin:8px 0;
 }
 
-h3{
-margin-top:15px;
+.section-title{
+    text-align:left;
+    font-size:20px;
+    font-weight:bold;
+    margin:20px 0 10px;
+    border-bottom:2px solid #b00000;
+    padding-bottom:7px;
 }
 
 .history-heading{
-text-align:left;
-margin:18px 0 8px 0;
-font-size:19px;
-font-weight:bold;
+    text-align:left;
+    font-size:20px;
+    font-weight:bold;
+    margin:25px 0 10px;
+    border-bottom:2px solid #b00000;
+    padding-bottom:7px;
 }
 
 input,button,select,textarea{
-width:100%;
-padding:11px;
-margin:6px 0;
-border-radius:6px;
-border:1px solid #ccc;
-font-size:15px;
+    width:100%;
+    padding:11px;
+    margin:6px 0;
+    border-radius:6px;
+    border:1px solid #ccc;
+    font-size:15px;
 }
 
 button{
-background:#b00000;
-color:white;
-border:none;
-cursor:pointer;
-font-weight:bold;
+    background:#b00000;
+    color:white;
+    border:none;
+    cursor:pointer;
+    font-weight:bold;
 }
 
 button:hover{
-opacity:.9;
+    opacity:.9;
 }
 
 .hidden{
-display:none!important;
+    display:none!important;
 }
 
 .msg{
-text-align:center;
-margin:10px 0;
-font-weight:bold;
+    text-align:center;
+    margin:10px 0;
+    font-weight:bold;
 }
 
 .logout{
-background:#555;
-width:auto;
-min-width:120px;
-float:right;
+    background:#555;
+    width:auto;
+    min-width:120px;
+    float:right;
 }
 
 .form-grid{
-display:grid;
-grid-template-columns:repeat(3,1fr);
-gap:8px;
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:8px;
 }
 
 .table-wrap{
-overflow-x:auto;
+    overflow-x:auto;
 }
 
 table{
-width:100%;
-border-collapse:collapse;
-margin-top:10px;
-min-width:1000px;
+    width:100%;
+    border-collapse:collapse;
+    margin-top:10px;
+    min-width:1000px;
 }
 
 th,td{
-border:1px solid #ddd;
-padding:9px;
-text-align:center;
+    border:1px solid #ddd;
+    padding:9px;
+    text-align:center;
 }
 
 th{
-background:#b00000;
-color:white;
+    background:#b00000;
+    color:white;
+    white-space:nowrap;
 }
 
 .action-btn{
-width:auto;
-padding:7px 10px;
-margin:2px;
-font-size:13px;
+    width:auto;
+    padding:7px 10px;
+    margin:2px;
+    font-size:13px;
 }
 
 .edit{
-background:#1769aa;
+    background:#1769aa;
 }
 
 .delete{
-background:#555;
+    background:#555;
 }
 
 .consume{
-background:#d35400;
+    background:#d35400;
 }
 
 .history-delete{
-background:#555;
+    background:#555;
+}
+
+#mainPage{
+    overflow:hidden;
 }
 
 @media(max-width:700px){
 
-.container{
-padding:8px;
-margin:5px auto;
-}
+    .container{
+        padding:8px;
+        margin:5px auto;
+    }
 
-.card{
-padding:12px;
-}
+    .card{
+        padding:12px;
+    }
 
-.form-grid{
-grid-template-columns:1fr;
-}
+    .form-grid{
+        grid-template-columns:1fr;
+    }
 
-h1{
-font-size:25px;
-}
+    h1{
+        font-size:25px;
+    }
 
-h2{
-font-size:19px;
+    h2{
+        font-size:19px;
+    }
 }
-
-}
-
 </style>
 </head>
 
@@ -175,7 +183,6 @@ font-size:19px;
 <div id="loginPage" class="card">
 
 <h1>RHI MAGNESITA</h1>
-
 <h2>SPARE STOCK REGISTER</h2>
 
 <input
@@ -188,9 +195,7 @@ type="password"
 id="loginPassword"
 placeholder="Password">
 
-<button id="loginButton">
-LOGIN
-</button>
+<button id="loginButton">LOGIN</button>
 
 <button
 id="forgotButton"
@@ -233,19 +238,21 @@ UPDATE PASSWORD
 
 <div id="mainPage" class="card hidden">
 
-<button
-id="logoutButton"
-class="logout">
+<button id="logoutButton" class="logout">
 LOGOUT
 </button>
 
 <h1>RHI MAGNESITA</h1>
-
 <h2>SPARE STOCK REGISTER</h2>
 
 <hr>
 
-<h3>ADD STOCK</h3>
+
+<!-- ADD STOCK -->
+
+<div class="section-title">
+ADD STOCK
+</div>
 
 <div class="form-grid">
 
@@ -290,45 +297,38 @@ ADD STOCK
 
 <hr>
 
-<h3>STOCK REGISTER</h3>
+
+<!-- STOCK REGISTER -->
+
+<div class="section-title">
+STOCK REGISTER
+</div>
 
 <div class="table-wrap">
 
 <table>
 
 <thead>
-
 <tr>
-
 <th>SR.NO</th>
-
 <th>ITEM NAME</th>
-
 <th>ITEM CODE</th>
-
 <th>STOCK</th>
-
 <th>RECEIVED</th>
-
 <th>TOTAL STOCK</th>
-
 <th>CONSUMPTION</th>
-
 <th>ACTION</th>
-
 </tr>
-
 </thead>
 
-<tbody id="stockTable">
-</tbody>
+<tbody id="stockTable"></tbody>
 
 </table>
 
 </div>
 
 
-<!-- CONSUMPTION BOX -->
+<!-- CONSUMPTION -->
 
 <div
 id="consumptionBox"
@@ -336,7 +336,9 @@ class="hidden">
 
 <hr>
 
-<h3>CONSUMPTION</h3>
+<div class="section-title">
+CONSUMPTION
+</div>
 
 <input
 type="hidden"
@@ -372,42 +374,31 @@ class="msg">
 
 </div>
 
-
 <hr>
 
 
 <!-- CONSUMPTION HISTORY -->
 
-<h3 class="history-heading">
+<div class="history-heading">
 CONSUMPTION HISTORY
-</h3>
+</div>
 
 <div class="table-wrap">
 
 <table>
 
 <thead>
-
 <tr>
-
 <th>DATE</th>
-
 <th>ITEM NAME</th>
-
 <th>ITEM CODE</th>
-
 <th>QUANTITY USED</th>
-
 <th>REMARKS</th>
-
 <th>ACTION</th>
-
 </tr>
-
 </thead>
 
-<tbody id="historyTable">
-</tbody>
+<tbody id="historyTable"></tbody>
 
 </table>
 
@@ -468,62 +459,53 @@ document.getElementById("consumptionBox");
 
 async function login(){
 
-const email =
-document.getElementById("loginEmail")
-.value.trim();
+    const email =
+    document.getElementById("loginEmail")
+    .value.trim();
 
-const password =
-document.getElementById("loginPassword")
-.value;
+    const password =
+    document.getElementById("loginPassword")
+    .value;
 
-if(!email || !password){
+    if(!email || !password){
 
-loginMessage.style.color="red";
+        loginMessage.style.color="red";
+        loginMessage.textContent=
+        "Enter Email and Password.";
 
-loginMessage.textContent =
-"Enter Email and Password.";
+        return;
+    }
 
-return;
-}
+    loginMessage.style.color="black";
+    loginMessage.textContent="Logging in...";
 
-loginMessage.style.color="black";
+    const {error} =
+    await supabaseClient.auth
+    .signInWithPassword({
+        email:email,
+        password:password
+    });
 
-loginMessage.textContent =
-"Logging in...";
+    if(error){
 
-const {error} =
-await supabaseClient.auth
-.signInWithPassword({
+        loginMessage.style.color="red";
+        loginMessage.textContent=
+        error.message;
 
-email:email,
-password:password
+        return;
+    }
 
-});
+    loginPage.classList.add("hidden");
+    resetPage.classList.add("hidden");
+    mainPage.classList.remove("hidden");
 
-if(error){
+    history.pushState(
+        {loggedIn:true},
+        "",
+        window.location.href
+    );
 
-loginMessage.style.color="red";
-
-loginMessage.textContent =
-error.message;
-
-return;
-}
-
-loginPage.classList.add("hidden");
-
-resetPage.classList.add("hidden");
-
-mainPage.classList.remove("hidden");
-
-history.pushState(
-null,
-"",
-window.location.href
-);
-
-await loadAll();
-
+    await loadAll();
 }
 
 
@@ -531,51 +513,46 @@ await loadAll();
 
 async function forgotPassword(){
 
-const email =
-document.getElementById("loginEmail")
-.value.trim();
+    const email =
+    document.getElementById("loginEmail")
+    .value.trim();
 
-if(!email){
+    if(!email){
 
-loginMessage.style.color="red";
+        loginMessage.style.color="red";
+        loginMessage.textContent=
+        "First enter your email.";
 
-loginMessage.textContent =
-"First enter your email.";
+        return;
+    }
 
-return;
-}
+    loginMessage.style.color="black";
+    loginMessage.textContent=
+    "Sending reset link...";
 
-loginMessage.style.color="black";
+    const {error} =
+    await supabaseClient.auth
+    .resetPasswordForEmail(
+        email,
+        {
+            redirectTo:
+            window.location.origin +
+            window.location.pathname
+        }
+    );
 
-loginMessage.textContent =
-"Sending reset link...";
+    if(error){
 
-const {error} =
-await supabaseClient.auth
-.resetPasswordForEmail(
-email,
-{
-redirectTo:
-window.location.origin +
-window.location.pathname
-}
-);
+        loginMessage.style.color="red";
+        loginMessage.textContent=
+        error.message;
 
-if(error){
+        return;
+    }
 
-loginMessage.style.color="red";
-
-loginMessage.textContent =
-error.message;
-
-return;
-}
-
-loginMessage.style.color="green";
-
-loginMessage.textContent =
-"Password reset link sent to your email.";
-
+    loginMessage.style.color="green";
+    loginMessage.textContent=
+    "Password reset link sent to your email.";
 }
 
 
@@ -583,65 +560,59 @@ loginMessage.textContent =
 
 async function resetPassword(){
 
-const password =
-document.getElementById("newPassword")
-.value;
+    const password =
+    document.getElementById("newPassword")
+    .value;
 
-const confirm =
-document.getElementById("confirmPassword")
-.value;
+    const confirm =
+    document.getElementById("confirmPassword")
+    .value;
 
-if(!password || !confirm){
+    if(!password || !confirm){
 
-resetMessage.style.color="red";
+        resetMessage.style.color="red";
+        resetMessage.textContent=
+        "Enter both passwords.";
 
-resetMessage.textContent =
-"Enter both passwords.";
+        return;
+    }
 
-return;
-}
+    if(password !== confirm){
 
-if(password !== confirm){
+        resetMessage.style.color="red";
+        resetMessage.textContent=
+        "Passwords do not match.";
 
-resetMessage.style.color="red";
+        return;
+    }
 
-resetMessage.textContent =
-"Passwords do not match.";
+    if(password.length < 6){
 
-return;
-}
+        resetMessage.style.color="red";
+        resetMessage.textContent=
+        "Password must be at least 6 characters.";
 
-if(password.length<6){
+        return;
+    }
 
-resetMessage.style.color="red";
+    const {error} =
+    await supabaseClient.auth
+    .updateUser({
+        password:password
+    });
 
-resetMessage.textContent =
-"Password must be at least 6 characters.";
+    if(error){
 
-return;
-}
+        resetMessage.style.color="red";
+        resetMessage.textContent=
+        error.message;
 
-const {error} =
-await supabaseClient.auth
-.updateUser({
-password:password
-});
+        return;
+    }
 
-if(error){
-
-resetMessage.style.color="red";
-
-resetMessage.textContent =
-error.message;
-
-return;
-}
-
-resetMessage.style.color="green";
-
-resetMessage.textContent =
-"Password updated successfully.";
-
+    resetMessage.style.color="green";
+    resetMessage.textContent=
+    "Password updated successfully.";
 }
 
 
@@ -649,18 +620,15 @@ resetMessage.textContent =
 
 async function logout(){
 
-await supabaseClient.auth.signOut();
+    await supabaseClient.auth.signOut();
 
-mainPage.classList.add("hidden");
+    mainPage.classList.add("hidden");
+    resetPage.classList.add("hidden");
+    loginPage.classList.remove("hidden");
 
-resetPage.classList.add("hidden");
+    consumptionBox.classList.add("hidden");
 
-loginPage.classList.remove("hidden");
-
-consumptionBox.classList.add("hidden");
-
-window.scrollTo(0,0);
-
+    window.scrollTo(0,0);
 }
 
 
@@ -668,117 +636,107 @@ window.scrollTo(0,0);
 
 async function addStock(){
 
-const name =
-document.getElementById("itemName")
-.value.trim();
+    const name =
+    document.getElementById("itemName")
+    .value.trim();
 
-const code =
-document.getElementById("itemCode")
-.value.trim();
+    const code =
+    document.getElementById("itemCode")
+    .value.trim();
 
-const stock =
-Number(
-document.getElementById("stock").value
-)||0;
+    const stock =
+    Number(
+        document.getElementById("stock").value
+    ) || 0;
 
-const received =
-Number(
-document.getElementById("received").value
-)||0;
+    const received =
+    Number(
+        document.getElementById("received").value
+    ) || 0;
 
-const receivedDate =
-document.getElementById("receivedDate")
-.value;
+    const receivedDate =
+    document.getElementById("receivedDate")
+    .value;
 
-const remarks =
-document.getElementById("remarks")
-.value.trim();
+    const remarks =
+    document.getElementById("remarks")
+    .value.trim();
 
-if(!name){
+    if(!name){
 
-showStockMessage(
-"Enter Item Name.",
-"red"
-);
+        showStockMessage(
+            "Enter Item Name.","red"
+        );
 
-return;
-}
+        return;
+    }
 
-if(!code){
+    if(!code){
 
-showStockMessage(
-"Enter Item Code.",
-"red"
-);
+        showStockMessage(
+            "Enter Item Code.","red"
+        );
 
-return;
-}
+        return;
+    }
 
-if(stock<0 || received<0){
+    if(stock<0 || received<0){
 
-showStockMessage(
-"Invalid quantity.",
-"red"
-);
+        showStockMessage(
+            "Invalid quantity.","red"
+        );
 
-return;
-}
+        return;
+    }
 
-if(stock===0 && received===0){
+    if(stock===0 && received===0){
 
-showStockMessage(
-"Enter Stock or Received quantity.",
-"red"
-);
+        showStockMessage(
+            "Enter Stock or Received quantity.",
+            "red"
+        );
 
-return;
-}
+        return;
+    }
 
-const total =
-stock+received;
+    const total =
+    stock + received;
 
-const {error} =
-await supabaseClient
-.from("stock_items")
-.insert({
+    const {error} =
+    await supabaseClient
+    .from("stock_items")
+    .insert({
 
-item_name:name,
+        item_name:name,
+        item_code:code,
+        open_stock:stock,
+        received:received,
+        quantity:total,
+        entry_date:
+        receivedDate ||
+        new Date().toISOString(),
+        remarks:remarks
 
-item_code:code,
+    });
 
-open_stock:stock,
+    if(error){
 
-received:received,
+        showStockMessage(
+            error.message,
+            "red"
+        );
 
-quantity:total,
+        return;
+    }
 
-entry_date:
-receivedDate ||
-new Date().toISOString(),
+    showStockMessage(
+        "Stock added successfully.",
+        "green"
+    );
 
-remarks:remarks
+    clearForm();
 
-});
-
-if(error){
-
-showStockMessage(
-error.message,
-"red"
-);
-
-return;
-}
-
-showStockMessage(
-"Stock added successfully.",
-"green"
-);
-
-clearForm();
-
-await loadAll();
-
+    await loadAll();
 }
 
 
@@ -786,9 +744,8 @@ await loadAll();
 
 async function loadAll(){
 
-await loadStock();
-
-await loadHistory();
+    await loadStock();
+    await loadHistory();
 
 }
 
@@ -797,275 +754,128 @@ await loadHistory();
 
 async function loadStock(){
 
-stockTable.innerHTML="";
+    stockTable.innerHTML="";
 
-const {data,error} =
-await supabaseClient
-.from("stock_items")
-.select("*")
-.order("id",{ascending:false});
+    const {data,error} =
+    await supabaseClient
+    .from("stock_items")
+    .select("*")
+    .order("id",{ascending:false});
 
-if(error){
+    if(error){
 
-stockTable.innerHTML=
-`<tr>
-<td colspan="8">
-${escapeHtml(error.message)}
-</td>
-</tr>`;
+        stockTable.innerHTML=
+        `<tr>
+        <td colspan="8">
+        ${escapeHtml(error.message)}
+        </td>
+        </tr>`;
 
-return;
-}
+        return;
+    }
 
-if(!data || data.length===0){
+    if(!data || data.length===0){
 
-stockTable.innerHTML=
-`<tr>
-<td colspan="8">
-No stock found.
-</td>
-</tr>`;
+        stockTable.innerHTML=
+        `<tr>
+        <td colspan="8">
+        No stock found.
+        </td>
+        </tr>`;
 
-return;
-}
+        return;
+    }
 
-data.forEach(
-(item,index)=>{
+    data.forEach((item,index)=>{
 
-const row =
-document.createElement("tr");
+        const row =
+        document.createElement("tr");
 
-row.innerHTML=`
+        row.innerHTML=`
 
-<td>${index+1}</td>
+        <td>${index+1}</td>
 
-<td>
-${escapeHtml(item.item_name||"")}
-</td>
+        <td>
+        ${escapeHtml(item.item_name||"")}
+        </td>
 
-<td>
-${escapeHtml(item.item_code||"")}
-</td>
+        <td>
+        ${escapeHtml(item.item_code||"")}
+        </td>
 
-<td>
-${Number(item.open_stock||0)}
-</td>
+        <td>
+        ${Number(item.open_stock||0)}
+        </td>
 
-<td>
-${Number(item.received||0)}
-</td>
+        <td>
+        ${Number(item.received||0)}
+        </td>
 
-<td>
-<b>${Number(item.quantity||0)}</b>
-</td>
+        <td>
+        <b>${Number(item.quantity||0)}</b>
+        </td>
 
-<td>
+        <td>
+        <button
+        class="action-btn consume"
+        onclick="openConsumption('${item.id}')">
+        CONSUMPTION
+        </button>
+        </td>
 
-<button
-class="action-btn consume"
-onclick="openConsumption('${item.id}')">
-CONSUMPTION
-</button>
+        <td>
+        <button
+        class="action-btn edit"
+        onclick="editStock('${item.id}')">
+        EDIT
+        </button>
 
-</td>
+        <button
+        class="action-btn delete"
+        onclick
+        /* DELETE CONSUMPTION HISTORY */
 
-<td>
+async function deleteConsumption(id){
 
-<button
-class="action-btn edit"
-onclick="editStock('${item.id}')">
-EDIT
-</button>
+    const yes =
+    confirm(
+        "Are you sure you want to delete this consumption history?"
+    );
 
-<button
-class="action-btn delete"
-onclick="deleteStock('${item.id}')">
-DELETE
-</button>
+    if(!yes) return;
 
-</td>
+    const {error} =
+    await supabaseClient
+    .from("consumption_history")
+    .delete()
+    .eq("id",id);
 
-`;
+    if(error){
 
-stockTable.appendChild(row);
+        alert(
+            "History delete nahi hui:\n" +
+            error.message
+        );
 
-});
+        return;
+    }
 
-}
+    alert(
+        "Consumption history deleted successfully."
+    );
 
+    /*
+       IMPORTANT:
+       History delete karne par
+       Total Stock bilkul change nahi hoga.
+       Sirf history se record remove hoga.
+    */
 
-/* OPEN CONSUMPTION */
-
-function openConsumption(id){
-
-document.getElementById(
-"consumeId"
-).value=id;
-
-document.getElementById(
-"consumeQty"
-).value="";
-
-document.getElementById(
-"consumptionRemarks"
-).value="";
-
-consumptionMessage.textContent="";
-
-consumptionBox.classList.remove(
-"hidden"
-);
-
-consumptionBox.scrollIntoView({
-behavior:"smooth"
-});
-
+    await loadHistory();
 }
 
 
-/* SAVE CONSUMPTION */
-
-async function saveConsumption(){
-
-const id =
-document.getElementById(
-"consumeId"
-).value;
-
-const qty =
-Number(
-document.getElementById(
-"consumeQty"
-).value
-);
-
-const remarks =
-document.getElementById(
-"consumptionRemarks"
-).value.trim();
-
-if(!id){
-
-consumptionMessage.style.color="red";
-
-consumptionMessage.textContent =
-"Please select an item.";
-
-return;
-}
-
-if(!qty || qty<=0){
-
-consumptionMessage.style.color="red";
-
-consumptionMessage.textContent =
-"Enter valid consumption quantity.";
-
-return;
-}
-
-const {data:item,error:itemError} =
-await supabaseClient
-.from("stock_items")
-.select("*")
-.eq("id",id)
-.single();
-
-if(itemError){
-
-consumptionMessage.style.color="red";
-
-consumptionMessage.textContent =
-itemError.message;
-
-return;
-}
-
-const current =
-Number(item.quantity||0);
-
-if(qty>current){
-
-consumptionMessage.style.color="red";
-
-consumptionMessage.textContent =
-"Consumption cannot be greater than Total Stock.";
-
-return;
-}
-
-const newTotal =
-current-qty;
-
-const {error:updateError} =
-await supabaseClient
-.from("stock_items")
-.update({
-quantity:newTotal
-})
-.eq("id",id);
-
-if(updateError){
-
-consumptionMessage.style.color="red";
-
-consumptionMessage.textContent =
-updateError.message;
-
-return;
-}
-
-const {error:historyError} =
-await supabaseClient
-.from("consumption_history")
-.insert({
-
-stock_item_id:id,
-
-item_name:item.item_name,
-
-item_code:item.item_code,
-
-quantity:qty,
-
-consumption_date:
-new Date().toISOString(),
-
-remarks:remarks
-
-});
-
-if(historyError){
-
-consumptionMessage.style.color="red";
-
-consumptionMessage.textContent =
-historyError.message;
-
-return;
-}
-
-consumptionMessage.style.color="green";
-
-consumptionMessage.textContent =
-"Consumption saved successfully.";
-
-document.getElementById(
-"consumeQty"
-).value="";
-
-document.getElementById(
-"consumptionRemarks"
-).value="";
-
-consumptionBox.classList.add(
-"hidden"
-);
-
-await loadAll();
-
-}
-  /* HISTORY */
+/* LOAD CONSUMPTION HISTORY */
 
 async function loadHistory(){
 
@@ -1082,7 +892,7 @@ async function loadHistory(){
 
     if(error){
 
-        historyTable.innerHTML =
+        historyTable.innerHTML=
         `<tr>
         <td colspan="6">
         ${escapeHtml(error.message)}
@@ -1094,7 +904,7 @@ async function loadHistory(){
 
     if(!data || data.length===0){
 
-        historyTable.innerHTML =
+        historyTable.innerHTML=
         `<tr>
         <td colspan="6">
         No consumption history.
@@ -1118,7 +928,7 @@ async function loadHistory(){
         :
         "";
 
-        row.innerHTML = `
+        row.innerHTML=`
 
         <td>${date}</td>
 
@@ -1153,52 +963,6 @@ async function loadHistory(){
         historyTable.appendChild(row);
 
     });
-
-}
-
-
-/* DELETE CONSUMPTION HISTORY */
-
-async function deleteConsumption(id){
-
-    const yes =
-    confirm(
-        "Are you sure you want to delete this consumption history?"
-    );
-
-    if(!yes) return;
-
-
-    const {error} =
-    await supabaseClient
-    .from("consumption_history")
-    .delete()
-    .eq("id",id);
-
-
-    if(error){
-
-        alert(
-            "History delete nahi hui:\n" +
-            error.message
-        );
-
-        return;
-    }
-
-
-    alert(
-        "Consumption history deleted successfully."
-    );
-
-
-    /* IMPORTANT:
-       Total Stock ko change nahi karna.
-       Sirf history reload hogi.
-    */
-
-    await loadHistory();
-
 }
 
 
@@ -1220,15 +984,13 @@ async function editStock(id){
         return;
     }
 
-
     const name =
     prompt(
         "Item Name:",
         data.item_name || ""
     );
 
-    if(name===null)return;
-
+    if(name===null) return;
 
     const code =
     prompt(
@@ -1236,8 +998,7 @@ async function editStock(id){
         data.item_code || ""
     );
 
-    if(code===null)return;
-
+    if(code===null) return;
 
     const stock =
     prompt(
@@ -1245,8 +1006,7 @@ async function editStock(id){
         data.open_stock || 0
     );
 
-    if(stock===null)return;
-
+    if(stock===null) return;
 
     const received =
     prompt(
@@ -1254,8 +1014,7 @@ async function editStock(id){
         data.received || 0
     );
 
-    if(received===null)return;
-
+    if(received===null) return;
 
     const newStock =
     Number(stock) || 0;
@@ -1263,22 +1022,22 @@ async function editStock(id){
     const newReceived =
     Number(received) || 0;
 
+    /*
+       Previous consumption ko preserve karna hai.
+    */
 
     const oldTotal =
     Number(data.quantity || 0);
 
-
     const oldBase =
     Number(data.open_stock || 0) +
     Number(data.received || 0);
-
 
     const used =
     Math.max(
         0,
         oldBase - oldTotal
     );
-
 
     const newTotal =
     Math.max(
@@ -1287,7 +1046,6 @@ async function editStock(id){
         newReceived -
         used
     );
-
 
     const {error:updateError} =
     await supabaseClient
@@ -1307,7 +1065,6 @@ async function editStock(id){
     })
     .eq("id",id);
 
-
     if(updateError){
 
         alert(updateError.message);
@@ -1315,14 +1072,11 @@ async function editStock(id){
         return;
     }
 
-
     alert(
         "Stock updated successfully."
     );
 
-
     await loadAll();
-
 }
 
 
@@ -1335,14 +1089,28 @@ async function deleteStock(id){
         "Are you sure you want to delete this item?"
     );
 
-    if(!yes)return;
+    if(!yes) return;
 
+    /*
+       Pehle history delete.
+       Phir stock item delete.
+    */
 
+    const {error:historyError} =
     await supabaseClient
     .from("consumption_history")
     .delete()
     .eq("stock_item_id",id);
 
+    if(historyError){
+
+        alert(
+            "Related history delete nahi hui:\n" +
+            historyError.message
+        );
+
+        return;
+    }
 
     const {error} =
     await supabaseClient
@@ -1350,26 +1118,25 @@ async function deleteStock(id){
     .delete()
     .eq("id",id);
 
-
     if(error){
 
-        alert(error.message);
+        alert(
+            "Stock delete nahi hua:\n" +
+            error.message
+        );
 
         return;
     }
-
 
     alert(
         "Stock deleted successfully."
     );
 
-
     await loadAll();
-
 }
 
 
-/* CLEAR FORM */
+/* CLEAR ADD STOCK FORM */
 
 function clearForm(){
 
@@ -1396,42 +1163,6 @@ function clearForm(){
     document.getElementById(
         "remarks"
     ).value="";
-
-}
-
-
-/* MESSAGE */
-
-function showStockMessage(
-    text,
-    color
-){
-
-    stockMessage.style.color =
-    color;
-
-    stockMessage.textContent =
-    text;
-
-}
-
-
-/* ESCAPE HTML */
-
-function escapeHtml(value){
-
-    return String(value ?? "")
-
-    .replaceAll("&","&amp;")
-
-    .replaceAll("<","&lt;")
-
-    .replaceAll(">","&gt;")
-
-    .replaceAll('"',"&quot;")
-
-    .replaceAll("'","&#039;");
-
 }
 
 
@@ -1516,9 +1247,7 @@ document.getElementById(
     function(event){
 
         if(event.key==="Enter"){
-
             login();
-
         }
 
     }
@@ -1543,7 +1272,6 @@ supabaseClient.auth.onAuthStateChange(
             resetPage.classList.remove(
                 "hidden"
             );
-
         }
 
     }
@@ -1561,11 +1289,20 @@ window.addEventListener(
         .auth
         .getSession();
 
-
         if(data && data.session){
 
             await logout();
 
+            /*
+               Login page par history ko reset
+               kar diya jayega.
+            */
+
+            history.replaceState(
+                null,
+                "",
+                window.location.href
+            );
         }
 
     }
@@ -1581,7 +1318,6 @@ async function checkSession(){
     .auth
     .getSession();
 
-
     if(data && data.session){
 
         loginPage.classList.add(
@@ -1596,12 +1332,37 @@ async function checkSession(){
             "hidden"
         );
 
+        /*
+           Current page ko login state ke saath
+           history me set kar rahe hain.
+        */
+
+        history.replaceState(
+            {loggedIn:true},
+            "",
+            window.location.href
+        );
+
         await loadAll();
 
-    }
+    }else{
 
+        loginPage.classList.remove(
+            "hidden"
+        );
+
+        resetPage.classList.add(
+            "hidden"
+        );
+
+        mainPage.classList.add(
+            "hidden"
+        );
+    }
 }
 
+
+/* START */
 
 checkSession();
 
