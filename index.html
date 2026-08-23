@@ -11,9 +11,7 @@
 
 <style>
 
-*{
-box-sizing:border-box
-}
+*{box-sizing:border-box}
 
 body{
 margin:0;
@@ -35,9 +33,7 @@ border-radius:12px;
 box-shadow:0 3px 15px #ccc
 }
 
-h1,h2{
-text-align:center
-}
+h1,h2{text-align:center}
 
 input,button,select,textarea{
 width:100%;
@@ -87,18 +83,20 @@ table{
 width:100%;
 border-collapse:collapse;
 margin-top:15px;
-min-width:1100px
+min-width:1000px
 }
 
 th,td{
 border:1px solid #ddd;
 padding:9px;
-text-align:center
+text-align:center;
+vertical-align:middle
 }
 
 th{
 background:#b00000;
-color:white
+color:white;
+white-space:nowrap
 }
 
 .action-btn{
@@ -120,6 +118,43 @@ background:#555
 background:#d35400
 }
 
+/* CONSUMPTION HISTORY */
+
+.history-table{
+min-width:1100px;
+table-layout:fixed
+}
+
+.history-table th:nth-child(1),
+.history-table td:nth-child(1){
+width:130px
+}
+
+.history-table th:nth-child(2),
+.history-table td:nth-child(2){
+width:180px
+}
+
+.history-table th:nth-child(3),
+.history-table td:nth-child(3){
+width:150px
+}
+
+.history-table th:nth-child(4),
+.history-table td:nth-child(4){
+width:160px
+}
+
+.history-table th:nth-child(5),
+.history-table td:nth-child(5){
+width:250px
+}
+
+.history-table th:nth-child(6),
+.history-table td:nth-child(6){
+width:130px
+}
+
 @media(max-width:700px){
 
 .container{
@@ -135,18 +170,13 @@ padding:12px
 grid-template-columns:1fr
 }
 
-h1{
-font-size:25px
-}
+h1{font-size:25px}
 
-h2{
-font-size:19px
-}
+h2{font-size:19px}
 
 }
 
 </style>
-
 </head>
 
 <body>
@@ -226,9 +256,6 @@ LOGOUT
 
 <hr>
 
-
-<!-- ADD STOCK -->
-
 <h3>ADD STOCK</h3>
 
 <div class="form-grid">
@@ -274,9 +301,6 @@ ADD STOCK
 
 <hr>
 
-
-<!-- STOCK REGISTER -->
-
 <h3>STOCK REGISTER</h3>
 
 <div class="table-wrap">
@@ -286,7 +310,6 @@ ADD STOCK
 <thead>
 
 <tr>
-
 <th>SR.NO</th>
 <th>ITEM NAME</th>
 <th>ITEM CODE</th>
@@ -295,12 +318,12 @@ ADD STOCK
 <th>TOTAL STOCK</th>
 <th>CONSUMPTION</th>
 <th>ACTION</th>
-
 </tr>
 
 </thead>
 
-<tbody id="stockTable"></tbody>
+<tbody id="stockTable">
+</tbody>
 
 </table>
 
@@ -354,31 +377,27 @@ class="msg">
 
 <hr>
 
-
-<!-- CONSUMPTION HISTORY -->
-
 <h3>CONSUMPTION HISTORY</h3>
 
 <div class="table-wrap">
 
-<table>
+<table class="history-table">
 
 <thead>
 
 <tr>
-
 <th>DATE</th>
 <th>ITEM NAME</th>
 <th>ITEM CODE</th>
 <th>QUANTITY USED</th>
 <th>REMARKS</th>
 <th>ACTION</th>
-
 </tr>
 
 </thead>
 
-<tbody id="historyTable"></tbody>
+<tbody id="historyTable">
+</tbody>
 
 </table>
 
@@ -390,9 +409,6 @@ class="msg">
 
 
 <script>
-
-
-/* SUPABASE */
 
 const SUPABASE_URL =
 "https://mooagaasvythwctcktcx.supabase.co";
@@ -406,8 +422,6 @@ SUPABASE_URL,
 SUPABASE_ANON_KEY
 );
 
-
-/* ELEMENTS */
 
 const loginPage =
 document.getElementById("loginPage");
@@ -920,9 +934,6 @@ consumptionMessage.textContent =
 return;
 }
 
-
-/* GET ITEM */
-
 const {data:item,error:itemError} =
 await supabaseClient
 .from("stock_items")
@@ -953,10 +964,28 @@ consumptionMessage.textContent =
 return;
 }
 
+const newTotal =
+current-qty;
 
-/* FIRST SAVE HISTORY */
+const {error:updateError} =
+await supabaseClient
+.from("stock_items")
+.update({
+quantity:newTotal
+})
+.eq("id",id);
 
-const {data:history,error:historyError} =
+if(updateError){
+
+consumptionMessage.style.color="red";
+
+consumptionMessage.textContent =
+updateError.message;
+
+return;
+}
+
+const {error:historyError} =
 await supabaseClient
 .from("consumption_history")
 .insert({
@@ -969,11 +998,16 @@ consumption_date:
 new Date().toISOString(),
 remarks:remarks
 
-})
-.select()
-.single();
+});
 
 if(historyError){
+
+await supabaseClient
+.from("stock_items")
+.update({
+quantity:current
+})
+.eq("id",id);
 
 consumptionMessage.style.color="red";
 
@@ -982,40 +1016,6 @@ historyError.message;
 
 return;
 }
-
-
-/* THEN UPDATE STOCK */
-
-const newTotal =
-current-qty;
-
-const {error:updateError} =
-await supabaseClient
-.from("stock_items")
-.update({
-
-quantity:newTotal
-
-})
-.eq("id",id);
-
-if(updateError){
-
-/* DELETE HISTORY IF STOCK UPDATE FAILS */
-
-await supabaseClient
-.from("consumption_history")
-.delete()
-.eq("id",history.id);
-
-consumptionMessage.style.color="red";
-
-consumptionMessage.textContent =
-updateError.message;
-
-return;
-}
-
 
 consumptionMessage.style.color="green";
 
@@ -1037,218 +1037,209 @@ consumptionBox.classList.add(
 await loadAll();
 
 }
-
-
-/* LOAD HISTORY */
+  /* LOAD CONSUMPTION HISTORY */
 
 async function loadHistory(){
 
-historyTable.innerHTML="";
+    historyTable.innerHTML="";
 
-const {data,error} =
-await supabaseClient
-.from("consumption_history")
-.select("*")
-.order(
-"consumption_date",
-{ascending:false}
-);
+    const {data,error} =
+    await supabaseClient
+    .from("consumption_history")
+    .select("*")
+    .order(
+        "consumption_date",
+        {ascending:false}
+    );
 
-if(error){
+    if(error){
 
-historyTable.innerHTML=
-`<tr>
-<td colspan="6">
-${escapeHtml(error.message)}
-</td>
-</tr>`;
+        historyTable.innerHTML =
+        `<tr>
+            <td colspan="6">
+                ${escapeHtml(error.message)}
+            </td>
+        </tr>`;
 
-return;
-}
+        return;
+    }
 
-if(!data || data.length===0){
+    if(!data || data.length===0){
 
-historyTable.innerHTML=
-`<tr>
-<td colspan="6">
-No consumption history.
-</td>
-</tr>`;
+        historyTable.innerHTML =
+        `<tr>
+            <td colspan="6">
+                No consumption history.
+            </td>
+        </tr>`;
 
-return;
-}
+        return;
+    }
 
-data.forEach(item=>{
+    data.forEach(item=>{
 
-const row =
-document.createElement("tr");
+        const row =
+        document.createElement("tr");
 
-const date =
-item.consumption_date
-?
-new Date(
-item.consumption_date
-).toLocaleDateString("en-IN")
-:
-"";
+        const date =
+        item.consumption_date
+        ?
+        new Date(
+            item.consumption_date
+        ).toLocaleDateString("en-IN")
+        :
+        "";
 
-row.innerHTML=`
+        row.innerHTML=`
 
-<td>
-${date}
-</td>
+        <td>${date}</td>
 
-<td>
-${escapeHtml(
-item.item_name||""
-)}
-</td>
+        <td>
+            ${escapeHtml(item.item_name||"")}
+        </td>
 
-<td>
-${escapeHtml(
-item.item_code||""
-)}
-</td>
+        <td>
+            ${escapeHtml(item.item_code||"")}
+        </td>
 
-<td>
-<b>
-${Number(
-item.quantity||0
-)}
-</b>
-</td>
+        <td>
+            <b>${Number(item.quantity||0)}</b>
+        </td>
 
-<td>
-${escapeHtml(
-item.remarks||""
-)}
-</td>
+        <td>
+            ${escapeHtml(item.remarks||"")}
+        </td>
 
-<td>
+        <td>
 
-<button
-class="action-btn delete"
-onclick="deleteConsumptionHistory('${item.id}')">
-DELETE
-</button>
+            <button
+            class="action-btn delete"
+            onclick="deleteConsumption('${item.id}')">
+            DELETE
+            </button>
 
-</td>
+        </td>
 
-`;
+        `;
 
-historyTable.appendChild(row);
+        historyTable.appendChild(row);
 
-});
+    });
 
 }
 
 
 /* DELETE CONSUMPTION HISTORY */
 
-async function deleteConsumptionHistory(id){
+async function deleteConsumption(id){
 
-const yes =
-confirm(
-"Are you sure you want to delete this consumption history?"
-);
+    const yes =
+    confirm(
+        "Delete this consumption history?\n\nConsumed quantity will be added back to stock."
+    );
 
-if(!yes)return;
-
-
-/* GET HISTORY */
-
-const {data:history,error:historyError} =
-await supabaseClient
-.from("consumption_history")
-.select("*")
-.eq("id",id)
-.single();
-
-if(historyError){
-
-alert(historyError.message);
-
-return;
-}
+    if(!yes)return;
 
 
-/* GET STOCK */
+    /* GET HISTORY */
 
-const {data:item,error:itemError} =
-await supabaseClient
-.from("stock_items")
-.select("*")
-.eq("id",history.stock_item_id)
-.single();
+    const {data:history,error:historyError} =
+    await supabaseClient
+    .from("consumption_history")
+    .select("*")
+    .eq("id",id)
+    .single();
 
-if(itemError){
+    if(historyError){
 
-alert(itemError.message);
+        alert(historyError.message);
 
-return;
-}
-
-
-/* RESTORE STOCK */
-
-const currentStock =
-Number(item.quantity||0);
-
-const consumedQty =
-Number(history.quantity||0);
-
-const restoredStock =
-currentStock+consumedQty;
-
-const {error:updateError} =
-await supabaseClient
-.from("stock_items")
-.update({
-
-quantity:restoredStock
-
-})
-.eq("id",history.stock_item_id);
-
-if(updateError){
-
-alert(updateError.message);
-
-return;
-}
+        return;
+    }
 
 
-/* DELETE HISTORY */
+    const stockItemId =
+    history.stock_item_id;
 
-const {error:deleteError} =
-await supabaseClient
-.from("consumption_history")
-.delete()
-.eq("id",id);
+    const qty =
+    Number(history.quantity||0);
 
-if(deleteError){
 
-/* ROLLBACK */
+    /* GET CURRENT STOCK */
 
-await supabaseClient
-.from("stock_items")
-.update({
+    const {data:item,error:itemError} =
+    await supabaseClient
+    .from("stock_items")
+    .select("quantity")
+    .eq("id",stockItemId)
+    .single();
 
-quantity:currentStock
+    if(itemError){
 
-})
-.eq("id",history.stock_item_id);
+        alert(
+            "Stock item not found: " +
+            itemError.message
+        );
 
-alert(deleteError.message);
+        return;
+    }
 
-return;
-}
 
-alert(
-"Consumption history deleted successfully."
-);
+    const current =
+    Number(item.quantity||0);
 
-await loadAll();
+    const restored =
+    current + qty;
+
+
+    /* RESTORE STOCK */
+
+    const {error:updateError} =
+    await supabaseClient
+    .from("stock_items")
+    .update({
+        quantity:restored
+    })
+    .eq("id",stockItemId);
+
+    if(updateError){
+
+        alert(updateError.message);
+
+        return;
+    }
+
+
+    /* DELETE HISTORY */
+
+    const {error:deleteError} =
+    await supabaseClient
+    .from("consumption_history")
+    .delete()
+    .eq("id",id);
+
+    if(deleteError){
+
+        /* ROLLBACK */
+
+        await supabaseClient
+        .from("stock_items")
+        .update({
+            quantity:current
+        })
+        .eq("id",stockItemId);
+
+        alert(deleteError.message);
+
+        return;
+    }
+
+
+    alert(
+        "Consumption history deleted.\nStock quantity restored."
+    );
+
+    await loadAll();
 
 }
 
@@ -1257,109 +1248,129 @@ await loadAll();
 
 async function editStock(id){
 
-const {data,error} =
-await supabaseClient
-.from("stock_items")
-.select("*")
-.eq("id",id)
-.single();
+    const {data,error} =
+    await supabaseClient
+    .from("stock_items")
+    .select("*")
+    .eq("id",id)
+    .single();
 
-if(error){
+    if(error){
 
-alert(error.message);
+        alert(error.message);
 
-return;
-}
+        return;
+    }
 
-const name =
-prompt(
-"Item Name:",
-data.item_name||""
-);
 
-if(name===null)return;
+    const name =
+    prompt(
+        "Item Name:",
+        data.item_name||""
+    );
 
-const code =
-prompt(
-"Item Code:",
-data.item_code||""
-);
+    if(name===null)return;
 
-if(code===null)return;
 
-const stock =
-prompt(
-"Stock:",
-data.open_stock||0
-);
+    const code =
+    prompt(
+        "Item Code:",
+        data.item_code||""
+    );
 
-if(stock===null)return;
+    if(code===null)return;
 
-const received =
-prompt(
-"Received:",
-data.received||0
-);
 
-if(received===null)return;
+    const stock =
+    prompt(
+        "Stock:",
+        data.open_stock||0
+    );
 
-const newStock =
-Number(stock)||0;
+    if(stock===null)return;
 
-const newReceived =
-Number(received)||0;
 
-const oldTotal =
-Number(data.quantity||0);
+    const received =
+    prompt(
+        "Received:",
+        data.received||0
+    );
 
-const oldBase =
-Number(data.open_stock||0)+
-Number(data.received||0);
+    if(received===null)return;
 
-const used =
-Math.max(
-0,
-oldBase-oldTotal
-);
 
-const newTotal =
-Math.max(
-0,
-newStock+
-newReceived-
-used
-);
+    const newStock =
+    Number(stock)||0;
 
-const {error:updateError} =
-await supabaseClient
-.from("stock_items")
-.update({
+    const newReceived =
+    Number(received)||0;
 
-item_name:name.trim(),
 
-item_code:code.trim(),
+    if(newStock<0 || newReceived<0){
 
-open_stock:newStock,
+        alert(
+            "Stock and Received cannot be negative."
+        );
 
-received:newReceived,
+        return;
+    }
 
-quantity:newTotal
 
-})
-.eq("id",id);
+    const oldTotal =
+    Number(data.quantity||0);
 
-if(updateError){
+    const oldBase =
+    Number(data.open_stock||0) +
+    Number(data.received||0);
 
-alert(updateError.message);
+    const used =
+    Math.max(
+        0,
+        oldBase-oldTotal
+    );
 
-return;
-}
 
-alert(
-"Stock updated successfully."
-);
+    const newTotal =
+    Math.max(
+        0,
+        newStock+
+        newReceived-
+        used
+    );
 
-await loadAll();
+
+    const {error:updateError} =
+    await supabaseClient
+    .from("stock_items")
+    .update({
+
+        item_name:name.trim(),
+
+        item_code:code.trim(),
+
+        open_stock:newStock,
+
+        received:newReceived,
+
+        quantity:newTotal
+
+    })
+    .eq("id",id);
+
+
+    if(updateError){
+
+        alert(updateError.message);
+
+        return;
+    }
+
+
+    alert(
+        "Stock updated successfully."
+    );
+
+    await loadAll();
 
 }
 
@@ -1368,50 +1379,49 @@ await loadAll();
 
 async function deleteStock(id){
 
-const yes =
-confirm(
-"Are you sure you want to delete this item?"
-);
+    const yes =
+    confirm(
+        "Are you sure you want to delete this item?\n\nAll consumption history of this item will also be deleted."
+    );
 
-if(!yes)return;
-
-
-/* DELETE HISTORY FIRST */
-
-const {error:historyDeleteError} =
-await supabaseClient
-.from("consumption_history")
-.delete()
-.eq("stock_item_id",id);
-
-if(historyDeleteError){
-
-alert(historyDeleteError.message);
-
-return;
-}
+    if(!yes)return;
 
 
-/* DELETE STOCK */
+    const {error:historyError} =
+    await supabaseClient
+    .from("consumption_history")
+    .delete()
+    .eq("stock_item_id",id);
 
-const {error} =
-await supabaseClient
-.from("stock_items")
-.delete()
-.eq("id",id);
 
-if(error){
+    if(historyError){
 
-alert(error.message);
+        alert(historyError.message);
 
-return;
-}
+        return;
+    }
 
-alert(
-"Stock deleted successfully."
-);
 
-await loadAll();
+    const {error} =
+    await supabaseClient
+    .from("stock_items")
+    .delete()
+    .eq("id",id);
+
+
+    if(error){
+
+        alert(error.message);
+
+        return;
+    }
+
+
+    alert(
+        "Stock deleted successfully."
+    );
+
+    await loadAll();
 
 }
 
@@ -1420,29 +1430,29 @@ await loadAll();
 
 function clearForm(){
 
-document.getElementById(
-"itemName"
-).value="";
+    document.getElementById(
+        "itemName"
+    ).value="";
 
-document.getElementById(
-"itemCode"
-).value="";
+    document.getElementById(
+        "itemCode"
+    ).value="";
 
-document.getElementById(
-"stock"
-).value="";
+    document.getElementById(
+        "stock"
+    ).value="";
 
-document.getElementById(
-"received"
-).value="";
+    document.getElementById(
+        "received"
+    ).value="";
 
-document.getElementById(
-"receivedDate"
-).value="";
+    document.getElementById(
+        "receivedDate"
+    ).value="";
 
-document.getElementById(
-"remarks"
-).value="";
+    document.getElementById(
+        "remarks"
+    ).value="";
 
 }
 
@@ -1450,15 +1460,15 @@ document.getElementById(
 /* MESSAGE */
 
 function showStockMessage(
-text,
-color
+    text,
+    color
 ){
 
-stockMessage.style.color =
-color;
+    stockMessage.style.color =
+    color;
 
-stockMessage.textContent =
-text;
+    stockMessage.textContent =
+    text;
 
 }
 
@@ -1467,17 +1477,17 @@ text;
 
 function escapeHtml(value){
 
-return String(value??"")
+    return String(value??"")
 
-.replaceAll("&","&amp;")
+    .replaceAll("&","&amp;")
 
-.replaceAll("<","&lt;")
+    .replaceAll("<","&lt;")
 
-.replaceAll(">","&gt;")
+    .replaceAll(">","&gt;")
 
-.replaceAll('"',"&quot;")
+    .replaceAll('"',"&quot;")
 
-.replaceAll("'","&#039;");
+    .replaceAll("'","&#039;");
 
 }
 
@@ -1485,109 +1495,137 @@ return String(value??"")
 /* BUTTON EVENTS */
 
 document.getElementById(
-"loginButton"
+    "loginButton"
 )
 .addEventListener(
-"click",
-login
+    "click",
+    login
 );
+
 
 document.getElementById(
-"forgotButton"
+    "forgotButton"
 )
 .addEventListener(
-"click",
-forgotPassword
+    "click",
+    forgotPassword
 );
+
 
 document.getElementById(
-"resetButton"
+    "resetButton"
 )
 .addEventListener(
-"click",
-resetPassword
+    "click",
+    resetPassword
 );
+
 
 document.getElementById(
-"logoutButton"
+    "logoutButton"
 )
 .addEventListener(
-"click",
-logout
+    "click",
+    logout
 );
+
 
 document.getElementById(
-"addButton"
+    "addButton"
 )
 .addEventListener(
-"click",
-addStock
+    "click",
+    addStock
 );
+
 
 document.getElementById(
-"saveConsumptionButton"
+    "saveConsumptionButton"
 )
 .addEventListener(
-"click",
-saveConsumption
+    "click",
+    saveConsumption
 );
+
 
 document.getElementById(
-"cancelConsumptionButton"
+    "cancelConsumptionButton"
 )
 .addEventListener(
-"click",
-function(){
+    "click",
+    function(){
 
-consumptionBox.classList.add(
-"hidden"
-);
+        consumptionBox.classList.add(
+            "hidden"
+        );
 
-}
+    }
 );
 
 
 /* ENTER KEY LOGIN */
 
 document.getElementById(
-"loginPassword"
+    "loginPassword"
 )
 .addEventListener(
-"keydown",
-function(event){
+    "keydown",
+    function(event){
 
-if(event.key==="Enter"){
+        if(event.key==="Enter"){
 
-login();
+            login();
 
-}
+        }
 
-}
+    }
 );
 
 
 /* PASSWORD RECOVERY */
 
 supabaseClient.auth.onAuthStateChange(
-function(event,session){
+    function(event,session){
 
-if(event==="PASSWORD_RECOVERY"){
+        if(event==="PASSWORD_RECOVERY"){
 
-loginPage.classList.add(
-"hidden"
+            loginPage.classList.add(
+                "hidden"
+            );
+
+            mainPage.classList.add(
+                "hidden"
+            );
+
+            resetPage.classList.remove(
+                "hidden"
+            );
+
+        }
+
+    }
 );
 
-mainPage.classList.add(
-"hidden"
+
+/* BACK BUTTON = AUTO LOGOUT */
+
+history.pushState(
+    null,
+    "",
+    location.href
 );
 
-resetPage.classList.remove(
-"hidden"
-);
+window.addEventListener(
+    "popstate",
+    async function(){
 
-}
+        await supabaseClient.auth.signOut();
 
-}
+        window.location.replace(
+            window.location.pathname
+        );
+
+    }
 );
 
 
@@ -1595,26 +1633,28 @@ resetPage.classList.remove(
 
 async function checkSession(){
 
-const {data} =
-await supabaseClient
-.auth
-.getSession();
+    const {data} =
+    await supabaseClient
+    .auth
+    .getSession();
 
-if(data && data.session){
 
-loginPage.classList.add(
-"hidden"
-);
+    if(data && data.session){
 
-mainPage.classList.remove(
-"hidden"
-);
+        loginPage.classList.add(
+            "hidden"
+        );
 
-await loadAll();
+        mainPage.classList.remove(
+            "hidden"
+        );
+
+        await loadAll();
+
+    }
 
 }
 
-}
 
 checkSession();
 
