@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -11,29 +10,44 @@
 
 <style>
 
-*{box-sizing:border-box}
+*{
+box-sizing:border-box;
+}
 
 body{
 margin:0;
 font-family:Arial,sans-serif;
 background:#f3f3f3;
-color:#222
+color:#222;
 }
 
 .container{
 max-width:1200px;
 margin:20px auto;
-padding:15px
+padding:15px;
 }
 
 .card{
 background:#fff;
 padding:20px;
 border-radius:12px;
-box-shadow:0 3px 15px #ccc
+box-shadow:0 3px 15px #ccc;
 }
 
-h1,h2{text-align:center}
+h1,h2{
+text-align:center;
+}
+
+h3{
+margin-top:15px;
+}
+
+.history-heading{
+text-align:left;
+margin:18px 0 8px 0;
+font-size:19px;
+font-weight:bold;
+}
 
 input,button,select,textarea{
 width:100%;
@@ -41,7 +55,7 @@ padding:11px;
 margin:6px 0;
 border-radius:6px;
 border:1px solid #ccc;
-font-size:15px
+font-size:15px;
 }
 
 button{
@@ -49,130 +63,103 @@ background:#b00000;
 color:white;
 border:none;
 cursor:pointer;
-font-weight:bold
+font-weight:bold;
+}
+
+button:hover{
+opacity:.9;
 }
 
 .hidden{
-display:none!important
+display:none!important;
 }
 
 .msg{
 text-align:center;
 margin:10px 0;
-font-weight:bold
+font-weight:bold;
 }
 
 .logout{
 background:#555;
 width:auto;
 min-width:120px;
-float:right
+float:right;
 }
 
 .form-grid{
 display:grid;
 grid-template-columns:repeat(3,1fr);
-gap:8px
+gap:8px;
 }
 
 .table-wrap{
-overflow-x:auto
+overflow-x:auto;
 }
 
 table{
 width:100%;
 border-collapse:collapse;
-margin-top:15px;
-min-width:1000px
+margin-top:10px;
+min-width:1000px;
 }
 
 th,td{
 border:1px solid #ddd;
 padding:9px;
 text-align:center;
-vertical-align:middle
 }
 
 th{
 background:#b00000;
 color:white;
-white-space:nowrap
 }
 
 .action-btn{
 width:auto;
 padding:7px 10px;
 margin:2px;
-font-size:13px
+font-size:13px;
 }
 
 .edit{
-background:#1769aa
+background:#1769aa;
 }
 
 .delete{
-background:#555
+background:#555;
 }
 
 .consume{
-background:#d35400
+background:#d35400;
 }
 
-/* CONSUMPTION HISTORY */
-
-.history-table{
-min-width:1100px;
-table-layout:fixed
-}
-
-.history-table th:nth-child(1),
-.history-table td:nth-child(1){
-width:130px
-}
-
-.history-table th:nth-child(2),
-.history-table td:nth-child(2){
-width:180px
-}
-
-.history-table th:nth-child(3),
-.history-table td:nth-child(3){
-width:150px
-}
-
-.history-table th:nth-child(4),
-.history-table td:nth-child(4){
-width:160px
-}
-
-.history-table th:nth-child(5),
-.history-table td:nth-child(5){
-width:250px
-}
-
-.history-table th:nth-child(6),
-.history-table td:nth-child(6){
-width:130px
+.history-delete{
+background:#555;
 }
 
 @media(max-width:700px){
 
 .container{
 padding:8px;
-margin:5px auto
+margin:5px auto;
 }
 
 .card{
-padding:12px
+padding:12px;
 }
 
 .form-grid{
-grid-template-columns:1fr
+grid-template-columns:1fr;
 }
 
-h1{font-size:25px}
+h1{
+font-size:25px;
+}
 
-h2{font-size:19px}
+h2{
+font-size:19px;
+}
 
 }
 
@@ -188,6 +175,7 @@ h2{font-size:19px}
 <div id="loginPage" class="card">
 
 <h1>RHI MAGNESITA</h1>
+
 <h2>SPARE STOCK REGISTER</h2>
 
 <input
@@ -241,7 +229,7 @@ UPDATE PASSWORD
 </div>
 
 
-<!-- MAIN -->
+<!-- MAIN PAGE -->
 
 <div id="mainPage" class="card hidden">
 
@@ -252,6 +240,7 @@ LOGOUT
 </button>
 
 <h1>RHI MAGNESITA</h1>
+
 <h2>SPARE STOCK REGISTER</h2>
 
 <hr>
@@ -310,14 +299,23 @@ ADD STOCK
 <thead>
 
 <tr>
+
 <th>SR.NO</th>
+
 <th>ITEM NAME</th>
+
 <th>ITEM CODE</th>
+
 <th>STOCK</th>
+
 <th>RECEIVED</th>
+
 <th>TOTAL STOCK</th>
+
 <th>CONSUMPTION</th>
+
 <th>ACTION</th>
+
 </tr>
 
 </thead>
@@ -330,7 +328,7 @@ ADD STOCK
 </div>
 
 
-<!-- CONSUMPTION -->
+<!-- CONSUMPTION BOX -->
 
 <div
 id="consumptionBox"
@@ -377,21 +375,33 @@ class="msg">
 
 <hr>
 
-<h3>CONSUMPTION HISTORY</h3>
+
+<!-- CONSUMPTION HISTORY -->
+
+<h3 class="history-heading">
+CONSUMPTION HISTORY
+</h3>
 
 <div class="table-wrap">
 
-<table class="history-table">
+<table>
 
 <thead>
 
 <tr>
+
 <th>DATE</th>
+
 <th>ITEM NAME</th>
+
 <th>ITEM CODE</th>
+
 <th>QUANTITY USED</th>
+
 <th>REMARKS</th>
+
 <th>ACTION</th>
+
 </tr>
 
 </thead>
@@ -476,6 +486,8 @@ loginMessage.textContent =
 return;
 }
 
+loginMessage.style.color="black";
+
 loginMessage.textContent =
 "Logging in...";
 
@@ -504,6 +516,12 @@ resetPage.classList.add("hidden");
 
 mainPage.classList.remove("hidden");
 
+history.pushState(
+null,
+"",
+window.location.href
+);
+
 await loadAll();
 
 }
@@ -526,6 +544,8 @@ loginMessage.textContent =
 
 return;
 }
+
+loginMessage.style.color="black";
 
 loginMessage.textContent =
 "Sending reset link...";
@@ -637,6 +657,10 @@ resetPage.classList.add("hidden");
 
 loginPage.classList.remove("hidden");
 
+consumptionBox.classList.add("hidden");
+
+window.scrollTo(0,0);
+
 }
 
 
@@ -719,13 +743,19 @@ await supabaseClient
 .insert({
 
 item_name:name,
+
 item_code:code,
+
 open_stock:stock,
+
 received:received,
+
 quantity:total,
+
 entry_date:
 receivedDate ||
 new Date().toISOString(),
+
 remarks:remarks
 
 });
@@ -991,23 +1021,21 @@ await supabaseClient
 .insert({
 
 stock_item_id:id,
+
 item_name:item.item_name,
+
 item_code:item.item_code,
+
 quantity:qty,
+
 consumption_date:
 new Date().toISOString(),
+
 remarks:remarks
 
 });
 
 if(historyError){
-
-await supabaseClient
-.from("stock_items")
-.update({
-quantity:current
-})
-.eq("id",id);
 
 consumptionMessage.style.color="red";
 
@@ -1037,7 +1065,7 @@ consumptionBox.classList.add(
 await loadAll();
 
 }
-  /* LOAD CONSUMPTION HISTORY */
+  /* HISTORY */
 
 async function loadHistory(){
 
@@ -1056,9 +1084,9 @@ async function loadHistory(){
 
         historyTable.innerHTML =
         `<tr>
-            <td colspan="6">
-                ${escapeHtml(error.message)}
-            </td>
+        <td colspan="6">
+        ${escapeHtml(error.message)}
+        </td>
         </tr>`;
 
         return;
@@ -1068,9 +1096,9 @@ async function loadHistory(){
 
         historyTable.innerHTML =
         `<tr>
-            <td colspan="6">
-                No consumption history.
-            </td>
+        <td colspan="6">
+        No consumption history.
+        </td>
         </tr>`;
 
         return;
@@ -1090,33 +1118,33 @@ async function loadHistory(){
         :
         "";
 
-        row.innerHTML=`
+        row.innerHTML = `
 
         <td>${date}</td>
 
         <td>
-            ${escapeHtml(item.item_name||"")}
+        ${escapeHtml(item.item_name || "")}
         </td>
 
         <td>
-            ${escapeHtml(item.item_code||"")}
+        ${escapeHtml(item.item_code || "")}
         </td>
 
         <td>
-            <b>${Number(item.quantity||0)}</b>
+        <b>${Number(item.quantity || 0)}</b>
         </td>
 
         <td>
-            ${escapeHtml(item.remarks||"")}
+        ${escapeHtml(item.remarks || "")}
         </td>
 
         <td>
 
-            <button
-            class="action-btn delete"
-            onclick="deleteConsumption('${item.id}')">
-            DELETE
-            </button>
+        <button
+        class="action-btn history-delete"
+        onclick="deleteConsumption('${item.id}')">
+        DELETE
+        </button>
 
         </td>
 
@@ -1135,111 +1163,41 @@ async function deleteConsumption(id){
 
     const yes =
     confirm(
-        "Delete this consumption history?\n\nConsumed quantity will be added back to stock."
+        "Are you sure you want to delete this consumption history?"
     );
 
-    if(!yes)return;
+    if(!yes) return;
 
 
-    /* GET HISTORY */
-
-    const {data:history,error:historyError} =
+    const {error} =
     await supabaseClient
     .from("consumption_history")
-    .select("*")
-    .eq("id",id)
-    .single();
-
-    if(historyError){
-
-        alert(historyError.message);
-
-        return;
-    }
+    .delete()
+    .eq("id",id);
 
 
-    const stockItemId =
-    history.stock_item_id;
-
-    const qty =
-    Number(history.quantity||0);
-
-
-    /* GET CURRENT STOCK */
-
-    const {data:item,error:itemError} =
-    await supabaseClient
-    .from("stock_items")
-    .select("quantity")
-    .eq("id",stockItemId)
-    .single();
-
-    if(itemError){
+    if(error){
 
         alert(
-            "Stock item not found: " +
-            itemError.message
+            "History delete nahi hui:\n" +
+            error.message
         );
 
         return;
     }
 
 
-    const current =
-    Number(item.quantity||0);
-
-    const restored =
-    current + qty;
-
-
-    /* RESTORE STOCK */
-
-    const {error:updateError} =
-    await supabaseClient
-    .from("stock_items")
-    .update({
-        quantity:restored
-    })
-    .eq("id",stockItemId);
-
-    if(updateError){
-
-        alert(updateError.message);
-
-        return;
-    }
-
-
-    /* DELETE HISTORY */
-
-    const {error:deleteError} =
-    await supabaseClient
-    .from("consumption_history")
-    .delete()
-    .eq("id",id);
-
-    if(deleteError){
-
-        /* ROLLBACK */
-
-        await supabaseClient
-        .from("stock_items")
-        .update({
-            quantity:current
-        })
-        .eq("id",stockItemId);
-
-        alert(deleteError.message);
-
-        return;
-    }
-
-
     alert(
-        "Consumption history deleted.\nStock quantity restored."
+        "Consumption history deleted successfully."
     );
 
-    await loadAll();
+
+    /* IMPORTANT:
+       Total Stock ko change nahi karna.
+       Sirf history reload hogi.
+    */
+
+    await loadHistory();
 
 }
 
@@ -1266,7 +1224,7 @@ async function editStock(id){
     const name =
     prompt(
         "Item Name:",
-        data.item_name||""
+        data.item_name || ""
     );
 
     if(name===null)return;
@@ -1275,7 +1233,7 @@ async function editStock(id){
     const code =
     prompt(
         "Item Code:",
-        data.item_code||""
+        data.item_code || ""
     );
 
     if(code===null)return;
@@ -1284,7 +1242,7 @@ async function editStock(id){
     const stock =
     prompt(
         "Stock:",
-        data.open_stock||0
+        data.open_stock || 0
     );
 
     if(stock===null)return;
@@ -1293,48 +1251,40 @@ async function editStock(id){
     const received =
     prompt(
         "Received:",
-        data.received||0
+        data.received || 0
     );
 
     if(received===null)return;
 
 
     const newStock =
-    Number(stock)||0;
+    Number(stock) || 0;
 
     const newReceived =
-    Number(received)||0;
-
-
-    if(newStock<0 || newReceived<0){
-
-        alert(
-            "Stock and Received cannot be negative."
-        );
-
-        return;
-    }
+    Number(received) || 0;
 
 
     const oldTotal =
-    Number(data.quantity||0);
+    Number(data.quantity || 0);
+
 
     const oldBase =
-    Number(data.open_stock||0) +
-    Number(data.received||0);
+    Number(data.open_stock || 0) +
+    Number(data.received || 0);
+
 
     const used =
     Math.max(
         0,
-        oldBase-oldTotal
+        oldBase - oldTotal
     );
 
 
     const newTotal =
     Math.max(
         0,
-        newStock+
-        newReceived-
+        newStock +
+        newReceived -
         used
     );
 
@@ -1370,6 +1320,7 @@ async function editStock(id){
         "Stock updated successfully."
     );
 
+
     await loadAll();
 
 }
@@ -1381,25 +1332,16 @@ async function deleteStock(id){
 
     const yes =
     confirm(
-        "Are you sure you want to delete this item?\n\nAll consumption history of this item will also be deleted."
+        "Are you sure you want to delete this item?"
     );
 
     if(!yes)return;
 
 
-    const {error:historyError} =
     await supabaseClient
     .from("consumption_history")
     .delete()
     .eq("stock_item_id",id);
-
-
-    if(historyError){
-
-        alert(historyError.message);
-
-        return;
-    }
 
 
     const {error} =
@@ -1420,6 +1362,7 @@ async function deleteStock(id){
     alert(
         "Stock deleted successfully."
     );
+
 
     await loadAll();
 
@@ -1477,7 +1420,7 @@ function showStockMessage(
 
 function escapeHtml(value){
 
-    return String(value??"")
+    return String(value ?? "")
 
     .replaceAll("&","&amp;")
 
@@ -1607,23 +1550,23 @@ supabaseClient.auth.onAuthStateChange(
 );
 
 
-/* BACK BUTTON = AUTO LOGOUT */
-
-history.pushState(
-    null,
-    "",
-    location.href
-);
+/* BROWSER BACK = LOGOUT */
 
 window.addEventListener(
     "popstate",
     async function(){
 
-        await supabaseClient.auth.signOut();
+        const {data} =
+        await supabaseClient
+        .auth
+        .getSession();
 
-        window.location.replace(
-            window.location.pathname
-        );
+
+        if(data && data.session){
+
+            await logout();
+
+        }
 
     }
 );
@@ -1642,6 +1585,10 @@ async function checkSession(){
     if(data && data.session){
 
         loginPage.classList.add(
+            "hidden"
+        );
+
+        resetPage.classList.add(
             "hidden"
         );
 
