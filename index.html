@@ -1508,7 +1508,69 @@ window.scrollTo(0,0);
 
 }
 
+/* LOAD ALL STOCK */
 
+async function loadAll(){
+
+  const { data, error } = await supabaseClient
+    .from("stock_items")
+    .select("*")
+    .order("entry_date", { ascending:false });
+
+  if(error){
+
+    console.error("Load stock error:", error);
+
+    stockData = [];
+
+    stockTable.innerHTML =
+      `<tr><td colspan="10">Error: ${error.message}</td></tr>`;
+
+    return;
+  }
+
+  stockData = data || [];
+
+  renderStock();
+
+  /* DASHBOARD */
+
+  const totalItems = stockData.length;
+
+  const totalReceived = stockData.reduce(
+    (sum,item) => sum + Number(item.received || 0),
+    0
+  );
+
+  const totalStock = stockData.reduce(
+    (sum,item) => sum + Number(item.quantity || 0),
+    0
+  );
+
+  const lowItems = stockData.filter(
+    item => Number(item.quantity || 0) === 1
+  ).length;
+
+  const outItems = stockData.filter(
+    item => Number(item.quantity || 0) === 0
+  ).length;
+
+  document.getElementById("dashItems").textContent =
+    totalItems;
+
+  document.getElementById("dashReceived").textContent =
+    totalReceived;
+
+  document.getElementById("dashStock").textContent =
+    totalStock;
+
+  document.getElementById("dashLow").textContent =
+    lowItems;
+
+  document.getElementById("dashOut").textContent =
+    outItems;
+}
+  
 /* ADD / RECEIVE STOCK */
 
 async function addStock(){
