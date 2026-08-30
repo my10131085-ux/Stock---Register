@@ -217,6 +217,34 @@ grid-template-columns:1fr 1fr;
 gap:15px
 }
 
+.received-history{
+margin-top:15px
+}
+
+.activity-history{
+margin-top:15px
+}
+
+.badge{
+display:inline-block;
+padding:5px 8px;
+border-radius:5px;
+font-size:12px;
+font-weight:bold
+}
+
+.badge-low{
+background:#ffe0c2
+}
+
+.badge-out{
+background:#ffcccc
+}
+
+.badge-normal{
+background:#dff5df
+}
+
 .modal{
 position:fixed;
 inset:0;
@@ -523,7 +551,7 @@ class="alert out-alert hidden">
 
 <!-- ADD STOCK -->
 
-<h3>ADD STOCK</h3>
+<h3>ADD / RECEIVE STOCK</h3>
 
 <div class="form-grid no-print">
 
@@ -540,13 +568,13 @@ placeholder="Item Code">
 <input
 type="number"
 id="stock"
-placeholder="Stock"
+placeholder="Opening Stock"
 min="0">
 
 <input
 type="number"
 id="received"
-placeholder="Received"
+placeholder="Received Quantity"
 min="0">
 
 <input
@@ -565,7 +593,9 @@ placeholder="Remarks">
 class="no-print"
 type="button"
 onclick="addStock()">
-ADD STOCK
+
+ADD / RECEIVE STOCK
+
 </button>
 
 
@@ -583,8 +613,6 @@ class="msg no-print">
 <h3>STOCK REGISTER</h3>
 
 
-<!-- SEARCH -->
-
 <div class="search-box no-print">
 
 <input
@@ -595,8 +623,6 @@ oninput="renderStock()">
 
 </div>
 
-
-<!-- FILTER -->
 
 <div class="filters no-print">
 
@@ -641,7 +667,7 @@ Normal
 </option>
 
 <option value="low">
-Low Stock (≤1)
+Low Stock (1)
 </option>
 
 <option value="out">
@@ -665,17 +691,19 @@ CLEAR FILTER
 </div>
 
 
-<!-- REPORT BUTTONS -->
-
 <div
 class="no-print"
-style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px">
+style="
+display:grid;
+grid-template-columns:1fr 1fr 1fr;
+gap:8px;
+margin-top:8px">
 
 <button
 type="button"
 onclick="downloadStockCSV()">
 
-📥 DOWNLOAD EXCEL/CSV
+📥 DOWNLOAD STOCK
 
 </button>
 
@@ -741,6 +769,50 @@ id="stockTable">
 </div>
 
 
+<!-- RECEIVED HISTORY -->
+
+<div
+class="received-history">
+
+<hr>
+
+<h3>
+RECEIVED HISTORY
+</h3>
+
+<div class="table-wrap">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>DATE</th>
+
+<th>ITEM NAME</th>
+
+<th>ITEM CODE</th>
+
+<th>QUANTITY RECEIVED</th>
+
+<th>REMARKS</th>
+
+</tr>
+
+</thead>
+
+<tbody
+id="receivedHistoryTable">
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+
 <!-- CONSUMPTION -->
 
 <div
@@ -749,7 +821,9 @@ class="hidden no-print">
 
 <hr>
 
-<h3>CONSUMPTION</h3>
+<h3>
+CONSUMPTION
+</h3>
 
 <input
 type="hidden"
@@ -887,46 +961,52 @@ id="historyTable">
 </table>
 
 </div>
-<!-- MONTHLY REPORT -->
+
+
+<!-- ACTIVITY HISTORY -->
+
+<div
+class="activity-history no-print">
 
 <hr>
 
-<div class="report-grid no-print">
+<h3>
+USER ACTIVITY HISTORY
+</h3>
 
-<div>
+<div class="table-wrap">
 
-<h3>MONTHLY CONSUMPTION REPORT</h3>
+<table>
 
-<select
-id="reportMonth"
-onchange="renderMonthlyReport()">
-</select>
+<thead>
 
-<div id="monthlyReport">
+<tr>
+
+<th>DATE & TIME</th>
+
+<th>USER</th>
+
+<th>ACTION</th>
+
+<th>ITEM NAME</th>
+
+<th>ITEM CODE</th>
+
+<th>QUANTITY</th>
+
+</tr>
+
+</thead>
+
+<tbody
+id="activityTable">
+</tbody>
+
+</table>
+
 </div>
 
-</div>
-
-
-<!-- LOW STOCK LIST -->
-
-<div>
-
-<h3>LOW STOCK ITEMS</h3>
-
-<div id="lowStockList">
-</div>
-
-</div>
-
-</div>
-
-
-</div>
-</div>
-
-
-<!-- EDIT MODAL -->
+  <!-- EDIT MODAL -->
 
 <div
 id="editModal"
@@ -953,7 +1033,7 @@ placeholder="Item Code">
 <input
 type="number"
 id="editStock"
-placeholder="Stock"
+placeholder="Opening Stock"
 min="0">
 
 <input
@@ -972,34 +1052,25 @@ id="editRemarks"
 placeholder="Remarks">
 
 <div class="small-note">
-
 Consumed quantity is preserved automatically.
-
 </div>
-
 
 <div class="modal-actions">
 
 <button
 type="button"
 onclick="saveEdit()">
-
 SAVE
-
 </button>
-
 
 <button
 type="button"
 onclick="closeEditModal()"
 style="background:#555">
-
 CANCEL
-
 </button>
 
 </div>
-
 
 <div
 id="editMessage"
@@ -1007,12 +1078,10 @@ class="msg">
 </div>
 
 </div>
-
 </div>
 
 
 <script>
-
 
 /* SUPABASE */
 
@@ -1021,7 +1090,6 @@ const SUPABASE_URL =
 
 const SUPABASE_ANON_KEY =
 "sb_publishable_Zql7qJbZlj1R5H1ydOoqSg_F0WAdgd0";
-
 
 const supabaseClient =
 window.supabase.createClient(
@@ -1059,6 +1127,12 @@ document.getElementById("stockTable");
 const historyTable =
 document.getElementById("historyTable");
 
+const receivedHistoryTable =
+document.getElementById("receivedHistoryTable");
+
+const activityTable =
+document.getElementById("activityTable");
+
 const consumptionBox =
 document.getElementById("consumptionBox");
 
@@ -1066,6 +1140,73 @@ document.getElementById("consumptionBox");
 let stockData = [];
 
 let historyData = [];
+
+let receivedHistoryData = [];
+
+let activityData = [];
+
+
+/* CURRENT USER */
+
+async function getCurrentUser(){
+
+const {data} =
+await supabaseClient
+.auth
+.getUser();
+
+return data && data.user
+? data.user
+: null;
+
+}
+
+
+/* ACTIVITY LOG */
+
+async function logActivity(
+action,
+itemName="",
+itemCode="",
+quantity=0
+){
+
+try{
+
+const user =
+await getCurrentUser();
+
+await supabaseClient
+.from("activity_history")
+.insert({
+
+user_email:
+user
+?
+user.email
+:
+"Unknown",
+
+action:action,
+
+item_name:itemName,
+
+item_code:itemCode,
+
+quantity:Number(quantity)||0
+
+});
+
+}catch(error){
+
+console.error(
+"Activity log error:",
+error
+);
+
+}
+
+}
 
 
 /* LOGIN */
@@ -1075,12 +1216,14 @@ async function login(){
 try{
 
 const email =
-document.getElementById("loginEmail")
-.value.trim();
+document.getElementById(
+"loginEmail"
+).value.trim();
 
 const password =
-document.getElementById("loginPassword")
-.value;
+document.getElementById(
+"loginPassword"
+).value;
 
 
 if(!email || !password){
@@ -1102,7 +1245,8 @@ loginMessage.textContent =
 
 
 const {data,error} =
-await supabaseClient.auth
+await supabaseClient
+.auth
 .signInWithPassword({
 
 email:email,
@@ -1136,13 +1280,21 @@ return;
 }
 
 
-loginPage.classList.add("hidden");
+loginPage
+.classList
+.add("hidden");
 
-resetPage.classList.add("hidden");
+resetPage
+.classList
+.add("hidden");
 
-mainPage.classList.remove("hidden");
+mainPage
+.classList
+.remove("hidden");
 
-consumptionBox.classList.add("hidden");
+consumptionBox
+.classList
+.add("hidden");
 
 
 history.replaceState(
@@ -1157,6 +1309,9 @@ loginMessage.textContent="";
 
 await loadAll();
 
+await loadReceivedHistory();
+
+await loadActivity();
 
 }catch(error){
 
@@ -1165,7 +1320,8 @@ console.error(error);
 loginMessage.style.color="red";
 
 loginMessage.textContent =
-"Login error: "+error.message;
+"Login error: "+
+error.message;
 
 }
 
@@ -1177,8 +1333,9 @@ loginMessage.textContent =
 async function forgotPassword(){
 
 const email =
-document.getElementById("loginEmail")
-.value.trim();
+document.getElementById(
+"loginEmail"
+).value.trim();
 
 
 if(!email){
@@ -1200,7 +1357,8 @@ loginMessage.textContent =
 
 
 const {error} =
-await supabaseClient.auth
+await supabaseClient
+.auth
 .resetPasswordForEmail(
 
 email,
@@ -1241,12 +1399,14 @@ loginMessage.textContent =
 async function resetPassword(){
 
 const password =
-document.getElementById("newPassword")
-.value;
+document.getElementById(
+"newPassword"
+).value;
 
 const confirm =
-document.getElementById("confirmPassword")
-.value;
+document.getElementById(
+"confirmPassword"
+).value;
 
 
 if(!password || !confirm){
@@ -1286,7 +1446,8 @@ return;
 
 
 const {error} =
-await supabaseClient.auth
+await supabaseClient
+.auth
 .updateUser({
 
 password:password
@@ -1318,16 +1479,26 @@ resetMessage.textContent =
 
 async function logout(){
 
-await supabaseClient.auth.signOut();
+await supabaseClient
+.auth
+.signOut();
 
 
-mainPage.classList.add("hidden");
+mainPage
+.classList
+.add("hidden");
 
-resetPage.classList.add("hidden");
+resetPage
+.classList
+.add("hidden");
 
-loginPage.classList.remove("hidden");
+loginPage
+.classList
+.remove("hidden");
 
-consumptionBox.classList.add("hidden");
+consumptionBox
+.classList
+.add("hidden");
 
 
 document.getElementById(
@@ -1340,41 +1511,47 @@ window.scrollTo(0,0);
 }
 
 
-/* ADD STOCK */
+/* ADD / RECEIVE STOCK */
 
 async function addStock(){
 
 const name =
-document.getElementById("itemName")
-.value.trim();
+document.getElementById(
+"itemName"
+).value.trim();
 
 const code =
-document.getElementById("itemCode")
-.value.trim();
+document.getElementById(
+"itemCode"
+).value.trim();
 
 
 const stock =
 Number(
-document.getElementById("stock")
-.value
+document.getElementById(
+"stock"
+).value
 )||0;
 
 
 const received =
 Number(
-document.getElementById("received")
-.value
+document.getElementById(
+"received"
+).value
 )||0;
 
 
 const receivedDate =
-document.getElementById("receivedDate")
-.value;
+document.getElementById(
+"receivedDate"
+).value;
 
 
 const remarks =
-document.getElementById("remarks")
-.value.trim();
+document.getElementById(
+"remarks"
+).value.trim();
 
 
 if(!name){
@@ -1401,7 +1578,8 @@ return;
 }
 
 
-if(stock < 0 || received < 0){
+if(stock < 0 ||
+received < 0){
 
 showStockMessage(
 "Invalid quantity.",
@@ -1413,7 +1591,8 @@ return;
 }
 
 
-if(stock === 0 && received === 0){
+if(stock === 0 &&
+received === 0){
 
 showStockMessage(
 "Enter Stock or Received quantity.",
@@ -1425,11 +1604,160 @@ return;
 }
 
 
+/* CHECK EXISTING ITEM CODE */
+
+const {data:existing,
+error:findError} =
+await supabaseClient
+.from("stock_items")
+.select("*")
+.eq("item_code",code)
+.limit(1);
+
+
+if(findError){
+
+showStockMessage(
+findError.message,
+"red"
+);
+
+return;
+
+}
+
+
+/* EXISTING ITEM */
+
+if(existing &&
+existing.length > 0){
+
+const item =
+existing[0];
+
+
+const oldTotal =
+Number(item.quantity || 0);
+
+
+const newTotal =
+oldTotal + received;
+
+
+const {error:updateError} =
+await supabaseClient
+.from("stock_items")
+.update({
+
+item_name:name,
+
+quantity:newTotal,
+
+remarks:remarks ||
+
+item.remarks ||
+
+""
+
+})
+.eq("id",item.id);
+
+
+if(updateError){
+
+showStockMessage(
+updateError.message,
+"red"
+);
+
+return;
+
+}
+
+
+/* RECEIVED HISTORY */
+
+if(received > 0){
+
+const {error:historyError} =
+await supabaseClient
+.from("received_history")
+.insert({
+
+stock_item_id:item.id,
+
+item_name:name,
+
+item_code:code,
+
+quantity:received,
+
+received_date:
+receivedDate ||
+new Date()
+.toISOString()
+.slice(0,10),
+
+remarks:remarks
+
+});
+
+
+if(historyError){
+
+showStockMessage(
+historyError.message,
+"red"
+);
+
+return;
+
+}
+
+}
+
+
+/* ACTIVITY */
+
+await logActivity(
+received > 0
+?
+"RECEIVE STOCK"
+:
+"UPDATE STOCK",
+name,
+code,
+received
+);
+
+
+showStockMessage(
+"Existing Item Code found. Stock updated successfully.",
+"green"
+);
+
+
+clearForm();
+
+await loadAll();
+
+await loadReceivedHistory();
+
+await loadActivity();
+
+return;
+
+}
+
+
+/* NEW ITEM */
+
 const total =
 stock + received;
 
 
-const {error} =
+const {data:newItem,
+error} =
 await supabaseClient
 .from("stock_items")
 .insert({
@@ -1450,7 +1778,9 @@ new Date().toISOString(),
 
 remarks:remarks
 
-});
+})
+.select()
+.single();
 
 
 if(error){
@@ -1465,6 +1795,58 @@ return;
 }
 
 
+/* RECEIVED HISTORY FOR NEW ITEM */
+
+if(received > 0){
+
+const {error:historyError} =
+await supabaseClient
+.from("received_history")
+.insert({
+
+stock_item_id:newItem.id,
+
+item_name:name,
+
+item_code:code,
+
+quantity:received,
+
+received_date:
+receivedDate ||
+new Date()
+.toISOString()
+.slice(0,10),
+
+remarks:remarks
+
+});
+
+
+if(historyError){
+
+showStockMessage(
+historyError.message,
+"red"
+);
+
+return;
+
+}
+
+}
+
+
+/* ACTIVITY */
+
+await logActivity(
+"ADD STOCK",
+name,
+code,
+stock + received
+);
+
+
 showStockMessage(
 "Stock added successfully.",
 "green"
@@ -1473,600 +1855,11 @@ showStockMessage(
 
 clearForm();
 
-
 await loadAll();
 
-}
-
-
-/* LOAD ALL */
-
-async function loadAll(){
-
-await loadStock();
-
-await loadHistory();
-
-}
-
-
-/* LOAD STOCK */
-
-async function loadStock(){
-
-const {data,error} =
-await supabaseClient
-.from("stock_items")
-.select("*")
-.order(
-"id",
-{ascending:false}
-);
-
-
-if(error){
-
-stockData=[];
-
-stockTable.innerHTML =
-`<tr>
-<td colspan="10">
-${escapeHtml(error.message)}
-</td>
-</tr>`;
-
-return;
-
-}
-
-
-stockData =
-data || [];
-
-
-updateDashboard();
-
-renderStock();
-
-renderLowStock();
-
-renderMonthlyReport();
-
-}
-
-
-/* DASHBOARD */
-
-function updateDashboard(){
-
-const totalItems =
-stockData.length;
-
-
-const totalReceived =
-stockData.reduce(
-(sum,item)=>
-sum + Number(item.received || 0),
-0
-);
-
-
-const totalStock =
-stockData.reduce(
-(sum,item)=>
-sum + Number(item.quantity || 0),
-0
-);
-
-
-const low =
-stockData.filter(
-item =>
-Number(item.quantity || 0) === 1
-).length;
-
-
-const out =
-stockData.filter(
-item =>
-Number(item.quantity || 0) === 0
-).length;
-
-
-document.getElementById(
-"dashItems"
-).textContent =
-totalItems;
-
-
-document.getElementById(
-"dashReceived"
-).textContent =
-totalReceived;
-
-
-document.getElementById(
-"dashStock"
-).textContent =
-totalStock;
-
-
-document.getElementById(
-"dashLow"
-).textContent =
-low;
-
-
-document.getElementById(
-"dashOut"
-).textContent =
-out;
-
-
-const lowAlert =
-document.getElementById(
-"lowAlert"
-);
-
-
-const outAlert =
-document.getElementById(
-"outAlert"
-);
-
-
-if(low > 0){
-
-lowAlert.classList.remove(
-"hidden"
-);
-
-lowAlert.textContent =
-"⚠️ LOW STOCK ALERT: "+
-low+
-" item(s) have stock 1.";
-
-}else{
-
-lowAlert.classList.add(
-"hidden"
-);
-
-}
-
-
-if(out > 0){
-
-outAlert.classList.remove(
-"hidden"
-);
-
-outAlert.textContent =
-"⛔ OUT OF STOCK: "+
-out+
-" item(s) have zero stock.";
-
-}else{
-
-outAlert.classList.add(
-"hidden"
-);
-
-}
-
-}
-
-
-/* RENDER STOCK */
-
-function renderStock(){
-
-const search =
-(
-document.getElementById(
-"stockSearch"
-).value || ""
-)
-.trim()
-.toLowerCase();
-
-
-const from =
-document.getElementById(
-"filterFrom"
-).value;
-
-
-const to =
-document.getElementById(
-"filterTo"
-).value;
-
-
-const status =
-document.getElementById(
-"statusFilter"
-).value;
-
-
-let rows =
-stockData.filter(
-item => {
-
-const name =
-(item.item_name || "")
-.toLowerCase();
-
-const code =
-(item.item_code || "")
-.toLowerCase();
-
-const remarks =
-(item.remarks || "")
-.toLowerCase();
-
-const q =
-Number(item.quantity || 0);
-
-const d =
-item.entry_date
-?
-formatISODate(item.entry_date)
-:
-"";
-
-
-if(
-search &&
-!name.includes(search) &&
-!code.includes(search) &&
-!remarks.includes(search)
-){
-
-return false;
-
-}
-
-
-if(from && d < from){
-
-return false;
-
-}
-
-
-if(to && d > to){
-
-return false;
-
-}
-
-
-if(
-status === "low" &&
-q !== 1
-){
-
-return false;
-
-}
-
-
-if(
-status === "out" &&
-q !== 0
-){
-
-return false;
-
-}
-
-
-if(
-status === "normal" &&
-q <= 1
-){
-
-return false;
-
-}
-
-
-return true;
-
-});
-
-
-stockTable.innerHTML="";
-
-
-if(rows.length === 0){
-
-stockTable.innerHTML =
-`<tr>
-<td colspan="10">
-No matching stock found.
-</td>
-</tr>`;
-
-return;
-
-}
-
-
-rows.forEach(
-(item,index) => {
-
-const q =
-Number(item.quantity || 0);
-
-
-const statusText =
-q === 0
-?
-"OUT OF STOCK"
-:
-q === 1
-?
-"LOW STOCK"
-:
-"NORMAL";
-
-
-const row =
-document.createElement("tr");
-
-
-row.innerHTML = `
-
-<td>${index+1}</td>
-
-<td>
-${escapeHtml(
-item.item_name || ""
-)}
-</td>
-
-<td>
-${escapeHtml(
-item.item_code || ""
-)}
-</td>
-
-<td>
-${Number(
-item.open_stock || 0
-)}
-</td>
-
-<td>
-${Number(
-item.received || 0
-)}
-</td>
-
-<td>
-${
-item.entry_date
-?
-new Date(
-item.entry_date
-)
-.toLocaleDateString("en-IN")
-:
-""
-}
-</td>
-
-<td>
-<b>${q}</b>
-</td>
-
-<td>
-<b>${statusText}</b>
-</td>
-
-<td>
-
-<button
-type="button"
-class="action-btn consume"
-onclick="openConsumption('${item.id}')">
-
-CONSUMPTION
-
-</button>
-
-</td>
-
-<td>
-
-<button
-type="button"
-class="action-btn edit"
-onclick="editStock('${item.id}')">
-
-EDIT
-
-</button>
-
-<button
-type="button"
-class="action-btn delete"
-onclick="deleteStock('${item.id}')">
-
-DELETE
-
-</button>
-
-</td>
-
-`;
-
-
-stockTable.appendChild(row);
-
-});
-
-}
-
-
-/* CLEAR STOCK FILTER */
-
-function clearFilters(){
-
-document.getElementById(
-"stockSearch"
-).value="";
-
-
-document.getElementById(
-"filterFrom"
-).value="";
-
-
-document.getElementById(
-"filterTo"
-).value="";
-
-
-document.getElementById(
-"statusFilter"
-).value="all";
-
-
-renderStock();
-
-}
-
-
-/* LOW STOCK LIST */
-
-function renderLowStock(){
-
-const box =
-document.getElementById(
-"lowStockList"
-);
-
-
-const rows =
-stockData.filter(
-item =>
-Number(item.quantity || 0) <= 1
-);
-
-
-if(rows.length === 0){
-
-box.innerHTML =
-"No low stock items.";
-
-return;
-
-}
-
-
-box.innerHTML =
-rows.map(
-item => `
-
-<div
-style="
-padding:8px;
-border-bottom:1px solid #ddd">
-
-<b>
-${escapeHtml(
-item.item_name || ""
-)}
-</b>
-
-(
-${escapeHtml(
-item.item_code || ""
-)}
-)
-
--
-
-Stock:
-
-<b>
-${Number(
-item.quantity || 0
-)}
-</b>
-
+await load
 </div>
 
-`
-).join("");
-
-}
-
-
-/* OPEN CONSUMPTION */
-
-function openConsumption(id){
-
-document.getElementById(
-"consumeId"
-).value=id;
-
-
-document.getElementById(
-"consumeQty"
-).value="";
-
-
-document.getElementById(
-"consumptionRemarks"
-).value="";
-
-
-consumptionMessage.textContent="";
-
-
-consumptionBox.classList.remove(
-"hidden"
-);
-
-
-consumptionBox.scrollIntoView({
-behavior:"smooth"
-});
-
-}
-
-
-/* CANCEL CONSUMPTION */
-
-function cancelConsumption(){
-
-consumptionBox.classList.add(
-"hidden"
-);
-
-
-document.getElementById(
-"consumeId"
-).value="";
-
-
-document.getElementById(
-"consumeQty"
-).value="";
-
-
-document.getElementById(
-"consumptionRemarks"
-).value="";
-
-
-consumptionMessage.textContent="";
-
-}
   /* SAVE CONSUMPTION */
 
 async function saveConsumption(){
@@ -2097,7 +1890,7 @@ return;
 }
 
 
-if(!qty || qty <= 0){
+if(!qty || qty<=0){
 
 consumptionMessage.style.color="red";
 
@@ -2133,7 +1926,7 @@ const current =
 Number(item.quantity || 0);
 
 
-if(qty > current){
+if(qty>current){
 
 consumptionMessage.style.color="red";
 
@@ -2145,11 +1938,15 @@ return;
 }
 
 
+const newTotal =
+current-qty;
+
+
 const {error:updateError} =
 await supabaseClient
 .from("stock_items")
 .update({
-quantity:current-qty
+quantity:newTotal
 })
 .eq("id",id);
 
@@ -2165,6 +1962,8 @@ return;
 
 }
 
+
+/* CONSUMPTION HISTORY */
 
 const {error:historyError} =
 await supabaseClient
@@ -2196,7 +1995,6 @@ quantity:current
 })
 .eq("id",id);
 
-
 consumptionMessage.style.color="red";
 
 consumptionMessage.textContent =
@@ -2207,34 +2005,46 @@ return;
 }
 
 
+/* ACTIVITY */
+
+await logActivity(
+"CONSUMPTION",
+item.item_name,
+item.item_code,
+qty
+);
+
+
 cancelConsumption();
 
 await loadAll();
 
+await loadActivity();
+
 }
 
 
-/* LOAD HISTORY */
+/* RECEIVED HISTORY */
 
-async function loadHistory(){
+async function loadReceivedHistory(){
 
 const {data,error} =
 await supabaseClient
-.from("consumption_history")
+.from("received_history")
 .select("*")
 .order(
-"consumption_date",
+"created_at",
 {ascending:false}
 );
 
 
 if(error){
 
-historyData=[];
+receivedHistoryData=[];
 
-historyTable.innerHTML =
+receivedHistoryTable.innerHTML =
 `<tr>
-<td colspan="6">
+<td colspan="5">
 ${escapeHtml(error.message)}
 </td>
 </tr>`;
@@ -2244,104 +2054,30 @@ return;
 }
 
 
-historyData =
+receivedHistoryData =
 data || [];
 
 
-renderHistory();
-
-renderMonthlyReport();
+renderReceivedHistory();
 
 }
 
 
-/* RENDER HISTORY */
+/* RENDER RECEIVED HISTORY */
 
-function renderHistory(){
+function renderReceivedHistory(){
 
-const search =
-(
-document.getElementById(
-"historySearch"
-).value || ""
-)
-.trim()
-.toLowerCase();
-
-
-const from =
-document.getElementById(
-"historyFrom"
-).value;
-
-
-const to =
-document.getElementById(
-"historyTo"
-).value;
-
-
-const rows =
-historyData.filter(
-item => {
-
-const name =
-(item.item_name || "")
-.toLowerCase();
-
-const code =
-(item.item_code || "")
-.toLowerCase();
-
-const date =
-item.consumption_date
-?
-formatISODate(
-item.consumption_date
-)
-:
-"";
+receivedHistoryTable.innerHTML="";
 
 
 if(
-search &&
-!name.includes(search) &&
-!code.includes(search)
+receivedHistoryData.length===0
 ){
 
-return false;
-
-}
-
-
-if(from && date < from){
-
-return false;
-
-}
-
-
-if(to && date > to){
-
-return false;
-
-}
-
-
-return true;
-
-});
-
-
-historyTable.innerHTML="";
-
-
-if(rows.length === 0){
-
-historyTable.innerHTML =
+receivedHistoryTable.innerHTML =
 `<tr>
-<td colspan="6">
-No consumption history.
+<td colspan="5">
+No received history.
 </td>
 </tr>`;
 
@@ -2350,21 +2086,24 @@ return;
 }
 
 
-rows.forEach(item=>{
-
-const date =
-item.consumption_date
-?
-new Date(
-item.consumption_date
-)
-.toLocaleDateString("en-IN")
-:
-"";
-
+receivedHistoryData.forEach(
+item=>{
 
 const row =
 document.createElement("tr");
+
+
+const date =
+item.received_date
+?
+new Date(
+item.received_date
+)
+.toLocaleDateString(
+"en-IN"
+)
+:
+"";
 
 
 row.innerHTML = `
@@ -2397,54 +2136,145 @@ item.remarks || ""
 )}
 </td>
 
-<td>
-
-<button
-type="button"
-class="action-btn history-delete"
-onclick="deleteConsumption('${item.id}')">
-
-DELETE
-
-</button>
-
-</td>
-
 `;
 
 
-historyTable.appendChild(row);
+receivedHistoryTable.appendChild(row);
 
 });
 
 }
 
 
-/* CLEAR HISTORY FILTER */
+/* ACTIVITY HISTORY */
 
-function clearHistoryFilters(){
+async function loadActivity(){
 
-document.getElementById(
-"historyFrom"
-).value="";
-
-
-document.getElementById(
-"historyTo"
-).value="";
-
-
-document.getElementById(
-"historySearch"
-).value="";
+const {data,error} =
+await supabaseClient
+.from("activity_history")
+.select("*")
+.order(
+"created_at",
+{ascending:false}
+)
+.limit(100);
 
 
-renderHistory();
+if(error){
+
+activityData=[];
+
+activityTable.innerHTML =
+`<tr>
+<td colspan="6">
+${escapeHtml(error.message)}
+</td>
+</tr>`;
+
+return;
 
 }
 
 
-/* DELETE HISTORY */
+activityData =
+data || [];
+
+
+renderActivity();
+
+}
+
+
+/* RENDER ACTIVITY */
+
+function renderActivity(){
+
+activityTable.innerHTML="";
+
+
+if(
+activityData.length===0
+){
+
+activityTable.innerHTML =
+`<tr>
+<td colspan="6">
+No activity found.
+</td>
+</tr>`;
+
+return;
+
+}
+
+
+activityData.forEach(
+item=>{
+
+const row =
+document.createElement("tr");
+
+
+const date =
+item.created_at
+?
+new Date(
+item.created_at
+).toLocaleString(
+"en-IN"
+)
+:
+"";
+
+
+row.innerHTML = `
+
+<td>${date}</td>
+
+<td>
+${escapeHtml(
+item.user_email || ""
+)}
+</td>
+
+<td>
+<b>
+${escapeHtml(
+item.action || ""
+)}
+</b>
+</td>
+
+<td>
+${escapeHtml(
+item.item_name || ""
+)}
+</td>
+
+<td>
+${escapeHtml(
+item.item_code || ""
+)}
+</td>
+
+<td>
+${Number(
+item.quantity || 0
+)}
+</td>
+
+`;
+
+
+activityTable.appendChild(row);
+
+});
+
+}
+
+
+/* DELETE CONSUMPTION HISTORY */
 
 async function deleteConsumption(id){
 
@@ -2481,7 +2311,7 @@ return;
 
 if(
 !data ||
-data.length === 0
+data.length===0
 ){
 
 alert(
@@ -2493,12 +2323,19 @@ return;
 }
 
 
+await logActivity(
+"DELETE CONSUMPTION HISTORY"
+);
+
+
 alert(
 "Consumption history deleted successfully."
 );
 
 
 await loadHistory();
+
+await loadActivity();
 
 }
 
@@ -2574,9 +2411,8 @@ document.getElementById(
 
 document.getElementById(
 "editModal"
-).classList.remove(
-"hidden"
-);
+).classList
+.remove("hidden");
 
 }
 
@@ -2587,9 +2423,8 @@ function closeEditModal(){
 
 document.getElementById(
 "editModal"
-).classList.add(
-"hidden"
-);
+).classList
+.add("hidden");
 
 }
 
@@ -2621,7 +2456,7 @@ Number(
 document.getElementById(
 "editStock"
 ).value
-) || 0;
+)||0;
 
 
 const newReceived =
@@ -2629,7 +2464,7 @@ Number(
 document.getElementById(
 "editReceived"
 ).value
-) || 0;
+)||0;
 
 
 const date =
@@ -2646,14 +2481,14 @@ document.getElementById(
 
 if(!name || !code){
 
+const msg =
 document.getElementById(
 "editMessage"
-).style.color="red";
+);
 
+msg.style.color="red";
 
-document.getElementById(
-"editMessage"
-).textContent =
+msg.textContent =
 "Item Name and Item Code required.";
 
 return;
@@ -2679,12 +2514,18 @@ return;
 
 
 const oldBase =
-Number(data.open_stock || 0) +
-Number(data.received || 0);
+Number(
+data.open_stock || 0
+)+
+Number(
+data.received || 0
+);
 
 
 const oldTotal =
-Number(data.quantity || 0);
+Number(
+data.quantity || 0
+);
 
 
 const used =
@@ -2703,7 +2544,7 @@ used
 );
 
 
-const update = {
+const update={
 
 item_name:name,
 
@@ -2736,24 +2577,29 @@ await supabaseClient
 
 if(updateError){
 
-document.getElementById(
-"editMessage"
-).style.color="red";
-
-
-document.getElementById(
-"editMessage"
-).textContent =
-updateError.message;
+alert(
+updateError.message
+);
 
 return;
 
 }
 
 
+await logActivity(
+"EDIT STOCK",
+name,
+code,
+newStock+
+newReceived
+);
+
+
 closeEditModal();
 
 await loadAll();
+
+await loadActivity();
 
 }
 
@@ -2773,6 +2619,46 @@ return;
 }
 
 
+const {data:item,error:itemError} =
+await supabaseClient
+.from("stock_items")
+.select("*")
+.eq("id",id)
+.single();
+
+
+if(itemError){
+
+alert(itemError.message);
+
+return;
+
+}
+
+
+/* DELETE RECEIVED HISTORY */
+
+const {error:receivedError} =
+await supabaseClient
+.from("received_history")
+.delete()
+.eq("stock_item_id",id);
+
+
+if(receivedError){
+
+alert(
+"Received history delete nahi hui:\n"+
+receivedError.message
+);
+
+return;
+
+}
+
+
+/* DELETE CONSUMPTION HISTORY */
+
 const {error:historyError} =
 await supabaseClient
 .from("consumption_history")
@@ -2783,7 +2669,7 @@ await supabaseClient
 if(historyError){
 
 alert(
-"History delete nahi hui:\n"+
+"Consumption history delete nahi hui:\n"+
 historyError.message
 );
 
@@ -2791,6 +2677,8 @@ return;
 
 }
 
+
+/* DELETE STOCK */
 
 const {error} =
 await supabaseClient
@@ -2801,11 +2689,23 @@ await supabaseClient
 
 if(error){
 
-alert(error.message);
+alert(
+error.message
+);
 
 return;
 
 }
+
+
+/* ACTIVITY */
+
+await logActivity(
+"DELETE STOCK",
+item.item_name,
+item.item_code,
+item.quantity
+);
 
 
 alert(
@@ -2814,6 +2714,10 @@ alert(
 
 
 await loadAll();
+
+await loadReceivedHistory();
+
+await loadActivity();
 
 }
 
@@ -2854,7 +2758,10 @@ d.getFullYear()+
 "-"+
 String(
 d.getMonth()+1
-).padStart(2,"0");
+).padStart(
+2,
+"0"
+);
 
 
 const option =
@@ -2915,7 +2822,9 @@ item =>
 item.consumption_date &&
 formatISODate(
 item.consumption_date
-).startsWith(month)
+).startsWith(
+month
+)
 );
 
 
@@ -2972,10 +2881,14 @@ ${total}
 
 
 const keys =
-Object.keys(byItem);
+Object.keys(
+byItem
+);
 
 
-if(keys.length === 0){
+if(
+keys.length===0
+){
 
 html +=
 "No consumption for selected month.";
@@ -3020,10 +2933,14 @@ html;
 
 /* CSV */
 
-function csvEscape(value){
+function csvEscape(
+value
+){
 
 const s =
-String(value ?? "");
+String(
+value ?? ""
+);
 
 
 return '"'+
@@ -3044,7 +2961,8 @@ content
 const blob =
 new Blob(
 [
-"\ufeff"+content
+"\ufeff"+
+content
 ],
 {
 type:
@@ -3054,7 +2972,9 @@ type:
 
 
 const a =
-document.createElement("a");
+document.createElement(
+"a"
+);
 
 
 a.href =
@@ -3063,10 +2983,13 @@ blob
 );
 
 
-a.download=filename;
+a.download =
+filename;
 
 
-document.body.appendChild(a);
+document.body.appendChild(
+a
+);
 
 
 a.click();
@@ -3086,11 +3009,11 @@ a.href
 }
 
 
-/* STOCK CSV */
+/* STOCK DOWNLOAD */
 
 function downloadStockCSV(){
 
-const rows = [
+const rows=[
 
 [
 "SR.NO",
@@ -3117,11 +3040,11 @@ item.quantity || 0
 
 
 const status =
-q === 0
+q===0
 ?
 "OUT OF STOCK"
 :
-q === 1
+q===1
 ?
 "LOW STOCK"
 :
@@ -3161,9 +3084,11 @@ downloadFile(
 rows
 .map(
 row =>
-row.map(
+row
+.map(
 csvEscape
-).join(",")
+)
+.join(",")
 )
 .join("\n")
 );
@@ -3171,11 +3096,11 @@ csvEscape
 }
 
 
-/* HISTORY CSV */
+/* CONSUMPTION DOWNLOAD */
 
 function downloadHistoryCSV(){
 
-const rows = [
+const rows=[
 
 [
 "DATE",
@@ -3189,7 +3114,7 @@ const rows = [
 
 
 historyData.forEach(
-item => {
+item=>{
 
 rows.push([
 
@@ -3216,9 +3141,11 @@ downloadFile(
 rows
 .map(
 row =>
-row.map(
+row
+.map(
 csvEscape
-).join(",")
+)
+.join(",")
 )
 .join("\n")
 );
@@ -3287,24 +3214,6 @@ text;
 }
 
 
-/* DATE */
-
-function formatISODate(
-value
-){
-
-if(!value){
-
-return "";
-
-}
-
-return String(value)
-.slice(0,10);
-
-}
-
-
 /* ESCAPE HTML */
 
 function escapeHtml(
@@ -3343,7 +3252,7 @@ value ?? ""
 }
 
 
-/* LOGIN ENTER */
+/* ENTER KEY */
 
 document.getElementById(
 "loginPassword"
@@ -3353,7 +3262,7 @@ document.getElementById(
 function(event){
 
 if(
-event.key === "Enter"
+event.key==="Enter"
 ){
 
 login();
@@ -3371,8 +3280,7 @@ supabaseClient.auth
 function(event){
 
 if(
-event ===
-"PASSWORD_RECOVERY"
+event==="PASSWORD_RECOVERY"
 ){
 
 loginPage
@@ -3451,6 +3359,10 @@ mainPage
 
 
 await loadAll();
+
+await loadReceivedHistory();
+
+await loadActivity();
 
 }else{
 
