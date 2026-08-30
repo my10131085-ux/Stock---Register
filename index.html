@@ -101,7 +101,7 @@ table{
 width:100%;
 border-collapse:collapse;
 margin-top:10px;
-min-width:1000px
+min-width:1100px
 }
 
 th,td{
@@ -130,6 +130,16 @@ font-size:13px
 .delete,.history-delete{background:#555}
 
 .consume{background:#d35400}
+
+.search-box{
+margin:10px 0 5px 0
+}
+
+.search-box input{
+border:2px solid #b00000;
+font-size:16px;
+padding:12px
+}
 
 @media(max-width:700px){
 .container{padding:8px;margin:5px auto}
@@ -277,6 +287,18 @@ ADD STOCK
 
 <h3>STOCK REGISTER</h3>
 
+<!-- SEARCH BAR -->
+
+<div class="search-box">
+
+<input
+type="text"
+id="stockSearch"
+placeholder="Search Item Name or Item Code..."
+oninput="searchStock()">
+
+</div>
+
 <div class="table-wrap">
 
 <table>
@@ -288,6 +310,7 @@ ADD STOCK
 <th>ITEM CODE</th>
 <th>STOCK</th>
 <th>RECEIVED</th>
+<th>RECEIVED DATE</th>
 <th>TOTAL STOCK</th>
 <th>CONSUMPTION</th>
 <th>ACTION</th>
@@ -659,7 +682,7 @@ const {data,error}=await supabaseClient
 if(error){
 
 stockTable.innerHTML=
-`<tr><td colspan="8">
+`<tr><td colspan="9">
 ${escapeHtml(error.message)}
 </td></tr>`;
 
@@ -669,16 +692,47 @@ return;
 if(!data || data.length===0){
 
 stockTable.innerHTML=
-`<tr><td colspan="8">
+`<tr><td colspan="9">
 No stock found.
 </td></tr>`;
 
 return;
 }
 
-data.forEach((item,index)=>{
+
+/* SEARCH */
+
+const search =
+document.getElementById("stockSearch").value
+.trim()
+.toLowerCase();
+
+const filteredData = data.filter(item =>
+(item.item_name || "").toLowerCase().includes(search) ||
+(item.item_code || "").toLowerCase().includes(search)
+);
+
+
+if(filteredData.length===0){
+
+stockTable.innerHTML=
+`<tr><td colspan="9">
+No matching stock found.
+</td></tr>`;
+
+return;
+
+}
+
+
+filteredData.forEach((item,index)=>{
 
 const row=document.createElement("tr");
+
+const receivedDate =
+item.entry_date
+? new Date(item.entry_date).toLocaleDateString("en-IN")
+: "";
 
 row.innerHTML=`
 
@@ -691,6 +745,8 @@ row.innerHTML=`
 <td>${Number(item.open_stock||0)}</td>
 
 <td>${Number(item.received||0)}</td>
+
+<td>${receivedDate}</td>
 
 <td><b>${Number(item.quantity||0)}</b></td>
 
@@ -725,6 +781,15 @@ DELETE
 stockTable.appendChild(row);
 
 });
+
+}
+
+
+/* SEARCH STOCK */
+
+function searchStock(){
+
+loadStock();
 
 }
 
@@ -860,6 +925,7 @@ cancelConsumption();
 await loadAll();
 
 }
+
 
 /* LOAD CONSUMPTION HISTORY */
 
