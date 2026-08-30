@@ -2052,6 +2052,7 @@ await loadAll();
 
   /* ADMIN CHECK - keeps existing delete protection functional.
      Add authorized admin email(s) here. */
+
   async function isAdmin(){
 
   const { data, error } =
@@ -2061,13 +2062,15 @@ await loadAll();
     return false;
   }
 
-  const email =
-    data.user.email.trim().toLowerCase();
+  const userEmail =
+    String(data.user.email || "").trim().toLowerCase();
 
-  return (
-    email === "my10131085@gmail.com" ||
-    email === "shivamkumarrai1999@gmail.com"
-  );
+  const adminEmails = [
+    "my10131085@gmail.com",
+    "shivamkumarrai1999@gmail.com"
+  ];
+
+  return adminEmails.includes(userEmail);
 }
 
   /* SAVE CONSUMPTION */
