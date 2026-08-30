@@ -2052,11 +2052,23 @@ await loadAll();
 
   /* ADMIN CHECK - keeps existing delete protection functional.
      Add authorized admin email(s) here. */
-  function isAdmin(){
-    const userEmail = String(supabaseClient?.auth?.user?.email || "").toLowerCase();
-    const adminEmails = [];
-    return adminEmails.includes(userEmail);
+  async function isAdmin(){
+
+  const { data, error } =
+    await supabaseClient.auth.getUser();
+
+  if(error || !data || !data.user){
+    return false;
   }
+
+  const email =
+    data.user.email.trim().toLowerCase();
+
+  return (
+    email === "my10131085@gmail.com" ||
+    email === "shivamkumarrai1999@gmail.com"
+  );
+}
 
   /* SAVE CONSUMPTION */
 
