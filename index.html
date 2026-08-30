@@ -1145,6 +1145,27 @@ let receivedHistoryData = [];
 
 let activityData = [];
 
+  insert into user_roles (user_id, email, role)
+select id, email,
+case
+  when email in (
+    'my10131085@gmail.com',
+    'shivamkumarrai1999@gmail.com'
+  )
+  then 'admin'
+  else 'user'
+end
+from auth.users
+where email in (
+  'my10131085@gmail.com',
+  'shivamkumarrai1999@gmail.com',
+  'dharmendra9556@gmail.com',
+  'rahulchamp10000@gmail.com'
+)
+on conflict (user_id)
+do update set
+  email = excluded.email,
+  role = excluded.role;
 
 /* CURRENT USER */
 
@@ -1306,7 +1327,8 @@ window.location.href
 
 loginMessage.textContent="";
 
-
+await loadUserRole();
+  
 await loadAll();
 
 await loadReceivedHistory();
@@ -2608,6 +2630,11 @@ await loadActivity();
 
 async function deleteStock(id){
 
+  if(!isAdmin()){
+alert("Only Admin can delete stock.");
+return;
+}
+  
 if(
 !confirm(
 "Are you sure you want to delete this item?"
