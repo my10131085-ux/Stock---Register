@@ -1919,6 +1919,145 @@ await loadAll();
 
 }
 
+  /* RENDER STOCK REGISTER */
+  function renderStock(){
+    if(!stockTable) return;
+
+    const search = (document.getElementById("stockSearch")?.value || "").trim().toLowerCase();
+    const from = document.getElementById("filterFrom")?.value || "";
+    const to = document.getElementById("filterTo")?.value || "";
+    const statusFilter = document.getElementById("statusFilter")?.value || "all";
+
+    let rows = stockData.filter(item => {
+      const name = String(item.item_name || "").toLowerCase();
+      const code = String(item.item_code || "").toLowerCase();
+      const remarks = String(item.remarks || "").toLowerCase();
+      const textMatch = !search || name.includes(search) || code.includes(search) || remarks.includes(search);
+
+      const date = formatISODate(item.entry_date);
+      const fromMatch = !from || date >= from;
+      const toMatch = !to || date <= to;
+
+      const q = Number(item.quantity || 0);
+      const status = q === 0 ? "out" : q === 1 ? "low" : "normal";
+      const statusMatch = statusFilter === "all" || statusFilter === status;
+      return textMatch && fromMatch && toMatch && statusMatch;
+    });
+
+    stockTable.innerHTML = "";
+
+    if(rows.length === 0){
+      stockTable.innerHTML = '<tr><td colspan="10">No stock found.</td></tr>';
+      return;
+    }
+
+    rows.forEach((item,index) => {
+      const q = Number(item.quantity || 0);
+      let statusText = "NORMAL";
+      let badgeClass = "badge-normal";
+      if(q === 0){ statusText = "OUT OF STOCK"; badgeClass = "badge-out"; }
+      else if(q === 1){ statusText = "LOW STOCK"; badgeClass = "badge-low"; }
+
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${index + 1}</td>
+        <td>${escapeHtml(item.item_name || "")}</td>
+        <td>${escapeHtml(item.item_code || "")}</td>
+        <td>${Number(item.open_stock || 0)}</td>
+        <td>${Number(item.received || 0)}</td>
+        <td>${formatISODate(item.entry_date)}</td>
+        <td><b>${q}</b></td>
+        <td><span class="badge ${badgeClass}">${statusText}</span></td>
+        <td><button type="button" class="action-btn consume" onclick="startConsumption('${String(item.id).replace(/'/g,"\\'")}')">CONSUME</button></td>
+        <td>
+          <button type="button" class="action-btn edit" onclick="editStock('${String(item.id).replace(/'/g,"\\'")}')">EDIT</button>
+          <button type="button" class="action-btn delete" onclick="deleteStock('${String(item.id).replace(/'/g,"\\'")}')">DELETE</button>
+        </td>`;
+      stockTable.appendChild(row);
+    });
+  }
+
+  /* CONSUMPTION HISTORY */
+  async function loadHistory(){
+    const {data,error} = await supabaseClient
+      .from("consumption_history")
+      .select("*")
+      .order("consumption_date", {ascending:false});
+
+    if(error){
+      historyData=[];
+      if(historyTable) historyTable.innerHTML = `<tr><td colspan="6">${escapeHtml(error.message)}</td></tr>`;
+      return;
+    }
+    historyData=data || [];
+    renderHistory();
+  }
+
+  function renderHistory(){
+    if(!historyTable) return;
+    const from=document.getElementById("historyFrom")?.value || "";
+    const to=document.getElementById("historyTo")?.value || "";
+    const search=(document.getElementById("historySearch")?.value || "").trim().toLowerCase();
+
+    const rows=historyData.filter(item=>{
+      const date=formatISODate(item.consumption_date);
+      const matchDate=(!from || date>=from) && (!to || date<=to);
+      const text=(String(item.item_name||"")+" "+String(item.item_code||"")).toLowerCase();
+      return matchDate && (!search || text.includes(search));
+    });
+
+    historyTable.innerHTML="";
+    if(!rows.length){
+      historyTable.innerHTML='<tr><td colspan="6">No consumption history.</td></tr>';
+      return;
+    }
+    rows.forEach(item=>{
+      const row=document.createElement("tr");
+      row.innerHTML=`
+        <td>${formatISODate(item.consumption_date)}</td>
+        <td>${escapeHtml(item.item_name||"")}</td>
+        <td>${escapeHtml(item.item_code||"")}</td>
+        <td><b>${Number(item.quantity||0)}</b></td>
+        <td>${escapeHtml(item.remarks||"")}</td>
+        <td><button type="button" class="action-btn history-delete" onclick="deleteConsumption('${String(item.id).replace(/'/g,"\\'")}')">DELETE</button></td>`;
+      historyTable.appendChild(row);
+    });
+  }
+
+  function startConsumption(id){
+    document.getElementById("consumeId").value=id;
+    document.getElementById("consumeQty").value="";
+    document.getElementById("consumptionRemarks").value="";
+    consumptionMessage.textContent="";
+    consumptionBox.classList.remove("hidden");
+    consumptionBox.scrollIntoView({behavior:"smooth", block:"center"});
+  }
+
+  function cancelConsumption(){
+    consumptionBox.classList.add("hidden");
+    document.getElementById("consumeId").value="";
+    document.getElementById("consumeQty").value="";
+    document.getElementById("consumptionRemarks").value="";
+    consumptionMessage.textContent="";
+  }
+
+  function formatISODate(value){
+    if(!value) return "";
+    const s=String(value);
+    if(/^\\d{4}-\\d{2}-\\d{2}/.test(s)) return s.slice(0,10);
+    const d=new Date(value);
+    if(Number.isNaN(d.getTime())) return "";
+    return d.toISOString().slice(0,10);
+  }
+
+  /* ADMIN CHECK - keeps existing delete protection functional.
+     Add authorized admin email(s) here. */
+  function isAdmin(){
+    const userEmail = String(supabaseClient?.auth?.user?.email || "").toLowerCase();
+    const adminEmails = [];
+    return adminEmails.includes(userEmail);
+  }
+
   /* SAVE CONSUMPTION */
 
 async function saveConsumption(){
@@ -3425,6 +3564,8 @@ mainPage
 await loadAll();
 
 await loadReceivedHistory();
+
+await loadHistory();
 
 await loadActivity();
 
