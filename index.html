@@ -2806,7 +2806,7 @@ await loadActivity();
 
 async function deleteStock(id){
 
-  if(!isAdmin()){
+  if(!(await isAdmin())){
 alert("Only Admin can delete stock.");
 return;
 }
