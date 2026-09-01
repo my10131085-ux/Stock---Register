@@ -846,28 +846,137 @@ type="button"
 class="consume"
 onclick="saveConsumption()">
 
-SAVE CONSUMPTION
+/* SAVE CONSUMPTION */
 
-</button>
+async function saveConsumption(){
 
-<button
-type="button"
-onclick="cancelConsumption()"
-style="background:#555">
+  const id =
+    document.getElementById("consumeId").value;
 
-CANCEL
+  const qty =
+    Number(document.getElementById("consumeQty").value);
 
-</button>
+  const remarks =
+    document.getElementById("consumptionRemarks").value.trim();
 
-<div
-id="consumptionMessage"
-class="msg">
-</div>
+  if(!id){
+    consumptionMessage.style.color = "red";
+    consumptionMessage.textContent = "Please select an item.";
+    return;
+  }
 
-</div>
+  if(!qty || qty <= 0){
+    consumptionMessage.style.color = "red";
+    consumptionMessage.textContent = "Enter valid consumption quantity.";
+    return;
+  }
 
+  /* GET CURRENT STOCK */
 
-<hr>
+  const { data:item, error:itemError } =
+    await supabaseClient
+      .from("stock_items")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+  if(itemError || !item){
+
+    consumptionMessage.style.color = "red";
+    consumptionMessage.textContent =
+      itemError ? itemError.message : "Item not found.";
+
+    return;
+  }
+
+  const oldStock =
+    Number(item.quantity || 0);
+
+  if(qty > oldStock){
+
+    consumptionMessage.style.color = "red";
+    consumptionMessage.textContent =
+      "Consumption quantity is greater than available stock.";
+
+    return;
+  }
+
+  const newStock =
+    oldStock - qty;
+
+  /* UPDATE STOCK */
+
+  const { error:updateError } =
+    await supabaseClient
+      .from("stock_items")
+      .update({
+        quantity:newStock
+      })
+      .eq("id", id);
+
+  if(updateError){
+
+    consumptionMessage.style.color = "red";
+    consumptionMessage.textContent =
+      updateError.message;
+
+    return;
+  }
+
+  /* SAVE CONSUMPTION HISTORY */
+
+  const { error:historyError } =
+    await supabaseClient
+      .from("stock_history")
+      .insert({
+        stock_item_id:id,
+        item_name:item.item_name,
+        item_code:item.item_code,
+        quantity:qty,
+        remarks:remarks
+      });
+
+  if(historyError){
+
+    console.error("Consumption history error:", historyError);
+
+    consumptionMessage.style.color = "red";
+    consumptionMessage.textContent =
+      "Stock updated, but history save failed: " +
+      historyError.message;
+
+    await loadAll();
+    return;
+  }
+
+  /* USER ACTIVITY HISTORY */
+
+  await logActivity(
+    "CONSUMPTION",
+    item.item_name,
+    item.item_code,
+    qty
+  );
+
+  consumptionMessage.style.color = "green";
+  consumptionMessage.textContent =
+    "Consumption saved successfully.";
+
+  /* CLEAR */
+
+  document.getElementById("consumeId").value = "";
+  document.getElementById("consumeQty").value = "";
+  document.getElementById("consumptionRemarks").value = "";
+
+  consumptionBox.classList.add("hidden");
+
+  /* RELOAD EVERYTHING */
+
+  await loadAll();
+  await loadHistory();
+  await loadActivity();
+
+}
 
 
 <!-- CONSUMPTION HISTORY -->
