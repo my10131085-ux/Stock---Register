@@ -23,7 +23,7 @@ button:disabled{opacity:.6;cursor:not-allowed}
 .logout{background:#555;width:auto;min-width:120px;float:right}
 .form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .table-wrap{overflow-x:auto}
-table{width:100%;border-collapse:collapse;margin-top:10px;min-width:1250px}
+table{width:100%;border-collapse:collapse;margin-top:10px;min-width:1150px}
 th,td{border:1px solid #ddd;padding:9px;text-align:center;vertical-align:middle}
 th{background:#b00000;color:white;font-weight:bold;white-space:nowrap}
 .action-btn{width:auto;padding:7px 10px;margin:2px;font-size:13px}
@@ -53,292 +53,17 @@ th{background:#b00000;color:white;font-weight:bold;white-space:nowrap}
 <body>
 <div class="container">
 
-<div id="loginPage" class="card">
-<h1>RHI MAGNESITA</h1><h2>SPARE STOCK REGISTER</h2>
-<input type="email" id="loginEmail" placeholder="Email">
-<input type="password" id="loginPassword" placeholder="Password">
-<button type="button" onclick="login()">LOGIN</button>
-<button type="button" onclick="forgotPassword()" style="background:#555">FORGOT PASSWORD</button>
-<div id="loginMessage" class="msg"></div>
-</div>
-
-<div id="resetPage" class="card hidden">
-<h2>RESET PASSWORD</h2>
-<input type="password" id="newPassword" placeholder="New Password">
-<input type="password" id="confirmPassword" placeholder="Confirm New Password">
-<button type="button" onclick="resetPassword()">UPDATE PASSWORD</button>
-<div id="resetMessage" class="msg"></div>
-</div>
-
-<div id="mainPage" class="card hidden">
-<button type="button" class="logout" onclick="logout()">LOGOUT</button>
-<h1>RHI MAGNESITA</h1><h2>SPARE STOCK REGISTER</h2>
-
-<div class="no-print">
-<div class="dashboard">
-<div class="stat"><div>TOTAL ITEMS</div><div id="dashItems" class="num">0</div></div>
-<div class="stat"><div>TOTAL RECEIVED</div><div id="dashReceived" class="num">0</div></div>
-<div class="stat"><div>TOTAL STOCK</div><div id="dashStock" class="num">0</div></div>
-<div class="stat low"><div>LOW STOCK ≤ 1</div><div id="dashLow" class="num">0</div></div>
-<div class="stat out"><div>OUT OF STOCK</div><div id="dashOut" class="num">0</div></div>
-</div>
-<div id="lowAlert" class="alert low-alert hidden"></div>
-<div id="outAlert" class="alert out-alert hidden"></div>
-</div>
-
-<hr>
-<h3>ADD / RECEIVE STOCK</h3>
-<div class="form-grid no-print">
-<input type="text" id="itemName" placeholder="Item Name">
-<input type="text" id="itemCode" placeholder="Item Code">
-<input type="number" id="stock" placeholder="Opening Stock" min="0">
-<input type="number" id="received" placeholder="Received Quantity" min="0">
-<input type="date" id="receivedDate">
-<input type="text" id="remarks" placeholder="Remarks">
-</div>
-<button class="no-print" type="button" onclick="addStock()">ADD / RECEIVE STOCK</button>
-<div id="stockMessage" class="msg no-print"></div>
-
-<hr>
-<h3>STOCK REGISTER</h3>
-<div class="search-box no-print">
-<input type="text" id="stockSearch" placeholder="🔎 Search Item Name, Item Code or Remarks..." oninput="renderStock()">
-</div>
-
-<div class="filters no-print">
-<div><label>Received From</label><input type="date" id="filterFrom" onchange="renderStock()"></div>
-<div><label>Received To</label><input type="date" id="filterTo" onchange="renderStock()"></div>
-<div><label>Stock Status</label>
-<select id="statusFilter" onchange="renderStock()">
-<option value="all">All</option>
-<option value="normal">Normal</option>
-<option value="low">Low Stock (1)</option>
-<option value="out">Out of Stock (0)</option>
-</select>
-</div>
-<button class="filter-btn" type="button" onclick="clearFilters()">CLEAR FILTER</button>
-</div>
-
-<div class="no-print" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px">
-<button type="button" onclick="downloadStockCSV()">📥 DOWNLOAD STOCK</button>
-<button type="button" onclick="printStock()">🖨️ PRINT STOCK</button>
-<button type="button" onclick="downloadHistoryCSV()">📥 CONSUMPTION CSV</button>
-</div>
-
-<div class="table-wrap"><table><thead><tr>
-<th>SR.NO</th>
-<th>ITEM NAME</th>
-<th>ITEM CODE</th>
-<th>STOCK</th>
-<th>RECEIVED</th>
-<th>RECEIVED DATE</th>
-<th>TOTAL STOCK</th>
-<th>STATUS</th>
-<th>REMARKS</th>
-<th>CONSUMPTION</th>
-<th>ACTION</th>
-</tr></thead>
-<tbody id="stockTable"></tbody></table></div>
-
-<div class="received-history">
-<hr>
-<h3>RECEIVED HISTORY</h3>
-<div class="table-wrap">
-<table><thead><tr>
-<th>DATE</th>
-<th>ITEM NAME</th>
-<th>ITEM CODE</th>
-<th>QUANTITY RECEIVED</th>
-<th>REMARKS</th>
-</tr></thead>
-<tbody id="receivedHistoryTable"></tbody>
-</table>
-</div>
-</div>
-
-<div id="consumptionBox" class="hidden no-print">
-<hr>
-<h3>CONSUMPTION</h3>
-<input type="hidden" id="consumeId">
-<input type="number" id="consumeQty" placeholder="Consumption Quantity" min="1">
-<textarea id="consumptionRemarks" placeholder="Remarks" rows="3"></textarea>
-<button type="button" class="consume" onclick="saveConsumption()">SAVE CONSUMPTION</button>
-<button type="button" style="background:#555" onclick="cancelConsumption()">CANCEL</button>
-<div id="consumptionMessage" class="msg"></div>
-</div>
-
-<h3 class="history-heading">CONSUMPTION HISTORY</h3>
-<div class="filters no-print">
-<div><label>Consumption From</label><input type="date" id="historyFrom" onchange="renderHistory()"></div>
-<div><label>Consumption To</label><input type="date" id="historyTo" onchange="renderHistory()"></div>
-<div><label>Search History</label><input type="text" id="historySearch" placeholder="Item / Code..." oninput="renderHistory()"></div>
-<button class="filter-btn" type="button" onclick="clearHistoryFilters()">CLEAR</button>
-</div>
-
-<div class="table-wrap">
-<table><thead><tr>
-<th>DATE</th>
-<th>ITEM NAME</th>
-<th>ITEM CODE</th>
-<th>QUANTITY USED</th>
-<th>REMARKS</th>
-<th>ACTION</th>
-</tr></thead>
-<tbody id="historyTable"></tbody>
-</table>
-</div>
-
-<div class="activity-history no-print">
-<hr>
-<h3>USER ACTIVITY HISTORY</h3>
-<div class="table-wrap">
-<table><thead><tr>
-<th>DATE & TIME</th>
-<th>USER</th>
-<th>ACTION</th>
-<th>ITEM NAME</th>
-<th>ITEM CODE</th>
-<th>QUANTITY</th>
-</tr></thead>
-<tbody id="activityTable"></tbody>
-</table>
-</div>
-</div>
-
-<div id="editModal" class="modal hidden no-print">
+<div id="inactivityLock" class="modal hidden no-print">
 <div class="modal-box">
-<h3>EDIT STOCK</h3>
-<input type="hidden" id="editId">
-<input type="text" id="editName" placeholder="Item Name">
-<input type="text" id="editCode" placeholder="Item Code">
-<input type="number" id="editStock" placeholder="Opening Stock" min="0">
-<input type="number" id="editReceived" placeholder="Received" min="0">
-<input type="date" id="editReceivedDate">
-<input type="text" id="editRemarks" placeholder="Remarks">
-<div class="small-note">Consumed quantity is preserved automatically.</div>
-<div class="modal-actions">
-<button type="button" onclick="saveEdit()">SAVE</button>
-<button type="button" onclick="closeEditModal()" style="background:#555">CANCEL</button>
-</div>
-<div id="editMessage" class="msg"></div>
-</div>
+<h2>SESSION LOCKED</h2>
+<p style="text-align:center">You have been inactive for 10 minutes.</p>
+<p style="text-align:center">Please login again to continue.</p>
+<button type="button" onclick="unlockLogin()">LOGIN AGAIN</button>
 </div>
 </div>
 
-<script>
-const SUPABASE_URL="https://mooagaasvythwctcktcx.supabase.co";
-const SUPABASE_ANON_KEY="sb_publishable_Zql7qJbZlj1R5H1ydOoqSg_F0WAdgd0";
-const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
-
-const loginPage=document.getElementById("loginPage"),
-resetPage=document.getElementById("resetPage"),
-mainPage=document.getElementById("mainPage");
-
-const loginMessage=document.getElementById("loginMessage"),
-resetMessage=document.getElementById("resetMessage"),
-stockMessage=document.getElementById("stockMessage"),
-consumptionMessage=document.getElementById("consumptionMessage");
-
-const stockTable=document.getElementById("stockTable"),
-historyTable=document.getElementById("historyTable"),
-receivedHistoryTable=document.getElementById("receivedHistoryTable"),
-activityTable=document.getElementById("activityTable"),
-consumptionBox=document.getElementById("consumptionBox");
-
-let stockData=[],
-historyData=[],
-receivedHistoryData=[],
-activityData=[];
-
-let consumptionSaving=false;
-
-async function getCurrentUser(){
-const {data}=await supabaseClient.auth.getUser();
-return data&&data.user?data.user:null
-}
-
-async function logActivity(action,itemName="",itemCode="",quantity=0){
-try{
-
-const user=await getCurrentUser();
-
-const {error}=await supabaseClient
-.from("activity_history")
-.insert({
-user_email:user?user.email:"Unknown",
-action,
-item_name:itemName,
-item_code:itemCode,
-quantity:Number(quantity)||0
-});
-
-if(error){
-console.error("Activity log error:",error);
-return false
-}
-
-return true
-
-}catch(error){
-
-console.error("Activity log error:",error);
-return false
-}
-}
-
-async function login(){
-try{
-
-const email=document.getElementById("loginEmail").value.trim(),
-password=document.getElementById("loginPassword").value;
-
-if(!email||!password){
-loginMessage.style.color="red";
-loginMessage.textContent="Enter Email and Password.";
-return
-}
-
-loginMessage.style.color="black";
-loginMessage.textContent="Logging in...";
-
-const {data,error}=await supabaseClient
-.auth.signInWithPassword({email,password});
-
-if(error){
-loginMessage.style.color="red";
-loginMessage.textContent=error.message;
-return
-}
-
-if(!data||!data.session){
-loginMessage.style.color="red";
-loginMessage.textContent="Login failed. Please try again.";
-return
-}
-
-loginPage.classList.add("hidden");
-resetPage.classList.add("hidden");
-mainPage.classList.remove("hidden");
-consumptionBox.classList.add("hidden");
-
-history.replaceState({loggedIn:true},"",window.location.href);
-
-loginMessage.textContent="";
-
-await loadAll();
-await loadReceivedHistory();
-await loadHistory();
-await loadActivity();
-
-}catch(error){
-
-console.error(error);
-loginMessage.style.color="red";
-loginMessage.textContent="Login error: "+error.message
-}
-}
-
-async function forgotPassword(){
+<div id="loginPage" class="card">
+  async function forgotPassword(){
 
 const email=document.getElementById("loginEmail").value.trim();
 
@@ -402,6 +127,11 @@ resetMessage.textContent="Password updated successfully.";
 
 async function logout(){
 
+if(inactivityTimer)
+clearTimeout(inactivityTimer);
+
+inactivityTimer=null;
+
 await supabaseClient.auth.signOut();
 
 mainPage.classList.add("hidden");
@@ -428,7 +158,9 @@ console.error("Load stock error:",error);
 stockData=[];
 
 stockTable.innerHTML=
-`<tr><td colspan="11">Error: ${escapeHtml(error.message)}</td></tr>`;
+`<tr><td colspan="11">
+Error: ${escapeHtml(error.message)}
+</td></tr>`;
 
 return
 }
@@ -436,12 +168,29 @@ return
 stockData=data||[];
 
 renderStock();
+populateReportFilters();
 
-const totalItems=stockData.length,
-totalReceived=stockData.reduce((sum,item)=>sum+Number(item.received||0),0),
-totalStock=stockData.reduce((sum,item)=>sum+Number(item.quantity||0),0),
-lowItems=stockData.filter(item=>Number(item.quantity||0)===1).length,
-outItems=stockData.filter(item=>Number(item.quantity||0)===0).length;
+const totalItems=stockData.length;
+
+const totalReceived=
+stockData.reduce(
+(sum,item)=>sum+Number(item.received||0),0
+);
+
+const totalStock=
+stockData.reduce(
+(sum,item)=>sum+Number(item.quantity||0),0
+);
+
+const lowItems=
+stockData.filter(
+item=>Number(item.quantity||0)===1
+).length;
+
+const outItems=
+stockData.filter(
+item=>Number(item.quantity||0)===0
+).length;
 
 document.getElementById("dashItems").textContent=totalItems;
 document.getElementById("dashReceived").textContent=totalReceived;
@@ -449,11 +198,13 @@ document.getElementById("dashStock").textContent=totalStock;
 document.getElementById("dashLow").textContent=lowItems;
 document.getElementById("dashOut").textContent=outItems;
 
-const lowNames=stockData
+const lowNames=
+stockData
 .filter(i=>Number(i.quantity||0)===1)
 .map(i=>`${i.item_name} (${i.item_code})`);
 
-const outNames=stockData
+const outNames=
+stockData
 .filter(i=>Number(i.quantity||0)===0)
 .map(i=>`${i.item_name} (${i.item_code})`);
 
@@ -461,11 +212,15 @@ const lowAlert=document.getElementById("lowAlert"),
 outAlert=document.getElementById("outAlert");
 
 lowAlert.classList.toggle("hidden",!lowNames.length);
-lowAlert.textContent=lowNames.length?
+
+lowAlert.textContent=
+lowNames.length?
 `LOW STOCK: ${lowNames.join(", ")}`:"";
 
 outAlert.classList.toggle("hidden",!outNames.length);
-outAlert.textContent=outNames.length?
+
+outAlert.textContent=
+outNames.length?
 `OUT OF STOCK: ${outNames.join(", ")}`:"";
 }
 
@@ -494,11 +249,15 @@ return
 }
 
 if(stock===0&&received===0){
-showStockMessage("Enter Stock or Received quantity.","red");
+showStockMessage(
+"Enter Stock or Received quantity.",
+"red"
+);
 return
 }
 
-const {data:existing,error:findError}=await supabaseClient
+const {data:existing,error:findError}=
+await supabaseClient
 .from("stock_items")
 .select("*")
 .eq("item_code",code)
@@ -511,18 +270,20 @@ return
 
 if(existing&&existing.length>0){
 
-const item=existing[0],
-oldTotal=Number(item.quantity||0),
-oldReceived=Number(item.received||0),
-newTotal=oldTotal+received,
-newReceived=oldReceived+received;
+const item=existing[0];
 
-const {error:updateError}=await supabaseClient
+const oldTotal=
+Number(item.quantity||0);
+
+const newTotal=
+oldTotal+received;
+
+const {error:updateError}=
+await supabaseClient
 .from("stock_items")
 .update({
 item_name:name,
 quantity:newTotal,
-received:newReceived,
 remarks:remarks||item.remarks||""
 })
 .eq("id",item.id);
@@ -534,14 +295,17 @@ return
 
 if(received>0){
 
-const {error:historyError}=await supabaseClient
+const {error:historyError}=
+await supabaseClient
 .from("received_history")
 .insert({
 stock_item_id:item.id,
 item_name:name,
 item_code:code,
 quantity:received,
-received_date:receivedDate||new Date().toISOString().slice(0,10),
+received_date:
+receivedDate||
+new Date().toISOString().slice(0,10),
 remarks
 });
 
@@ -552,7 +316,9 @@ return
 }
 
 await logActivity(
-received>0?"RECEIVE STOCK":"UPDATE STOCK",
+received>0?
+"RECEIVE STOCK":
+"UPDATE STOCK",
 name,
 code,
 received
@@ -582,7 +348,9 @@ item_code:code,
 open_stock:stock,
 received,
 quantity:total,
-entry_date:receivedDate||new Date().toISOString(),
+entry_date:
+receivedDate||
+new Date().toISOString(),
 remarks
 })
 .select()
@@ -595,14 +363,17 @@ return
 
 if(received>0){
 
-const {error:historyError}=await supabaseClient
+const {error:historyError}=
+await supabaseClient
 .from("received_history")
 .insert({
 stock_item_id:newItem.id,
 item_name:name,
 item_code:code,
 quantity:received,
-received_date:receivedDate||new Date().toISOString().slice(0,10),
+received_date:
+receivedDate||
+new Date().toISOString().slice(0,10),
 remarks
 });
 
@@ -635,18 +406,30 @@ function renderStock(){
 
 if(!stockTable)return;
 
-const search=(document.getElementById("stockSearch")?.value||"")
-.trim().toLowerCase();
+const search=
+(document.getElementById("stockSearch")?.value||"")
+.trim()
+.toLowerCase();
 
-const from=document.getElementById("filterFrom")?.value||"";
-const to=document.getElementById("filterTo")?.value||"";
-const statusFilter=document.getElementById("statusFilter")?.value||"all";
+const from=
+document.getElementById("filterFrom")?.value||"";
+
+const to=
+document.getElementById("filterTo")?.value||"";
+
+const statusFilter=
+document.getElementById("statusFilter")?.value||"all";
 
 let rows=stockData.filter(item=>{
 
-const name=String(item.item_name||"").toLowerCase();
-const code=String(item.item_code||"").toLowerCase();
-const remarks=String(item.remarks||"").toLowerCase();
+const name=
+String(item.item_name||"").toLowerCase();
+
+const code=
+String(item.item_code||"").toLowerCase();
+
+const remarks=
+String(item.remarks||"").toLowerCase();
 
 const textMatch=
 !search||
@@ -654,36 +437,49 @@ name.includes(search)||
 code.includes(search)||
 remarks.includes(search);
 
-const date=formatISODate(item.entry_date);
+const date=
+formatISODate(item.entry_date);
 
-const fromMatch=!from||date>=from;
-const toMatch=!to||date<=to;
+const fromMatch=
+!from||date>=from;
 
-const q=Number(item.quantity||0);
+const toMatch=
+!to||date<=to;
+
+const q=
+Number(item.quantity||0);
 
 const status=
-q===0?"out":
-q===1?"low":
+q===0?
+"out":
+q===1?
+"low":
 "normal";
 
 const statusMatch=
 statusFilter==="all"||
 statusFilter===status;
 
-return textMatch&&fromMatch&&toMatch&&statusMatch
+return textMatch&&
+fromMatch&&
+toMatch&&
+statusMatch
 });
 
 stockTable.innerHTML="";
 
 if(!rows.length){
+
 stockTable.innerHTML=
 "<tr><td colspan='11'>No stock found.</td></tr>";
+
 return
 }
 
 rows.forEach((item,index)=>{
 
-const q=Number(item.quantity||0);
+const q=
+Number(item.quantity||0);
 
 let statusText="NORMAL";
 let badgeClass="badge-normal";
@@ -706,7 +502,11 @@ row.innerHTML=`
 <td>${Number(item.received||0)}</td>
 <td>${formatISODate(item.entry_date)}</td>
 <td><b>${q}</b></td>
-<td><span class="badge ${badgeClass}">${statusText}</span></td>
+<td>
+<span class="badge ${badgeClass}">
+${statusText}
+</span>
+</td>
 <td>${escapeHtml(item.remarks||"")}</td>
 <td>
 <button type="button"
@@ -721,12 +521,14 @@ class="action-btn edit"
 onclick="editStock('${String(item.id).replace(/'/g,"\\'")}')">
 EDIT
 </button>
+
 <button type="button"
 class="action-btn delete"
 onclick="deleteStock('${String(item.id).replace(/'/g,"\\'")}')">
 DELETE
 </button>
-</td>`;
+</td>
+`;
 
 stockTable.appendChild(row)
 })
@@ -737,55 +539,70 @@ async function loadHistory(){
 const {data,error}=await supabaseClient
 .from("consumption_history")
 .select("*")
-.order("consumption_date",{ascending:false});
+.order("consumption_date",{ascending:false})
+.limit(10000);
 
 if(error){
 
 historyData=[];
 
 historyTable.innerHTML=
-`<tr><td colspan="6">${escapeHtml(error.message)}</td></tr>`;
+`<tr><td colspan="6">
+${escapeHtml(error.message)}
+</td></tr>`;
 
 return
 }
 
 historyData=data||[];
 
-renderHistory()
+renderHistory();
+
+populateReportFilters()
 }
 
 function renderHistory(){
 
 if(!historyTable)return;
 
-const from=document.getElementById("historyFrom")?.value||"";
-const to=document.getElementById("historyTo")?.value||"";
+const from=
+document.getElementById("historyFrom")?.value||"";
 
-const search=(document.getElementById("historySearch")?.value||"")
+const to=
+document.getElementById("historyTo")?.value||"";
+
+const search=
+(document.getElementById("historySearch")?.value||"")
 .trim()
 .toLowerCase();
 
 const rows=historyData.filter(item=>{
 
-const date=formatISODate(item.consumption_date);
+const date=
+formatISODate(item.consumption_date);
 
 const matchDate=
 (!from||date>=from)&&
 (!to||date<=to);
 
-const text=(
-String(item.item_name||"")+" "+
+const text=
+(
+String(item.item_name||"")+
+" "+
 String(item.item_code||"")
 ).toLowerCase();
 
-return matchDate&&(!search||text.includes(search))
+return matchDate&&
+(!search||text.includes(search))
 });
 
 historyTable.innerHTML="";
 
 if(!rows.length){
+
 historyTable.innerHTML=
 "<tr><td colspan='6'>No consumption history.</td></tr>";
+
 return
 }
 
@@ -805,7 +622,8 @@ class="action-btn history-delete"
 onclick="deleteConsumption('${String(item.id).replace(/'/g,"\\'")}')">
 DELETE
 </button>
-</td>`;
+</td>
+`;
 
 historyTable.appendChild(row)
 })
@@ -856,7 +674,8 @@ return d.toISOString().slice(0,10)
 
 async function isAdmin(){
 
-const {data,error}=await supabaseClient.auth.getUser();
+const {data,error}=
+await supabaseClient.auth.getUser();
 
 if(error||!data||!data.user)
 return false;
@@ -871,94 +690,132 @@ return [
 "shivamkumarrai1999@gmail.com"
 ].includes(userEmail)
 }
-  async function saveConsumption(){
 
-if(consumptionSaving)return;
+async function saveConsumption(){
 
-const id=document.getElementById("consumeId").value,
-qty=Number(document.getElementById("consumeQty").value),
-remarks=document.getElementById("consumptionRemarks").value.trim(),
-saveButton=document.querySelector('#consumptionBox button.consume');
+if(consumptionSaving)
+return;
+
+const id=
+document.getElementById("consumeId").value;
+
+const qty=
+Number(document.getElementById("consumeQty").value);
+
+const remarks=
+document.getElementById("consumptionRemarks")
+.value
+.trim();
+
+const saveButton=
+document.querySelector(
+'#consumptionBox button.consume'
+);
 
 if(!id){
+
 consumptionMessage.style.color="red";
-consumptionMessage.textContent="Please select an item.";
+
+consumptionMessage.textContent=
+"Please select an item.";
+
 return
 }
 
 if(!qty||qty<=0){
+
 consumptionMessage.style.color="red";
-consumptionMessage.textContent="Enter valid consumption quantity.";
+
+consumptionMessage.textContent=
+"Enter valid consumption quantity.";
+
 return
 }
 
 consumptionSaving=true;
 
 if(saveButton){
+
 saveButton.disabled=true;
 saveButton.textContent="SAVING...";
 }
 
 try{
 
-const {data:item,error:itemError}=await supabaseClient
+const {data:item,error:itemError}=
+await supabaseClient
 .from("stock_items")
 .select("*")
 .eq("id",id)
 .single();
 
 if(itemError){
+
 consumptionMessage.style.color="red";
-consumptionMessage.textContent=itemError.message;
+
+consumptionMessage.textContent=
+itemError.message;
+
 return
 }
 
-const current=Number(item.quantity||0);
+const current=
+Number(item.quantity||0);
 
 if(qty>current){
+
 consumptionMessage.style.color="red";
+
 consumptionMessage.textContent=
 "Consumption cannot be greater than Total Stock.";
+
 return
 }
 
-const newTotal=current-qty;
+const newTotal=
+current-qty;
 
-const {error:updateError}=await supabaseClient
+const {error:updateError}=
+await supabaseClient
 .from("stock_items")
-.update({quantity:newTotal})
+.update({
+quantity:newTotal
+})
 .eq("id",id);
 
 if(updateError){
+
 consumptionMessage.style.color="red";
-consumptionMessage.textContent=updateError.message;
+
+consumptionMessage.textContent=
+updateError.message;
+
 return
 }
-
-/* SAME ITEM + SAME DATE = MERGE INTO ONE HISTORY ROW */
 
 const now=new Date();
 
 const today=
-new Intl.DateTimeFormat("en-CA",{
-timeZone:"Asia/Kolkata"
-}).format(now);
+new Intl.DateTimeFormat(
+"en-CA",
+{timeZone:"Asia/Kolkata"}
+).format(now);
 
-const {data:recentHistory,error:findHistoryError}=
+const {
+data:recentHistory,
+error:findHistoryError
+}=
 await supabaseClient
 .from("consumption_history")
-.select("id,quantity,remarks,consumption_date")
-.eq("stock_item_id",id)
-.order("consumption_date",{ascending:false})
-.limit(100);
-
-const todayHistory=(recentHistory||[])
-.filter(h=>
-new Intl.DateTimeFormat("en-CA",{
-timeZone:"Asia/Kolkata"
-}).format(new Date(h.consumption_date))===today
+.select(
+"id,quantity,remarks,consumption_date"
 )
-.slice(0,1);
+.eq("stock_item_id",id)
+.order(
+"consumption_date",
+{ascending:false}
+)
+.limit(10000);
 
 if(findHistoryError){
 
@@ -968,41 +825,57 @@ await supabaseClient
 .eq("id",id);
 
 consumptionMessage.style.color="red";
-consumptionMessage.textContent=findHistoryError.message;
+
+consumptionMessage.textContent=
+findHistoryError.message;
+
 return
 }
 
+const sameDay=
+(recentHistory||[]).filter(h=>{
+
+const d=
+formatISODate(h.consumption_date);
+
+return d===today;
+});
+
 let historyError=null;
 
-if(todayHistory&&todayHistory.length){
+if(sameDay.length){
 
-const oldHistory=todayHistory[0];
+const old=sameDay[0];
 
 const mergedRemarks=
 remarks||
-oldHistory.remarks||
+old.remarks||
 "";
 
-const {error}=await supabaseClient
+const {error}=
+await supabaseClient
 .from("consumption_history")
 .update({
-quantity:Number(oldHistory.quantity||0)+qty,
+quantity:
+Number(old.quantity||0)+qty,
 remarks:mergedRemarks
 })
-.eq("id",oldHistory.id);
+.eq("id",old.id);
 
 historyError=error;
 
 }else{
 
-const {error}=await supabaseClient
+const {error}=
+await supabaseClient
 .from("consumption_history")
 .insert({
 stock_item_id:id,
 item_name:item.item_name,
 item_code:item.item_code,
 quantity:qty,
-consumption_date:now.toISOString(),
+consumption_date:
+now.toISOString(),
 remarks
 });
 
@@ -1017,25 +890,19 @@ await supabaseClient
 .eq("id",id);
 
 consumptionMessage.style.color="red";
-consumptionMessage.textContent=historyError.message;
+
+consumptionMessage.textContent=
+historyError.message;
+
 return
 }
 
-/* ACTIVITY HISTORY */
-
-const activitySaved=await logActivity(
+await logActivity(
 "CONSUMPTION",
 item.item_name,
 item.item_code,
 qty
 );
-
-if(!activitySaved){
-
-console.warn(
-"Consumption saved, but activity history could not be recorded. Check Supabase RLS policies for activity_history."
-);
-}
 
 cancelConsumption();
 
@@ -1045,43 +912,549 @@ await loadActivity();
 
 }catch(error){
 
-console.error("Consumption error:",error);
+console.error(
+"Consumption error:",
+error
+);
 
 consumptionMessage.style.color="red";
+
 consumptionMessage.textContent=
-"Consumption save error: "+error.message;
+"Consumption save error: "+
+error.message;
 
 }finally{
 
 consumptionSaving=false;
 
 if(saveButton){
+
 saveButton.disabled=false;
-saveButton.textContent="SAVE CONSUMPTION";
+saveButton.textContent=
+"SAVE CONSUMPTION";
 }
 }
+}
+
+function getDateOnly(value){
+
+if(!value)return"";
+
+const s=String(value);
+
+if(/^\d{4}-\d{2}-\d{2}/.test(s))
+return s.slice(0,10);
+
+const d=new Date(value);
+
+if(Number.isNaN(d.getTime()))
+return"";
+
+return d.toISOString().slice(0,10);
+}
+
+function monthKey(date){
+return date.slice(0,7);
+}
+
+function monthLabel(key){
+
+const [y,m]=key.split("-");
+
+const d=
+new Date(
+Number(y),
+Number(m)-1,
+1
+);
+
+return d.toLocaleDateString(
+"en-IN",
+{
+month:"long",
+year:"numeric"
+}
+);
+}
+
+function populateReportFilters(){
+
+const itemSelect=
+document.getElementById("reportItem");
+
+const yearSelect=
+document.getElementById("reportYear");
+
+if(!itemSelect||!yearSelect)
+return;
+
+const currentItem=
+itemSelect.value||"all";
+
+const currentYear=
+yearSelect.value||"all";
+
+const items={};
+
+stockData.forEach(item=>{
+
+const code=
+String(item.item_code||"");
+
+const name=
+String(item.item_name||"");
+
+if(code)
+items[code]=name;
+});
+
+itemSelect.innerHTML=
+'<option value="all">ALL ITEMS</option>';
+
+Object.keys(items)
+.sort()
+.forEach(code=>{
+
+const option=
+document.createElement("option");
+
+option.value=code;
+
+option.textContent=
+items[code]+" ("+code+")";
+
+itemSelect.appendChild(option);
+});
+
+if(
+[...itemSelect.options]
+.some(o=>o.value===currentItem)
+)
+itemSelect.value=currentItem;
+
+const years=new Set();
+
+receivedHistoryData.forEach(item=>{
+
+const d=
+getDateOnly(
+item.received_date||
+item.created_at
+);
+
+if(d)
+years.add(d.slice(0,4));
+});
+
+historyData.forEach(item=>{
+
+const d=
+getDateOnly(
+item.consumption_date||
+item.created_at
+);
+
+if(d)
+years.add(d.slice(0,4));
+});
+
+yearSelect.innerHTML=
+'<option value="all">ALL YEARS</option>';
+
+[...years]
+.sort()
+.reverse()
+.forEach(year=>{
+
+const option=
+document.createElement("option");
+
+option.value=year;
+option.textContent=year;
+
+yearSelect.appendChild(option);
+});
+
+if(
+[...yearSelect.options]
+.some(o=>o.value===currentYear)
+)
+yearSelect.value=currentYear;
+}
+
+async function generateReport(){
+
+const selectedItem=
+document.getElementById("reportItem").value;
+
+const selectedYear=
+document.getElementById("reportYear").value;
+
+const msg=
+document.getElementById("reportMessage");
+
+msg.style.color="black";
+msg.textContent="Generating report...";
+
+try{
+
+if(!receivedHistoryData.length)
+await loadReceivedHistory();
+
+if(!historyData.length)
+await loadHistory();
+
+const map={};
+
+for(let month=1;month<=12;month++){
+
+const key=
+String(
+selectedYear==="all"?
+new Date().getFullYear():
+selectedYear
+).padStart(4,"0")+
+"-"+
+String(month).padStart(2,"0");
+
+map[key]={
+received:0,
+used:0,
+closing:0
+};
+}
+
+(receivedHistoryData||[])
+.forEach(item=>{
+
+const code=
+String(item.item_code||"");
+
+if(
+selectedItem!=="all"&&
+code!==selectedItem
+)
+return;
+
+const date=
+getDateOnly(
+item.received_date||
+item.created_at
+);
+
+if(!date)return;
+
+const year=date.slice(0,4);
+
+if(
+selectedYear!=="all"&&
+year!==selectedYear
+)
+return;
+
+const key=date.slice(0,7);
+
+if(!map[key])
+map[key]={
+received:0,
+used:0,
+closing:0
+};
+
+map[key].received+=
+Number(item.quantity||0);
+});
+
+(historyData||[])
+.forEach(item=>{
+
+const code=
+String(item.item_code||"");
+
+if(
+selectedItem!=="all"&&
+code!==selectedItem
+)
+return;
+
+const date=
+getDateOnly(
+item.consumption_date||
+item.created_at
+);
+
+if(!date)return;
+
+const year=date.slice(0,4);
+
+if(
+selectedYear!=="all"&&
+year!==selectedYear
+)
+return;
+
+const key=date.slice(0,7);
+
+if(!map[key])
+map[key]={
+received:0,
+used:0,
+closing:0
+};
+
+map[key].used+=
+Number(item.quantity||0);
+});
+
+let keys=
+Object.keys(map)
+.sort();
+
+if(selectedYear==="all"){
+
+keys=
+keys.filter(
+key=>
+map[key].received>0||
+map[key].used>0
+);
+}
+
+if(!keys.length){
+
+reportData=[];
+
+document.getElementById(
+"reportTableBody"
+).innerHTML=
+"<tr><td colspan='4'>No data found for selected item/year.</td></tr>";
+
+msg.style.color="red";
+msg.textContent=
+"No report data found.";
+
+return
+}
+  let currentStock=0;
+
+if(selectedItem==="all"){
+
+currentStock=
+stockData.reduce(
+(sum,item)=>
+sum+Number(item.quantity||0),
+0
+);
+
+}else{
+
+const selectedStock=
+stockData.find(
+item=>
+String(item.item_code||"")===
+selectedItem
+);
+
+currentStock=
+selectedStock?
+Number(selectedStock.quantity||0):
+0;
+}
+
+reportData=
+keys.map(key=>({
+
+month:key,
+
+label:
+monthLabel(key),
+
+received:
+map[key].received,
+
+used:
+map[key].used,
+
+closing:0
+
+}));
+
+let runningStock=
+currentStock;
+
+for(
+let i=reportData.length-1;
+i>=0;
+i--
+){
+
+reportData[i].closing=
+runningStock;
+
+runningStock=
+runningStock-
+reportData[i].received+
+reportData[i].used;
+}
+
+const body=
+document.getElementById(
+"reportTableBody"
+);
+
+body.innerHTML="";
+
+reportData.forEach(item=>{
+
+const row=
+document.createElement("tr");
+
+row.innerHTML=`
+<td>${escapeHtml(item.label)}</td>
+<td><b>${item.received}</b></td>
+<td><b>${item.used}</b></td>
+<td><b>${item.closing}</b></td>
+`;
+
+body.appendChild(row);
+});
+
+msg.style.color="green";
+
+const itemText=
+selectedItem==="all"?
+"All Items":
+(
+document.getElementById(
+"reportItem"
+).selectedOptions[0]?.textContent||
+selectedItem
+);
+
+const yearText=
+selectedYear==="all"?
+"All Years":
+selectedYear;
+
+msg.textContent=
+"Report: "+
+itemText+
+" | "+
+yearText;
+
+}catch(error){
+
+console.error(
+"Report error:",
+error
+);
+
+reportData=[];
+
+document.getElementById(
+"reportTableBody"
+).innerHTML=
+`<tr><td colspan="4">
+Report Error:
+${escapeHtml(error.message)}
+</td></tr>`;
+
+msg.style.color="red";
+
+msg.textContent=
+"Report generate nahi hua.";
+}
+}
+
+function downloadReportCSV(){
+
+if(!reportData.length){
+
+generateReport().then(()=>{
+
+if(reportData.length)
+downloadReportCSV();
+
+});
+
+return
+}
+
+const rows=[
+[
+"MONTH",
+"TOTAL RECEIVED",
+"TOTAL USED",
+"CLOSING STOCK"
+]
+];
+
+reportData.forEach(item=>{
+
+rows.push([
+item.label,
+item.received,
+item.used,
+item.closing
+])
+});
+
+downloadFile(
+"Monthly_Yearly_Stock_Report.csv",
+rows
+.map(row=>
+row.map(csvEscape).join(",")
+)
+.join("\n")
+)
+}
+
+function printReport(){
+
+if(!reportData.length){
+
+generateReport().then(()=>{
+
+if(reportData.length)
+printReport();
+
+});
+
+return
+}
+
+window.print()
 }
 
 async function loadReceivedHistory(){
 
-const {data,error}=await supabaseClient
+const {data,error}=
+await supabaseClient
 .from("received_history")
 .select("*")
-.order("created_at",{ascending:false});
+.order(
+"created_at",
+{ascending:false}
+)
+.limit(10000);
 
 if(error){
 
 receivedHistoryData=[];
 
 receivedHistoryTable.innerHTML=
-`<tr><td colspan="5">${escapeHtml(error.message)}</td></tr>`;
+`<tr><td colspan="5">
+${escapeHtml(error.message)}
+</td></tr>`;
 
 return
 }
 
 receivedHistoryData=data||[];
 
-renderReceivedHistory()
+renderReceivedHistory();
+
+populateReportFilters()
 }
 
 function renderReceivedHistory(){
@@ -1098,10 +1471,14 @@ return
 
 receivedHistoryData.forEach(item=>{
 
-const row=document.createElement("tr");
+const row=
+document.createElement("tr");
 
-const date=item.received_date?
-new Date(item.received_date).toLocaleDateString("en-IN"):
+const date=
+item.received_date?
+new Date(
+item.received_date
+).toLocaleDateString("en-IN"):
 "";
 
 row.innerHTML=`
@@ -1118,21 +1495,29 @@ receivedHistoryTable.appendChild(row)
 
 async function loadActivity(){
 
-const {data,error}=await supabaseClient
+const {data,error}=
+await supabaseClient
 .from("activity_history")
 .select("*")
-.order("created_at",{ascending:false})
-.limit(100);
+.order(
+"created_at",
+{ascending:false}
+)
+.limit(10000);
 
 if(error){
 
-console.error("Load activity error:",error);
+console.error(
+"Load activity error:",
+error
+);
 
 activityData=[];
 
 activityTable.innerHTML=
-`<tr><td colspan="6">
-Activity History Error: ${escapeHtml(error.message)}
+`<tr><td colspan="7">
+Activity History Error:
+${escapeHtml(error.message)}
 </td></tr>`;
 
 return
@@ -1143,24 +1528,40 @@ activityData=data||[];
 renderActivity()
 }
 
-function renderActivity(){
+async function renderActivity(){
 
 activityTable.innerHTML="";
 
 if(!activityData.length){
 
 activityTable.innerHTML=
-"<tr><td colspan='6'>No activity found.</td></tr>";
+"<tr><td colspan='7'>No activity found.</td></tr>";
 
 return
 }
 
+const admin=
+await isAdmin();
+
 activityData.forEach(item=>{
 
-const row=document.createElement("tr");
+const row=
+document.createElement("tr");
 
-const date=item.created_at?
-new Date(item.created_at).toLocaleString("en-IN"):
+const date=
+item.created_at?
+new Date(
+item.created_at
+).toLocaleString("en-IN"):
+"";
+
+const deleteButton=
+admin?
+`<button type="button"
+class="action-btn history-delete"
+onclick="deleteActivity('${String(item.id).replace(/'/g,"\\'")}')">
+DELETE
+</button>`:
 "";
 
 row.innerHTML=`
@@ -1170,6 +1571,7 @@ row.innerHTML=`
 <td>${escapeHtml(item.item_name||"")}</td>
 <td>${escapeHtml(item.item_code||"")}</td>
 <td>${Number(item.quantity||0)}</td>
+<td>${deleteButton}</td>
 `;
 
 activityTable.appendChild(row)
@@ -1179,7 +1581,11 @@ activityTable.appendChild(row)
 async function deleteConsumption(id){
 
 if(!(await isAdmin())){
-alert("Only Admin can delete consumption history.");
+
+alert(
+"Only Admin can delete consumption history."
+);
+
 return
 }
 
@@ -1188,92 +1594,220 @@ if(!confirm(
 ))
 return;
 
-const {data,error}=await supabaseClient
+const {data,error}=
+await supabaseClient
 .from("consumption_history")
 .delete()
 .eq("id",id)
 .select();
 
 if(error){
-alert("History delete nahi hui:\n"+error.message);
+
+alert(
+"History delete nahi hui:\n"+
+error.message
+);
+
 return
 }
 
 if(!data||!data.length){
+
 alert(
 "History delete nahi hui. Supabase DELETE permission check karein."
 );
+
 return
 }
 
-await logActivity("DELETE CONSUMPTION HISTORY");
+await logActivity(
+"DELETE CONSUMPTION HISTORY"
+);
 
-alert("Consumption history deleted successfully.");
+alert(
+"Consumption history deleted successfully."
+);
 
 await loadHistory();
 await loadActivity();
 }
 
+async function deleteActivity(id){
+
+if(!(await isAdmin())){
+
+alert(
+"Only Admin can delete user activity history."
+);
+
+return
+}
+
+if(!confirm(
+"Are you sure you want to delete this activity record?"
+))
+return;
+
+const {data,error}=
+await supabaseClient
+.from("activity_history")
+.delete()
+.eq("id",id)
+.select();
+
+if(error){
+
+alert(
+"Activity delete nahi hui:\n"+
+error.message
+);
+
+return
+}
+
+if(!data||!data.length){
+
+alert(
+"Activity delete nahi hui. Supabase DELETE permission check karein."
+);
+
+return
+}
+
+await loadActivity();
+}
+
 async function editStock(id){
 
-const {data,error}=await supabaseClient
+const {data,error}=
+await supabaseClient
 .from("stock_items")
 .select("*")
 .eq("id",id)
 .single();
 
 if(error){
+
 alert(error.message);
+
 return
 }
 
-document.getElementById("editId").value=id;
-document.getElementById("editName").value=data.item_name||"";
-document.getElementById("editCode").value=data.item_code||"";
-document.getElementById("editStock").value=data.open_stock||0;
-document.getElementById("editReceived").value=data.received||0;
-document.getElementById("editReceivedDate").value=
-formatISODate(data.entry_date);
-document.getElementById("editRemarks").value=data.remarks||"";
-document.getElementById("editMessage").textContent="";
+document.getElementById(
+"editId"
+).value=id;
 
-document.getElementById("editModal")
-.classList.remove("hidden")
+document.getElementById(
+"editName"
+).value=
+data.item_name||"";
+
+document.getElementById(
+"editCode"
+).value=
+data.item_code||"";
+
+document.getElementById(
+"editStock"
+).value=
+data.open_stock||0;
+
+document.getElementById(
+"editReceived"
+).value=
+data.received||0;
+
+document.getElementById(
+"editReceivedDate"
+).value=
+formatISODate(data.entry_date);
+
+document.getElementById(
+"editRemarks"
+).value=
+data.remarks||"";
+
+document.getElementById(
+"editMessage"
+).textContent="";
+
+document.getElementById(
+"editModal"
+).classList.remove("hidden")
 }
 
 function closeEditModal(){
-document.getElementById("editModal").classList.add("hidden")
+
+document.getElementById(
+"editModal"
+).classList.add("hidden")
 }
 
 async function saveEdit(){
 
-const id=document.getElementById("editId").value,
-name=document.getElementById("editName").value.trim(),
-code=document.getElementById("editCode").value.trim(),
-newStock=Number(document.getElementById("editStock").value)||0,
-newReceived=Number(document.getElementById("editReceived").value)||0,
-date=document.getElementById("editReceivedDate").value,
-remarks=document.getElementById("editRemarks").value.trim();
+const id=
+document.getElementById("editId").value;
+
+const name=
+document.getElementById(
+"editName"
+).value.trim();
+
+const code=
+document.getElementById(
+"editCode"
+).value.trim();
+
+const newStock=
+Number(
+document.getElementById(
+"editStock"
+).value
+)||0;
+
+const newReceived=
+Number(
+document.getElementById(
+"editReceived"
+).value
+)||0;
+
+const date=
+document.getElementById(
+"editReceivedDate"
+).value;
+
+const remarks=
+document.getElementById(
+"editRemarks"
+).value.trim();
 
 if(!name||!code){
 
-const msg=document.getElementById("editMessage");
+const msg=
+document.getElementById(
+"editMessage"
+);
 
 msg.style.color="red";
+
 msg.textContent=
 "Item Name and Item Code required.";
 
 return
 }
 
-const {data,error}=await supabaseClient
+const {data,error}=
+await supabaseClient
 .from("stock_items")
 .select("*")
 .eq("id",id)
 .single();
 
 if(error){
+
 alert(error.message);
+
 return
 }
 
@@ -1281,33 +1815,51 @@ const oldBase=
 Number(data.open_stock||0)+
 Number(data.received||0);
 
-const oldTotal=Number(data.quantity||0);
+const oldTotal=
+Number(data.quantity||0);
 
 const used=
-Math.max(0,oldBase-oldTotal);
+Math.max(
+0,
+oldBase-oldTotal
+);
 
 const newTotal=
-Math.max(0,newStock+newReceived-used);
+Math.max(
+0,
+newStock+
+newReceived-
+used
+);
 
 const update={
+
 item_name:name,
+
 item_code:code,
+
 open_stock:newStock,
+
 received:newReceived,
+
 quantity:newTotal,
+
 remarks
 };
 
 if(date)
 update.entry_date=date;
 
-const {error:updateError}=await supabaseClient
+const {error:updateError}=
+await supabaseClient
 .from("stock_items")
 .update(update)
 .eq("id",id);
 
 if(updateError){
+
 alert(updateError.message);
+
 return
 }
 
@@ -1315,7 +1867,8 @@ await logActivity(
 "EDIT STOCK",
 name,
 code,
-newStock+newReceived
+newStock+
+newReceived
 );
 
 closeEditModal();
@@ -1327,57 +1880,75 @@ await loadActivity();
 async function deleteStock(id){
 
 if(!(await isAdmin())){
-alert("Only Admin can delete stock.");
+
+alert(
+"Only Admin can delete stock."
+);
+
 return
 }
 
-if(!confirm("Are you sure you want to delete this item?"))
+if(!confirm(
+"Are you sure you want to delete this item?"
+))
 return;
 
-const {data:item,error:itemError}=await supabaseClient
+const {data:item,error:itemError}=
+await supabaseClient
 .from("stock_items")
 .select("*")
 .eq("id",id)
 .single();
 
 if(itemError){
+
 alert(itemError.message);
+
 return
 }
 
-const {error:receivedError}=await supabaseClient
+const {error:receivedError}=
+await supabaseClient
 .from("received_history")
 .delete()
 .eq("stock_item_id",id);
 
 if(receivedError){
+
 alert(
 "Received history delete nahi hui:\n"+
 receivedError.message
 );
+
 return
 }
 
-const {error:historyError}=await supabaseClient
+const {error:historyError}=
+await supabaseClient
 .from("consumption_history")
 .delete()
 .eq("stock_item_id",id);
 
 if(historyError){
+
 alert(
 "Consumption history delete nahi hui:\n"+
 historyError.message
 );
+
 return
 }
 
-const {error}=await supabaseClient
+const {error}=
+await supabaseClient
 .from("stock_items")
 .delete()
 .eq("id",id);
 
 if(error){
+
 alert(error.message);
+
 return
 }
 
@@ -1388,7 +1959,9 @@ item.item_code,
 item.quantity
 );
 
-alert("Stock deleted successfully.");
+alert(
+"Stock deleted successfully."
+);
 
 await loadAll();
 await loadReceivedHistory();
@@ -1396,20 +1969,31 @@ await loadHistory();
 await loadActivity();
 }
 
-function downloadFile(filename,content){
+function downloadFile(
+filename,
+content
+){
 
-const blob=new Blob(
+const blob=
+new Blob(
 ["\ufeff"+content],
-{type:"text/csv;charset=utf-8;"}
+{
+type:"text/csv;charset=utf-8;"
+}
 );
 
-const a=document.createElement("a");
+const a=
+document.createElement("a");
 
-a.href=URL.createObjectURL(blob);
+a.href=
+URL.createObjectURL(blob);
+
 a.download=filename;
 
 document.body.appendChild(a);
+
 a.click();
+
 a.remove();
 
 setTimeout(
@@ -1421,13 +2005,15 @@ setTimeout(
 function csvEscape(value){
 
 return '"'+
-String(value??"").replaceAll('"','""')+
+String(value??"")
+.replaceAll('"','""')+
 '"'
 }
 
 function downloadStockCSV(){
 
 const rows=[
+
 [
 "SR.NO",
 "ITEM NAME",
@@ -1439,11 +2025,14 @@ const rows=[
 "STATUS",
 "REMARKS"
 ]
+
 ];
 
-stockData.forEach((item,index)=>{
+stockData.forEach(
+(item,index)=>{
 
-const q=Number(item.quantity||0);
+const q=
+Number(item.quantity||0);
 
 const status=
 q===0?
@@ -1453,29 +2042,44 @@ q===1?
 "NORMAL";
 
 rows.push([
+
 index+1,
+
 item.item_name,
+
 item.item_code,
+
 item.open_stock,
+
 item.received,
-formatISODate(item.entry_date),
+
+formatISODate(
+item.entry_date
+),
+
 q,
+
 status,
+
 item.remarks||""
+
 ])
 });
 
 downloadFile(
 "Stock_Register.csv",
-rows.map(row=>
+rows
+.map(row=>
 row.map(csvEscape).join(",")
-).join("\n")
+)
+.join("\n")
 )
 }
 
 function downloadHistoryCSV(){
 
 const rows=[
+
 [
 "DATE",
 "ITEM NAME",
@@ -1483,27 +2087,40 @@ const rows=[
 "QUANTITY USED",
 "REMARKS"
 ]
+
 ];
 
-historyData.forEach(item=>
+historyData.forEach(
+item=>
 rows.push([
-formatISODate(item.consumption_date),
+
+formatISODate(
+item.consumption_date
+),
+
 item.item_name,
+
 item.item_code,
+
 item.quantity,
+
 item.remarks||""
+
 ])
 );
 
 downloadFile(
 "Consumption_History.csv",
-rows.map(row=>
+rows
+.map(row=>
 row.map(csvEscape).join(",")
-).join("\n")
+)
+.join("\n")
 )
 }
 
 function printStock(){
+
 window.print()
 }
 
@@ -1516,7 +2133,9 @@ function clearForm(){
 "received",
 "receivedDate",
 "remarks"
-].forEach(id=>
+]
+.forEach(
+id=>
 document.getElementById(id).value=""
 )
 }
@@ -1527,11 +2146,15 @@ function clearFilters(){
 "stockSearch",
 "filterFrom",
 "filterTo"
-].forEach(id=>
+]
+.forEach(
+id=>
 document.getElementById(id).value=""
 );
 
-document.getElementById("statusFilter").value="all";
+document.getElementById(
+"statusFilter"
+).value="all";
 
 renderStock()
 }
@@ -1542,61 +2165,151 @@ function clearHistoryFilters(){
 "historyFrom",
 "historyTo",
 "historySearch"
-].forEach(id=>
+]
+.forEach(
+id=>
 document.getElementById(id).value=""
 );
 
 renderHistory()
 }
 
-function showStockMessage(text,color){
+function showStockMessage(
+text,
+color
+){
 
 stockMessage.style.color=color;
+
 stockMessage.textContent=text
 }
 
 function escapeHtml(value){
 
 return String(value??"")
-.replaceAll("&","&amp;")
-.replaceAll("<","&lt;")
-.replaceAll(">","&gt;")
-.replaceAll('"',"&quot;")
-.replaceAll("'","&#039;")
+
+.replaceAll(
+"&",
+"&amp;"
+)
+
+.replaceAll(
+"<",
+"&lt;"
+)
+
+.replaceAll(
+">",
+"&gt;"
+)
+
+.replaceAll(
+'"',
+"&quot;"
+)
+
+.replaceAll(
+"'",
+"&#039;"
+)
 }
 
-document.getElementById("loginPassword")
-.addEventListener("keydown",event=>{
-if(event.key==="Enter")login()
+document.getElementById(
+"loginPassword"
+).addEventListener(
+"keydown",
+event=>{
+
+if(event.key==="Enter")
+login()
+
 });
 
-supabaseClient.auth.onAuthStateChange(event=>{
+supabaseClient.auth.onAuthStateChange(
+event=>{
 
-if(event==="PASSWORD_RECOVERY"){
+if(
+event==="PASSWORD_RECOVERY"
+){
 
-loginPage.classList.add("hidden");
-mainPage.classList.add("hidden");
-resetPage.classList.remove("hidden")
+loginPage.classList.add(
+"hidden"
+);
+
+mainPage.classList.add(
+"hidden"
+);
+
+resetPage.classList.remove(
+"hidden"
+)
+
 }
 });
 
-window.addEventListener("popstate",async()=>{
+window.addEventListener(
+"popstate",
+async()=>{
 
-const {data}=await supabaseClient.auth.getSession();
+const {data}=
+await supabaseClient
+.auth.getSession();
 
 if(data&&data.session)
 await logout()
+
+});
+
+document.addEventListener(
+"visibilitychange",
+()=>{
+
+if(
+document.visibilityState==="visible"&&
+!mainPage.classList.contains("hidden")
+){
+
+checkInactivity();
+
+}
+
+});
+
+window.addEventListener(
+"pageshow",
+()=>{
+
+if(
+!mainPage.classList.contains("hidden")
+){
+
+checkInactivity();
+
+}
+
 });
 
 async function checkSession(){
 
-const {data}=await supabaseClient.auth.getSession();
+const {data}=
+await supabaseClient
+.auth.getSession();
 
 if(data&&data.session){
 
-loginPage.classList.add("hidden");
-resetPage.classList.add("hidden");
-mainPage.classList.remove("hidden");
+loginPage.classList.add(
+"hidden"
+);
+
+resetPage.classList.add(
+"hidden"
+);
+
+mainPage.classList.remove(
+"hidden"
+);
+
+resetInactivityTimer();
 
 await loadAll();
 await loadReceivedHistory();
@@ -1605,9 +2318,17 @@ await loadActivity();
 
 }else{
 
-loginPage.classList.remove("hidden");
-resetPage.classList.add("hidden");
-mainPage.classList.add("hidden")
+loginPage.classList.remove(
+"hidden"
+);
+
+resetPage.classList.add(
+"hidden"
+);
+
+mainPage.classList.add(
+"hidden"
+)
 }
 }
 
