@@ -81,7 +81,7 @@ th{background:#b00000;color:white;font-weight:bold;white-space:nowrap}
 
 <div id="mainPage" class="card hidden">
 <button type="button" class="logout" onclick="logout()">LOGOUT</button>
-<h1>RHI MAGNESITA</h1><h2>SPARE STOCK REGISTER</h2><div id="departmentBar" class="no-print" style="max-width:430px;margin:10px auto;text-align:center">
+<h1>RHI MAGNESITA</h1><h2>SPARE STOCK REGISTER</h2><div id="departmentBar" class="no-print" style="max-width:430px;margin:8px auto 18px;text-align:center">
 <label><b>SELECT DEPARTMENT</b></label>
 <select id="activeDepartment" onchange="changeDepartment()">
 <option value="Slide Gate">Slide Gate</option>
@@ -90,7 +90,7 @@ th{background:#b00000;color:white;font-weight:bold;white-space:nowrap}
 <option value="Tundish">Tundish</option>
 <option value="Furnace">Furnace</option>
 </select>
-<div class="small-note">Current: <b id="departmentLabel">Slide Gate</b></div>
+<div class="small-note">Current Department: <b id="departmentLabel">Slide Gate</b></div>
 </div>
 
 <div class="no-print">
@@ -113,13 +113,6 @@ th{background:#b00000;color:white;font-weight:bold;white-space:nowrap}
 <input type="number" id="stock" placeholder="Opening Stock" min="0">
 <input type="number" id="received" placeholder="Received Quantity" min="0">
 <input type="date" id="receivedDate">
-<select id="stockDepartment">
-<option value="Slide Gate">Slide Gate</option>
-<option value="Electrical">Electrical</option>
-<option value="Mechanical">Mechanical</option>
-<option value="Tundish">Tundish</option>
-<option value="Furnace">Furnace</option>
-</select>
 <input type="text" id="remarks" placeholder="Remarks">
 </div>
 <button class="no-print" type="button" onclick="addStock()">ADD / RECEIVE STOCK</button>
@@ -220,9 +213,12 @@ th{background:#b00000;color:white;font-weight:bold;white-space:nowrap}
 <input type="number" id="editStock" placeholder="Opening Stock" min="0">
 <input type="number" id="editReceived" placeholder="Received" min="0">
 <input type="date" id="editReceivedDate"><select id="editDepartment">
-<option value="Slide Gate">Slide Gate</option><option value="Electrical">Electrical</option>
-<option value="Mechanical">Mechanical</option><option value="Tundish">Tundish</option>
-<option value="Furnace">Furnace</option></select>
+<option value="Slide Gate">Slide Gate</option>
+<option value="Electrical">Electrical</option>
+<option value="Mechanical">Mechanical</option>
+<option value="Tundish">Tundish</option>
+<option value="Furnace">Furnace</option>
+</select>
 <input type="text" id="editRemarks" placeholder="Remarks">
 <div class="small-note">Consumed quantity is preserved automatically.</div>
 <div class="modal-actions"><button type="button" onclick="saveEdit()">SAVE</button><button type="button" onclick="closeEditModal()" style="background:#555">CANCEL</button></div>
@@ -383,51 +379,49 @@ async function logout(){if(inactivityTimer)clearTimeout(inactivityTimer);inactiv
 async function loadAll(){
 const {data,error}=await supabaseClient.from("stock_items").select("*").order("entry_date",{ascending:false});
 if(error){console.error("Load stock error:",error);stockData=[];stockTable.innerHTML=`<tr><td colspan="11">Error: ${escapeHtml(error.message)}</td></tr>`;return}
-stockData=data||[];renderStock();populateReportFilters();
+stockData=data||[];
+renderStock();populateReportFilters();
 const v=stockData.filter(i=>getDept(i)===activeDepartment);
-document.getElementById("dashItems").textContent=v.length;
-document.getElementById("dashReceived").textContent=v.reduce((s,i)=>s+Number(i.received||0),0);
-document.getElementById("dashStock").textContent=v.reduce((s,i)=>s+Number(i.quantity||0),0);
-document.getElementById("dashLow").textContent=v.filter(i=>Number(i.quantity||0)===1).length;
-document.getElementById("dashOut").textContent=v.filter(i=>Number(i.quantity||0)===0).length;
-const ln=v.filter(i=>Number(i.quantity||0)===1).map(i=>`${i.item_name} (${i.item_code})`);
-const on=v.filter(i=>Number(i.quantity||0)===0).map(i=>`${i.item_name} (${i.item_code})`);
-lowAlert.classList.toggle("hidden",!ln.length);lowAlert.textContent=ln.length?`LOW STOCK [${activeDepartment}]: ${ln.join(", ")}`:"";
-outAlert.classList.toggle("hidden",!on.length);outAlert.textContent=on.length?`OUT OF STOCK [${activeDepartment}]: ${on.join(", ")}`:"";
+const totalItems=v.length,totalReceived=v.reduce((s,i)=>s+Number(i.received||0),0),totalStock=v.reduce((s,i)=>s+Number(i.quantity||0),0),lowItems=v.filter(i=>Number(i.quantity||0)===1).length,outItems=v.filter(i=>Number(i.quantity||0)===0).length;
+dashItems.textContent=totalItems;dashReceived.textContent=totalReceived;dashStock.textContent=totalStock;dashLow.textContent=lowItems;dashOut.textContent=outItems;
+const lowNames=v.filter(i=>Number(i.quantity||0)===1).map(i=>`${i.item_name} (${i.item_code})`);
+const outNames=v.filter(i=>Number(i.quantity||0)===0).map(i=>`${i.item_name} (${i.item_code})`);
+lowAlert.classList.toggle("hidden",!lowNames.length);lowAlert.textContent=lowNames.length?`LOW STOCK [${activeDepartment}]: ${lowNames.join(", ")}`:"";
+outAlert.classList.toggle("hidden",!outNames.length);outAlert.textContent=outNames.length?`OUT OF STOCK [${activeDepartment}]: ${outNames.join(", ")}`:"";
 }
 
 async function addStock(){
-const name=document.getElementById("itemName").value.trim(),code=document.getElementById("itemCode").value.trim();
-const stock=Number(document.getElementById("stock").value)||0,received=Number(document.getElementById("received").value)||0;
-const receivedDate=document.getElementById("receivedDate").value,remarks=document.getElementById("remarks").value.trim();
 const department=activeDepartment;
-if(!name){showStockMessage("Enter Item Name.","red");return}
-if(!code){showStockMessage("Enter Item Code.","red");return}
-if(stock<0||received<0){showStockMessage("Invalid quantity.","red");return}
-if(stock===0&&received===0){showStockMessage("Enter Stock or Received quantity.","red");return}
+const name=document.getElementById("itemName").value.trim(),code=document.getElementById("itemCode").value.trim(),stock=Number(document.getElementById("stock").value)||0,received=Number(document.getElementById("received").value)||0,receivedDate=document.getElementById("receivedDate").value,remarks=document.getElementById("remarks").value.trim();
+if(!name){showStockMessage("Enter Item Name.","red");return}if(!code){showStockMessage("Enter Item Code.","red");return}if(stock<0||received<0){showStockMessage("Invalid quantity.","red");return}if(stock===0&&received===0){showStockMessage("Enter Stock or Received quantity.","red");return}
 const {data:existing,error:findError}=await supabaseClient.from("stock_items").select("*").eq("item_code",code).eq("department",department).limit(1);
 if(findError){showStockMessage(findError.message,"red");return}
 if(existing&&existing.length){
-const item=existing[0],newTotal=Number(item.quantity||0)+received;
-const {error}=await supabaseClient.from("stock_items").update({item_name:name,quantity:newTotal,remarks:remarks||item.remarks||""}).eq("id",item.id);
+const item=existing[0],oldTotal=Number(item.quantity||0),newTotal=oldTotal+received;
+const {error:updateError}=await supabaseClient.from("stock_items").update({item_name:name,quantity:newTotal,remarks:remarks||item.remarks||""}).eq("id",item.id);
+if(updateError){showStockMessage(updateError.message,"red");return}
+if(received>0){
+const {error:historyError}=await supabaseClient.from("received_history").insert({stock_item_id:item.id,item_name:name,item_code:code,department,quantity:received,received_date:receivedDate||new Date().toISOString().slice(0,10),remarks});
+if(historyError){showStockMessage(historyError.message,"red");return}}
+await logActivity(received>0?"RECEIVE STOCK":"UPDATE STOCK",name,code,received);showStockMessage("Existing Item Code found. Stock updated successfully.","green");clearForm();await loadAll();await loadReceivedHistory();await loadActivity();return}
+const total=stock+received;
+const {data:newItem,error}=await supabaseClient.from("stock_items").insert({item_name:name,item_code:code,department,open_stock:stock,received,quantity:total,entry_date:receivedDate||new Date().toISOString(),remarks}).select().single();
 if(error){showStockMessage(error.message,"red");return}
-if(received>0)await supabaseClient.from("received_history").insert({stock_item_id:item.id,item_name:name,item_code:code,department,quantity:received,received_date:receivedDate||new Date().toISOString().slice(0,10),remarks});
-await logActivity(received>0?"RECEIVE STOCK":"UPDATE STOCK",name,code,received);
-showStockMessage("Existing Item Code found. Stock updated successfully.","green");clearForm();await loadAll();await loadReceivedHistory();await loadActivity();return}
-const {data:newItem,error}=await supabaseClient.from("stock_items").insert({item_name:name,item_code:code,department,open_stock:stock,received,quantity:stock+received,entry_date:receivedDate||new Date().toISOString(),remarks}).select().single();
-if(error){showStockMessage(error.message,"red");return}
-if(received>0)await supabaseClient.from("received_history").insert({stock_item_id:newItem.id,item_name:name,item_code:code,department,quantity:received,received_date:receivedDate||new Date().toISOString().slice(0,10),remarks});
-await logActivity("ADD STOCK",name,code,stock+received);showStockMessage("Stock added successfully.","green");clearForm();await loadAll();await loadReceivedHistory();await loadActivity();
+if(received>0){
+const {error:historyError}=await supabaseClient.from("received_history").insert({stock_item_id:newItem.id,item_name:name,item_code:code,department,quantity:received,received_date:receivedDate||new Date().toISOString().slice(0,10),remarks});
+if(historyError){showStockMessage(historyError.message,"red");return}}
+await logActivity("ADD STOCK",name,code,total);showStockMessage("Stock added successfully.","green");clearForm();await loadAll();await loadReceivedHistory();await loadActivity();
 }
 
 function renderStock(){
 if(!stockTable)return;
-const search=(document.getElementById("stockSearch")?.value||"").trim().toLowerCase(),from=document.getElementById("filterFrom")?.value||"",to=document.getElementById("filterTo")?.value||"",sf=document.getElementById("statusFilter")?.value||"all";
+const search=(document.getElementById("stockSearch")?.value||"").trim().toLowerCase(),from=document.getElementById("filterFrom")?.value||"",to=document.getElementById("filterTo")?.value||"",statusFilter=document.getElementById("statusFilter")?.value||"all";
 let rows=stockData.filter(item=>getDept(item)===activeDepartment).filter(item=>{
 const text=(String(item.item_name||"")+" "+String(item.item_code||"")+" "+String(item.remarks||"")).toLowerCase(),date=formatISODate(item.entry_date),q=Number(item.quantity||0),status=q===0?"out":q===1?"low":"normal";
-return (!search||text.includes(search))&&(!from||date>=from)&&(!to||date<=to)&&(sf==="all"||sf===status)});
-stockTable.innerHTML="";if(!rows.length){stockTable.innerHTML="<tr><td colspan='11'>No stock found.</td></tr>";return}
-rows.forEach((item,index)=>{const q=Number(item.quantity||0);let st="NORMAL",bc="badge-normal";if(q===0){st="OUT OF STOCK";bc="badge-out"}else if(q===1){st="LOW STOCK";bc="badge-low"}const row=document.createElement("tr");row.innerHTML=`<td>${index+1}</td><td>${escapeHtml(item.item_name||"")}</td><td>${escapeHtml(item.item_code||"")}</td><td>${Number(item.open_stock||0)}</td><td>${Number(item.received||0)}</td><td>${formatISODate(item.entry_date)}</td><td><b>${q}</b></td><td><span class="badge ${bc}">${st}</span></td><td>${escapeHtml(item.remarks||"")}</td><td><button type="button" class="action-btn consume" onclick="startConsumption('${String(item.id).replace(/'/g,"\\'")}')">CONSUME</button></td><td><button type="button" class="action-btn edit" onclick="editStock('${String(item.id).replace(/'/g,"\\'")}')">EDIT</button><button type="button" class="action-btn delete" onclick="deleteStock('${String(item.id).replace(/'/g,"\\'")}')">DELETE</button></td>`;stockTable.appendChild(row)})}
+return (!search||text.includes(search))&&(!from||date>=from)&&(!to||date<=to)&&(statusFilter==="all"||statusFilter===status)});
+stockTable.innerHTML="";
+if(!rows.length){stockTable.innerHTML="<tr><td colspan='11'>No stock found.</td></tr>";return}
+rows.forEach((item,index)=>{const q=Number(item.quantity||0);let statusText="NORMAL",badgeClass="badge-normal";if(q===0){statusText="OUT OF STOCK";badgeClass="badge-out"}else if(q===1){statusText="LOW STOCK";badgeClass="badge-low"}const row=document.createElement("tr");row.innerHTML=`<td>${index+1}</td><td>${escapeHtml(item.item_name||"")}</td><td>${escapeHtml(item.item_code||"")}</td><td>${Number(item.open_stock||0)}</td><td>${Number(item.received||0)}</td><td>${formatISODate(item.entry_date)}</td><td><b>${q}</b></td><td><span class="badge ${badgeClass}">${statusText}</span></td><td>${escapeHtml(item.remarks||"")}</td><td><button type="button" class="action-btn consume" onclick="startConsumption('${String(item.id).replace(/'/g,"\\'")}')">CONSUME</button></td><td><button type="button" class="action-btn edit" onclick="editStock('${String(item.id).replace(/'/g,"\\'")}')">EDIT</button><button type="button" class="action-btn delete" onclick="deleteStock('${String(item.id).replace(/'/g,"\\'")}')">DELETE</button></td>`;stockTable.appendChild(row)})}
 
 async function loadHistory(){const {data,error}=await supabaseClient.from("consumption_history").select("*").order("consumption_date",{ascending:false}).limit(10000);if(error){historyData=[];historyTable.innerHTML=`<tr><td colspan="6">${escapeHtml(error.message)}</td></tr>`;return}historyData=data||[];renderHistory();populateReportFilters()}
 function renderHistory(){if(!historyTable)return;const from=document.getElementById("historyFrom")?.value||"",to=document.getElementById("historyTo")?.value||"",search=(document.getElementById("historySearch")?.value||"").trim().toLowerCase(),rows=historyData.filter(item=>getDept(item)===activeDepartment).filter(item=>{const date=formatISODate(item.consumption_date),text=(String(item.item_name||"")+" "+String(item.item_code||"")).toLowerCase();return (!from||date>=from)&&(!to||date<=to)&&(!search||text.includes(search))});historyTable.innerHTML="";if(!rows.length){historyTable.innerHTML="<tr><td colspan='6'>No consumption history.</td></tr>";return}rows.forEach(item=>{const row=document.createElement("tr"),deleteBtn=currentIsAdmin?`<button type="button" class="action-btn history-delete" onclick="deleteConsumption('${String(item.id).replace(/'/g,"\\'")}')">DELETE</button>`:"";row.innerHTML=`<td>${formatISODate(item.consumption_date)}</td><td>${escapeHtml(item.item_name||"")}</td><td>${escapeHtml(item.item_code||"")}</td><td><b>${Number(item.quantity||0)}</b></td><td>${escapeHtml(item.remarks||"")}</td><td>${deleteBtn}</td>`;historyTable.appendChild(row)})}
@@ -593,7 +587,7 @@ return d.toLocaleDateString("en-IN",{month:"long",year:"numeric"});
 }
 
 
-function populateReportFilters(){const itemSelect=document.getElementById("reportItem"),yearSelect=document.getElementById("reportYear");if(!itemSelect||!yearSelect)return;const ci=itemSelect.value||"all",cy=yearSelect.value||"all",items={};stockData.filter(i=>getDept(i)===activeDepartment).forEach(i=>{const c=String(i.item_code||"");if(c)items[c]=String(i.item_name||"")});itemSelect.innerHTML='<option value="all">ALL ITEMS</option>';Object.keys(items).sort().forEach(c=>{const o=document.createElement("option");o.value=c;o.textContent=items[c]+" ("+c+")";itemSelect.appendChild(o)});if([...itemSelect.options].some(o=>o.value===ci))itemSelect.value=ci;const years=new Set();receivedHistoryData.filter(i=>getDept(i)===activeDepartment).forEach(i=>{const d=getDateOnly(i.received_date||i.created_at);if(d)years.add(d.slice(0,4))});historyData.filter(i=>getDept(i)===activeDepartment).forEach(i=>{const d=getDateOnly(i.consumption_date||i.created_at);if(d)years.add(d.slice(0,4))});yearSelect.innerHTML='<option value="all">ALL YEARS</option>';[...years].sort().reverse().forEach(y=>{const o=document.createElement("option");o.value=y;o.textContent=y;yearSelect.appendChild(o)});if([...yearSelect.options].some(o=>o.value===cy))yearSelect.value=cy}
+function populateReportFilters(){const itemSelect=document.getElementById("reportItem"),yearSelect=document.getElementById("reportYear");if(!itemSelect||!yearSelect)return;const currentItem=itemSelect.value||"all",currentYear=yearSelect.value||"all",items={};stockData.filter(i=>getDept(i)===activeDepartment).forEach(i=>{const code=String(i.item_code||"");if(code)items[code]=String(i.item_name||"")});itemSelect.innerHTML='<option value="all">ALL ITEMS</option>';Object.keys(items).sort().forEach(code=>{const option=document.createElement("option");option.value=code;option.textContent=items[code]+" ("+code+")";itemSelect.appendChild(option)});if([...itemSelect.options].some(o=>o.value===currentItem))itemSelect.value=currentItem;const years=new Set();receivedHistoryData.filter(i=>getDept(i)===activeDepartment).forEach(i=>{const d=getDateOnly(i.received_date||i.created_at);if(d)years.add(d.slice(0,4))});historyData.filter(i=>getDept(i)===activeDepartment).forEach(i=>{const d=getDateOnly(i.consumption_date||i.created_at);if(d)years.add(d.slice(0,4))});yearSelect.innerHTML='<option value="all">ALL YEARS</option>';[...years].sort().reverse().forEach(year=>{const option=document.createElement("option");option.value=year;option.textContent=year;yearSelect.appendChild(option)});if([...yearSelect.options].some(o=>o.value===currentYear))yearSelect.value=currentYear}
 
 async function generateReport(){
 
@@ -1062,16 +1056,47 @@ checkInactivity();
 }
 });
 
-async function checkSession(){const {data}=await supabaseClient.auth.getSession();if(data&&data.session){currentIsAdmin=await isAdmin();loginPage.classList.add("hidden");resetPage.classList.add("hidden");mainPage.classList.remove("hidden");resetInactivityTimer();await loadAll();await loadReceivedHistory();await loadHistory();await loadActivity()}else{loginPage.classList.remove("hidden");resetPage.classList.add("hidden");mainPage.classList.add("hidden")}}
+async function checkSession(){const {data}=await supabaseClient.auth.getSession();if(data&&data.session){currentIsAdmin=await isAdmin();await migrateOldDataToSlideGate();loginPage.classList.add("hidden");resetPage.classList.add("hidden");mainPage.classList.remove("hidden");resetInactivityTimer();await loadAll();await loadReceivedHistory();await loadHistory();await loadActivity()}else{loginPage.classList.remove("hidden");resetPage.classList.add("hidden");mainPage.classList.add("hidden")}}
 checkSession();
 </script>
 
+</body>
+</html
 <script>
 let activeDepartment=localStorage.getItem("rhi_active_department")||"Slide Gate";
-function getDept(row){return row&&row.department?row.department:"Slide Gate";}
-function changeDepartment(){activeDepartment=document.getElementById("activeDepartment").value;localStorage.setItem("rhi_active_department",activeDepartment);document.getElementById("departmentLabel").textContent=activeDepartment;loadAll();loadReceivedHistory();loadHistory();loadActivity();}
-async function migrateOldDepartmentRows(){for(const t of ["stock_items","received_history","consumption_history","activity_history"]){try{await supabaseClient.from(t).update({department:"Slide Gate"}).is("department",null)}catch(e){console.warn(t,e.message)}}}
-document.addEventListener("DOMContentLoaded",async()=>{document.getElementById("activeDepartment").value=activeDepartment;document.getElementById("departmentLabel").textContent=activeDepartment;await migrateOldDepartmentRows();});
+const RHI_DEPARTMENTS=["Electrical","Mechanical","Tundish","Slide Gate","Furnace"];
+
+function getDept(row){
+  return row && row.department ? String(row.department) : "Slide Gate";
+}
+
+function changeDepartment(){
+  const s=document.getElementById("activeDepartment");
+  activeDepartment=s?s.value:"Slide Gate";
+  localStorage.setItem("rhi_active_department",activeDepartment);
+  const label=document.getElementById("departmentLabel");
+  if(label) label.textContent=activeDepartment;
+  renderStock();
+  renderHistory();
+  renderReceivedHistory();
+  populateReportFilters();
+  loadAll();
+  loadReceivedHistory();
+  loadHistory();
+  loadActivity();
+}
+
+async function migrateOldDataToSlideGate(){
+  // Existing records without a department are the old stock.
+  // They are explicitly assigned to Slide Gate.
+  for(const table of ["stock_items","received_history","consumption_history","activity_history"]){
+    try{
+      const {error}=await supabaseClient.from(table)
+        .update({department:"Slide Gate"})
+        .is("department",null);
+      if(error) console.warn("Department migration failed for",table,error.message);
+    }catch(e){console.warn("Department migration failed for",table,e.message)}
+  }
+}
 </script>
-</body>
-</html>
+>
