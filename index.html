@@ -976,6 +976,106 @@ function clearHistoryFilters(){["historyFrom","historyTo","historySearch"].forEa
 function showStockMessage(text,color){stockMessage.style.color=color;stockMessage.textContent=text}
 function escapeHtml(value){return String(value??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
 
+
+/* =========================
+   GLOBAL DOUBLE-CLICK PROTECTION
+   Prevents duplicate submissions/actions
+========================= */
+const actionLocks = {};
+
+async function runOnce(actionName, actionFunction){
+if(actionLocks[actionName]) return;
+actionLocks[actionName] = true;
+try{
+return await actionFunction();
+}catch(error){
+console.error(actionName,error);
+throw error;
+}finally{
+setTimeout(()=>{ actionLocks[actionName] = false; }, 700);
+}
+}
+
+const _login = login;
+login = function(){
+return runOnce("login", _login);
+};
+
+const _forgotPassword = forgotPassword;
+forgotPassword = function(){
+return runOnce("forgotPassword", _forgotPassword);
+};
+
+const _resetPassword = resetPassword;
+resetPassword = function(){
+return runOnce("resetPassword", _resetPassword);
+};
+
+const _logout = logout;
+logout = function(){
+return runOnce("logout", _logout);
+};
+
+const _addStock = addStock;
+addStock = function(){
+return runOnce("addStock", _addStock);
+};
+
+const _saveConsumption = saveConsumption;
+saveConsumption = function(){
+return runOnce("saveConsumption", _saveConsumption);
+};
+
+const _saveEdit = saveEdit;
+saveEdit = function(){
+return runOnce("saveEdit", _saveEdit);
+};
+
+const _deleteStock = deleteStock;
+deleteStock = function(id){
+return runOnce("deleteStock_"+id, ()=>_deleteStock(id));
+};
+
+const _deleteConsumption = deleteConsumption;
+deleteConsumption = function(id){
+return runOnce("deleteConsumption_"+id, ()=>_deleteConsumption(id));
+};
+
+const _deleteActivity = deleteActivity;
+deleteActivity = function(id){
+return runOnce("deleteActivity_"+id, ()=>_deleteActivity(id));
+};
+
+const _generateReport = generateReport;
+generateReport = function(){
+return runOnce("generateReport", _generateReport);
+};
+
+const _downloadReportCSV = downloadReportCSV;
+downloadReportCSV = function(){
+return runOnce("downloadReportCSV", _downloadReportCSV);
+};
+
+const _downloadStockCSV = downloadStockCSV;
+downloadStockCSV = function(){
+return runOnce("downloadStockCSV", _downloadStockCSV);
+};
+
+const _downloadHistoryCSV = downloadHistoryCSV;
+downloadHistoryCSV = function(){
+return runOnce("downloadHistoryCSV", _downloadHistoryCSV);
+};
+
+const _printReport = printReport;
+printReport = function(){
+return runOnce("printReport", _printReport);
+};
+
+const _printStock = printStock;
+printStock = function(){
+return runOnce("printStock", _printStock);
+};
+
 document.getElementById("loginPassword").addEventListener("keydown",event=>{if(event.key==="Enter")login()});
 supabaseClient.auth.onAuthStateChange(event=>{if(event==="PASSWORD_RECOVERY"){loginPage.classList.add("hidden");mainPage.classList.add("hidden");resetPage.classList.remove("hidden")}});
 
