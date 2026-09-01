@@ -1060,14 +1060,13 @@ async function checkSession(){const {data}=await supabaseClient.auth.getSession(
 checkSession();
 </script>
 
-</body>
-</html
 <script>
 let activeDepartment=localStorage.getItem("rhi_active_department")||"Slide Gate";
 const RHI_DEPARTMENTS=["Electrical","Mechanical","Tundish","Slide Gate","Furnace"];
 
 function getDept(row){
-  return row && row.department ? String(row.department) : "Slide Gate";
+  const d=row&&row.department!=null?String(row.department).trim():"";
+  return d||"Slide Gate";
 }
 
 function changeDepartment(){
@@ -1076,10 +1075,6 @@ function changeDepartment(){
   localStorage.setItem("rhi_active_department",activeDepartment);
   const label=document.getElementById("departmentLabel");
   if(label) label.textContent=activeDepartment;
-  renderStock();
-  renderHistory();
-  renderReceivedHistory();
-  populateReportFilters();
   loadAll();
   loadReceivedHistory();
   loadHistory();
@@ -1093,10 +1088,11 @@ async function migrateOldDataToSlideGate(){
     try{
       const {error}=await supabaseClient.from(table)
         .update({department:"Slide Gate"})
-        .is("department",null);
+        .or("department.is.null,department.eq.");
       if(error) console.warn("Department migration failed for",table,error.message);
     }catch(e){console.warn("Department migration failed for",table,e.message)}
   }
 }
 </script>
->
+</body>
+</html>
