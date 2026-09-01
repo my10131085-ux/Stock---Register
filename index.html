@@ -228,6 +228,51 @@ th{background:#b00000;color:white;font-weight:bold;white-space:nowrap}
 </div>
 
 <script>
+let activeDepartment="Slide Gate";
+const RHI_DEPARTMENTS=["Electrical","Mechanical","Tundish","Slide Gate","Furnace"];
+
+function getDept(row){
+  return row && row.department ? String(row.department) : "Slide Gate";
+}
+
+function changeDepartment(){
+  const s=document.getElementById("activeDepartment");
+  activeDepartment=s?s.value:"Slide Gate";
+  localStorage.setItem("rhi_active_department",activeDepartment);
+  const label=document.getElementById("departmentLabel");
+  if(label)label.textContent=activeDepartment;
+  renderStock();
+  renderHistory();
+  renderReceivedHistory();
+  populateReportFilters();
+  loadAll();
+  loadReceivedHistory();
+  loadHistory();
+  loadActivity();
+}
+
+async function migrateOldDataToSlideGate(){
+  const key="rhi_old_data_migrated_to_slide_gate_v2";
+  if(localStorage.getItem(key)==="1")return true;
+
+  // At the moment of introducing Department, all existing records are old
+  // records. Put ALL existing rows into Slide Gate, including rows that may
+  // already contain another department from earlier testing.
+  const tables=["stock_items","received_history","consumption_history","activity_history"];
+  for(const table of tables){
+    const {error}=await supabaseClient.from(table).update({department:"Slide Gate"}).neq("id","");
+    if(error){
+      console.error("Department migration failed for "+table,error);
+      return false;
+    }
+  }
+  localStorage.setItem(key,"1");
+  activeDepartment="Slide Gate";
+  localStorage.setItem("rhi_active_department","Slide Gate");
+  return true;
+}
+</script>
+<script>
 const SUPABASE_URL="https://mooagaasvythwctcktcx.supabase.co";
 const SUPABASE_ANON_KEY="sb_publishable_Zql7qJbZlj1R5H1ydOoqSg_F0WAdgd0";
 const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
@@ -1056,43 +1101,9 @@ checkInactivity();
 }
 });
 
-async function checkSession(){const {data}=await supabaseClient.auth.getSession();if(data&&data.session){currentIsAdmin=await isAdmin();await migrateOldDataToSlideGate();loginPage.classList.add("hidden");resetPage.classList.add("hidden");mainPage.classList.remove("hidden");resetInactivityTimer();await loadAll();await loadReceivedHistory();await loadHistory();await loadActivity()}else{loginPage.classList.remove("hidden");resetPage.classList.add("hidden");mainPage.classList.add("hidden")}}
+async function checkSession(){const {data}=await supabaseClient.auth.getSession();if(data&&data.session){currentIsAdmin=await isAdmin();await migrateOldDataToSlideGate();activeDepartment="Slide Gate";localStorage.setItem("rhi_active_department","Slide Gate");const dep=document.getElementById("activeDepartment");if(dep)dep.value=activeDepartment;const depLabel=document.getElementById("departmentLabel");if(depLabel)depLabel.textContent=activeDepartment;loginPage.classList.add("hidden");resetPage.classList.add("hidden");mainPage.classList.remove("hidden");resetInactivityTimer();await loadAll();await loadReceivedHistory();await loadHistory();await loadActivity()}else{loginPage.classList.remove("hidden");resetPage.classList.add("hidden");mainPage.classList.add("hidden")}}
 checkSession();
 </script>
 
-<script>
-let activeDepartment=localStorage.getItem("rhi_active_department")||"Slide Gate";
-const RHI_DEPARTMENTS=["Electrical","Mechanical","Tundish","Slide Gate","Furnace"];
-
-function getDept(row){
-  const d=row&&row.department!=null?String(row.department).trim():"";
-  return d||"Slide Gate";
-}
-
-function changeDepartment(){
-  const s=document.getElementById("activeDepartment");
-  activeDepartment=s?s.value:"Slide Gate";
-  localStorage.setItem("rhi_active_department",activeDepartment);
-  const label=document.getElementById("departmentLabel");
-  if(label) label.textContent=activeDepartment;
-  loadAll();
-  loadReceivedHistory();
-  loadHistory();
-  loadActivity();
-}
-
-async function migrateOldDataToSlideGate(){
-  // Existing records without a department are the old stock.
-  // They are explicitly assigned to Slide Gate.
-  for(const table of ["stock_items","received_history","consumption_history","activity_history"]){
-    try{
-      const {error}=await supabaseClient.from(table)
-        .update({department:"Slide Gate"})
-        .or("department.is.null,department.eq.");
-      if(error) console.warn("Department migration failed for",table,error.message);
-    }catch(e){console.warn("Department migration failed for",table,e.message)}
-  }
-}
-</script>
 </body>
 </html>
