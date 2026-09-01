@@ -1096,5 +1096,102 @@ checkInactivity();
 async function checkSession(){const {data}=await supabaseClient.auth.getSession();if(data&&data.session){currentIsAdmin=await isAdmin();loginPage.classList.add("hidden");resetPage.classList.add("hidden");mainPage.classList.remove("hidden");resetInactivityTimer();await loadAll();await loadReceivedHistory();await loadHistory();await loadActivity()}else{loginPage.classList.remove("hidden");resetPage.classList.add("hidden");mainPage.classList.add("hidden")}}
 checkSession();
 </script>
+
+<!-- ===== DEPARTMENT SELECTION ===== -->
+<div id="departmentOverlay" style="
+position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:99999;
+display:none;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;padding:24px;border-radius:12px;width:min(420px,95vw);text-align:center">
+    <h3 style="margin-top:0">SELECT DEPARTMENT</h3>
+    <select id="departmentChoice" style="width:100%;padding:12px">
+      <option value="Slide Gate">Slide Gate</option>
+      <option value="Electrical">Electrical</option>
+      <option value="Mechanical">Mechanical</option>
+      <option value="Tundish">Tundish</option>
+      <option value="Furnace">Furnace</option>
+    </select>
+    <button type="button" onclick="confirmDepartment()" style="margin-top:14px;padding:11px 22px">
+      CONTINUE
+    </button>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  const DEPTS=["Electrical","Mechanical","Tundish","Slide Gate","Furnace"];
+  let selectedDept=localStorage.getItem("rhi_department")||"Slide Gate";
+
+  function dept(row){
+    return (row && row.department) ? row.department : "Slide Gate";
+  }
+
+  window.confirmDepartment=function(){
+    const el=document.getElementById("departmentChoice");
+    selectedDept=el?el.value:"Slide Gate";
+    localStorage.setItem("rhi_department",selectedDept);
+    document.getElementById("departmentOverlay").style.display="none";
+    if(window.rhiApplyDepartment) window.rhiApplyDepartment();
+  };
+
+  window.rhiApplyDepartment=function(){
+    // Refresh the existing UI. The database remains the source of truth.
+    try{ if(typeof loadAll==="function") loadAll(); }catch(e){}
+    try{ if(typeof loadReceivedHistory==="function") loadReceivedHistory(); }catch(e){}
+    try{ if(typeof loadActivity==="function") loadActivity(); }catch(e){}
+  };
+
+  window.getRhiDepartment=function(){return selectedDept;};
+  window.getRhiDepartmentOf=dept;
+
+  // Add a visible selector to the existing main page without disturbing layout.
+  function addSelector(){
+    if(document.getElementById("rhiDeptSelector")) return;
+    const main=document.getElementById("mainPage")||document.body;
+    const box=document.createElement("div");
+    box.id="rhiDeptSelector";
+    box.className="no-print";
+    box.style.cssText="max-width:420px;margin:10px auto;padding:10px;text-align:center";
+    box.innerHTML=
+      '<label><b>SELECT DEPARTMENT</b></label><br>'+
+      '<select id="rhiDeptSelect" style="width:100%;padding:9px;margin-top:5px">'+
+      DEPTS.map(d=>'<option value="'+d+'">'+d+'</option>').join("")+
+      '</select>';
+    main.insertBefore(box,main.firstChild);
+    const s=document.getElementById("rhiDeptSelect");
+    s.value=selectedDept;
+    s.onchange=function(){
+      selectedDept=this.value;
+      localStorage.setItem("rhi_department",selectedDept);
+      window.rhiApplyDepartment();
+    };
+  }
+
+  // One-time migration: old NULL department rows are Slide Gate.
+  async function migrate(){
+    if(typeof supabaseClient==="undefined") return;
+    for(const table of ["stock_items","received_history","consumption_history","activity_history"]){
+      try{
+        await supabaseClient.from(table)
+          .update({department:"Slide Gate"})
+          .is("department",null);
+      }catch(e){ console.warn("Department migration:",table,e.message); }
+    }
+  }
+
+  async function initDept(){
+    await migrate();
+    addSelector();
+  }
+
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",initDept);
+  }else{
+    initDept();
+  }
+})();
+</script>
+<!-- ===== END DEPARTMENT SELECTION ===== -->
 </body>
 </html>
