@@ -103,6 +103,13 @@ th{background:#b00000;color:white;font-weight:bold;white-space:nowrap}
 <input type="number" id="stock" placeholder="Opening Stock" min="0">
 <input type="number" id="received" placeholder="Received Quantity" min="0">
 <input type="date" id="receivedDate">
+<select id="stockDepartment">
+<option value="Slide Gate">Slide Gate</option>
+<option value="Electrical">Electrical</option>
+<option value="Mechanical">Mechanical</option>
+<option value="Tundish">Tundish</option>
+<option value="Furnace">Furnace</option>
+</select>
 <input type="text" id="remarks" placeholder="Remarks">
 </div>
 <button class="no-print" type="button" onclick="addStock()">ADD / RECEIVE STOCK</button>
@@ -374,6 +381,7 @@ outAlert.classList.toggle("hidden",!outNames.length);outAlert.textContent=outNam
 }
 
 async function addStock(){
+const selectedDepartment=window.RHI_ACTIVE_DEPARTMENT||"Slide Gate";
 const name=document.getElementById("itemName").value.trim(),code=document.getElementById("itemCode").value.trim(),stock=Number(document.getElementById("stock").value)||0,received=Number(document.getElementById("received").value)||0,receivedDate=document.getElementById("receivedDate").value,remarks=document.getElementById("remarks").value.trim();
 if(!name){showStockMessage("Enter Item Name.","red");return}if(!code){showStockMessage("Enter Item Code.","red");return}if(stock<0||received<0){showStockMessage("Invalid quantity.","red");return}if(stock===0&&received===0){showStockMessage("Enter Stock or Received quantity.","red");return}
 const {data:existing,error:findError}=await supabaseClient.from("stock_items").select("*").eq("item_code",code).limit(1);
@@ -389,7 +397,7 @@ if(historyError){showStockMessage(historyError.message,"red");return}
 await logActivity(received>0?"RECEIVE STOCK":"UPDATE STOCK",name,code,received);showStockMessage("Existing Item Code found. Stock updated successfully.","green");clearForm();await loadAll();await loadReceivedHistory();await loadActivity();return;
 }
 const total=stock+received;
-const {data:newItem,error}=await supabaseClient.from("stock_items").insert({item_name:name,item_code:code,open_stock:stock,received,quantity:total,entry_date:receivedDate||new Date().toISOString(),remarks}).select().single();
+const {data:newItem,error}=await supabaseClient.from("stock_items").insert({item_name:name,item_code:code,department:(document.getElementById("stockDepartment")?.value||window.RHI_ACTIVE_DEPARTMENT||"Slide Gate"),open_stock:stock,received,quantity:total,entry_date:receivedDate||new Date().toISOString(),remarks}).select().single();
 if(error){showStockMessage(error.message,"red");return}
 if(received>0){
 const {error:historyError}=await supabaseClient.from("received_history").insert({stock_item_id:newItem.id,item_name:name,item_code:code,quantity:received,received_date:receivedDate||new Date().toISOString().slice(0,10),remarks});
@@ -1097,101 +1105,126 @@ async function checkSession(){const {data}=await supabaseClient.auth.getSession(
 checkSession();
 </script>
 
-<!-- ===== DEPARTMENT SELECTION ===== -->
-<div id="departmentOverlay" style="
-position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:99999;
-display:none;align-items:center;justify-content:center;padding:20px">
-  <div style="background:#fff;padding:24px;border-radius:12px;width:min(420px,95vw);text-align:center">
-    <h3 style="margin-top:0">SELECT DEPARTMENT</h3>
-    <select id="departmentChoice" style="width:100%;padding:12px">
-      <option value="Slide Gate">Slide Gate</option>
-      <option value="Electrical">Electrical</option>
-      <option value="Mechanical">Mechanical</option>
-      <option value="Tundish">Tundish</option>
-      <option value="Furnace">Furnace</option>
-    </select>
-    <button type="button" onclick="confirmDepartment()" style="margin-top:14px;padding:11px 22px">
-      CONTINUE
-    </button>
-  </div>
-</div>
+<!-- ===== REAL DEPARTMENT FILTER ===== -->
+<style>
+#rhiDepartmentBox{max-width:430px;margin:10px auto 16px;text-align:center}
+#rhiDepartmentBox select{width:100%;padding:10px;border-radius:7px}
+.rhi-dept-tag{font-weight:700;margin-top:5px;font-size:13px}
+</style>
 
 <script>
 (function(){
-  "use strict";
+"use strict";
+const RHI_DEPTS=["Electrical","Mechanical","Tundish","Slide Gate","Furnace"];
+window.RHI_ACTIVE_DEPARTMENT=localStorage.getItem("rhi_active_department")||"Slide Gate";
 
-  const DEPTS=["Electrical","Mechanical","Tundish","Slide Gate","Furnace"];
-  let selectedDept=localStorage.getItem("rhi_department")||"Slide Gate";
+function rhiDept(row){
+  return row && row.department ? row.department : "Slide Gate";
+}
+window.RHI_GET_DEPARTMENT=rhiDept;
 
-  function dept(row){
-    return (row && row.department) ? row.department : "Slide Gate";
-  }
+function rhiSetDepartment(v){
+  if(!RHI_DEPTS.includes(v)) v="Slide Gate";
+  window.RHI_ACTIVE_DEPARTMENT=v;
+  localStorage.setItem("rhi_active_department",v);
 
-  window.confirmDepartment=function(){
-    const el=document.getElementById("departmentChoice");
-    selectedDept=el?el.value:"Slide Gate";
-    localStorage.setItem("rhi_department",selectedDept);
-    document.getElementById("departmentOverlay").style.display="none";
-    if(window.rhiApplyDepartment) window.rhiApplyDepartment();
-  };
+  const s=document.getElementById("rhiDepartmentSelect");
+  if(s) s.value=v;
 
-  window.rhiApplyDepartment=function(){
-    // Refresh the existing UI. The database remains the source of truth.
-    try{ if(typeof loadAll==="function") loadAll(); }catch(e){}
-    try{ if(typeof loadReceivedHistory==="function") loadReceivedHistory(); }catch(e){}
-    try{ if(typeof loadActivity==="function") loadActivity(); }catch(e){}
-  };
+  /* Refresh the existing application. */
+  try{ if(typeof loadAll==="function") loadAll(); }catch(e){console.error(e);}
+  try{ if(typeof loadReceivedHistory==="function") loadReceivedHistory(); }catch(e){console.error(e);}
+  try{ if(typeof loadActivity==="function") loadActivity(); }catch(e){console.error(e);}
+  try{ if(typeof renderStock==="function") renderStock(); }catch(e){console.error(e);}
+  try{ if(typeof renderHistory==="function") renderHistory(); }catch(e){console.error(e);}
+  try{ if(typeof renderReceivedHistory==="function") renderReceivedHistory(); }catch(e){console.error(e);}
+  try{ if(typeof populateReportFilters==="function") populateReportFilters(); }catch(e){console.error(e);}
+}
 
-  window.getRhiDepartment=function(){return selectedDept;};
-  window.getRhiDepartmentOf=dept;
+window.RHI_SET_DEPARTMENT=rhiSetDepartment;
 
-  // Add a visible selector to the existing main page without disturbing layout.
-  function addSelector(){
-    if(document.getElementById("rhiDeptSelector")) return;
-    const main=document.getElementById("mainPage")||document.body;
-    const box=document.createElement("div");
-    box.id="rhiDeptSelector";
-    box.className="no-print";
-    box.style.cssText="max-width:420px;margin:10px auto;padding:10px;text-align:center";
-    box.innerHTML=
-      '<label><b>SELECT DEPARTMENT</b></label><br>'+
-      '<select id="rhiDeptSelect" style="width:100%;padding:9px;margin-top:5px">'+
-      DEPTS.map(d=>'<option value="'+d+'">'+d+'</option>').join("")+
-      '</select>';
-    main.insertBefore(box,main.firstChild);
-    const s=document.getElementById("rhiDeptSelect");
-    s.value=selectedDept;
-    s.onchange=function(){
-      selectedDept=this.value;
-      localStorage.setItem("rhi_department",selectedDept);
-      window.rhiApplyDepartment();
-    };
-  }
+function makeDepartmentBox(){
+  if(document.getElementById("rhiDepartmentBox")) return;
+  const main=document.getElementById("mainPage");
+  if(!main) return;
 
-  // One-time migration: old NULL department rows are Slide Gate.
-  async function migrate(){
-    if(typeof supabaseClient==="undefined") return;
-    for(const table of ["stock_items","received_history","consumption_history","activity_history"]){
-      try{
-        await supabaseClient.from(table)
-          .update({department:"Slide Gate"})
-          .is("department",null);
-      }catch(e){ console.warn("Department migration:",table,e.message); }
+  const box=document.createElement("div");
+  box.id="rhiDepartmentBox";
+  box.className="no-print";
+  box.innerHTML=
+    '<label><b>SELECT DEPARTMENT</b></label>'+
+    '<select id="rhiDepartmentSelect">'+
+      RHI_DEPTS.map(x=>'<option value="'+x+'">'+x+'</option>').join("")+
+    '</select>'+
+    '<div class="rhi-dept-tag">Current: <span id="rhiDepartmentText"></span></div>';
+
+  main.insertBefore(box,main.firstChild);
+
+  const s=box.querySelector("select");
+  s.value=window.RHI_ACTIVE_DEPARTMENT;
+  s.addEventListener("change",function(){
+    rhiSetDepartment(this.value);
+    const t=document.getElementById("rhiDepartmentText");
+    if(t)t.textContent=window.RHI_ACTIVE_DEPARTMENT;
+  });
+  const t=document.getElementById("rhiDepartmentText");
+  if(t)t.textContent=window.RHI_ACTIVE_DEPARTMENT;
+}
+
+/* Convert old NULL/blank department rows to Slide Gate once. */
+async function migrateOldRows(){
+  if(typeof supabaseClient==="undefined") return;
+  for(const table of ["stock_items","received_history","consumption_history","activity_history"]){
+    try{
+      await supabaseClient.from(table)
+        .update({department:"Slide Gate"})
+        .or("department.is.null,department.eq.");
+    }catch(e){
+      console.warn("Department migration:",table,e.message);
     }
   }
+}
 
-  async function initDept(){
-    await migrate();
-    addSelector();
-  }
+/*
+ * Patch DB reads at the Supabase client level. This makes existing
+ * stock/history queries automatically receive only the selected department
+ * without rewriting the original app's query functions.
+ */
+function installQueryFilter(){
+  if(window.__RHI_QUERY_PATCHED || typeof supabaseClient==="undefined") return;
+  window.__RHI_QUERY_PATCHED=true;
 
-  if(document.readyState==="loading"){
-    document.addEventListener("DOMContentLoaded",initDept);
-  }else{
-    initDept();
-  }
+  const originalFrom=supabaseClient.from.bind(supabaseClient);
+  supabaseClient.from=function(table){
+    const q=originalFrom(table);
+
+    if(["stock_items","received_history","consumption_history","activity_history"].includes(table)){
+      const originalSelect=q.select.bind(q);
+      q.select=function(){
+        const result=originalSelect.apply(q,arguments);
+        try{
+          return result.eq("department",window.RHI_ACTIVE_DEPARTMENT);
+        }catch(e){ return result; }
+      };
+    }
+    return q;
+  };
+}
+
+async function init(){
+  makeDepartmentBox();
+  await migrateOldRows();
+  installQueryFilter();
+  rhiSetDepartment(window.RHI_ACTIVE_DEPARTMENT);
+}
+
+if(document.readyState==="loading"){
+  document.addEventListener("DOMContentLoaded",init);
+}else{
+  setTimeout(init,0);
+}
 })();
 </script>
-<!-- ===== END DEPARTMENT SELECTION ===== -->
+<!-- ===== END REAL DEPARTMENT FILTER ===== -->
 </body>
 </html>
