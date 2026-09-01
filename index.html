@@ -81,7 +81,17 @@ th{background:#b00000;color:white;font-weight:bold;white-space:nowrap}
 
 <div id="mainPage" class="card hidden">
 <button type="button" class="logout" onclick="logout()">LOGOUT</button>
-<h1>RHI MAGNESITA</h1><h2>SPARE STOCK REGISTER</h2>
+<h1>RHI MAGNESITA</h1><h2>SPARE STOCK REGISTER</h2><div id="departmentBar" class="no-print" style="max-width:430px;margin:10px auto;text-align:center">
+<label><b>SELECT DEPARTMENT</b></label>
+<select id="activeDepartment" onchange="changeDepartment()">
+<option value="Slide Gate">Slide Gate</option>
+<option value="Electrical">Electrical</option>
+<option value="Mechanical">Mechanical</option>
+<option value="Tundish">Tundish</option>
+<option value="Furnace">Furnace</option>
+</select>
+<div class="small-note">Current: <b id="departmentLabel">Slide Gate</b></div>
+</div>
 
 <div class="no-print">
 <div class="dashboard">
@@ -209,7 +219,10 @@ th{background:#b00000;color:white;font-weight:bold;white-space:nowrap}
 <input type="text" id="editCode" placeholder="Item Code">
 <input type="number" id="editStock" placeholder="Opening Stock" min="0">
 <input type="number" id="editReceived" placeholder="Received" min="0">
-<input type="date" id="editReceivedDate">
+<input type="date" id="editReceivedDate"><select id="editDepartment">
+<option value="Slide Gate">Slide Gate</option><option value="Electrical">Electrical</option>
+<option value="Mechanical">Mechanical</option><option value="Tundish">Tundish</option>
+<option value="Furnace">Furnace</option></select>
 <input type="text" id="editRemarks" placeholder="Remarks">
 <div class="small-note">Consumed quantity is preserved automatically.</div>
 <div class="modal-actions"><button type="button" onclick="saveEdit()">SAVE</button><button type="button" onclick="closeEditModal()" style="background:#555">CANCEL</button></div>
@@ -320,7 +333,7 @@ user_email:user?user.email:"Unknown",
 action,
 item_name:itemName,
 item_code:itemCode,
-quantity:Number(quantity)||0
+quantity:Number(quantity)||0,department:activeDepartment
 });
 if(error){
 console.error("Activity log error:",error);
@@ -371,53 +384,53 @@ async function loadAll(){
 const {data,error}=await supabaseClient.from("stock_items").select("*").order("entry_date",{ascending:false});
 if(error){console.error("Load stock error:",error);stockData=[];stockTable.innerHTML=`<tr><td colspan="11">Error: ${escapeHtml(error.message)}</td></tr>`;return}
 stockData=data||[];renderStock();populateReportFilters();
-const totalItems=stockData.length,totalReceived=stockData.reduce((sum,item)=>sum+Number(item.received||0),0),totalStock=stockData.reduce((sum,item)=>sum+Number(item.quantity||0),0),lowItems=stockData.filter(item=>Number(item.quantity||0)===1).length,outItems=stockData.filter(item=>Number(item.quantity||0)===0).length;
-document.getElementById("dashItems").textContent=totalItems;document.getElementById("dashReceived").textContent=totalReceived;document.getElementById("dashStock").textContent=totalStock;document.getElementById("dashLow").textContent=lowItems;document.getElementById("dashOut").textContent=outItems;
-const lowNames=stockData.filter(i=>Number(i.quantity||0)===1).map(i=>`${i.item_name} (${i.item_code})`);
-const outNames=stockData.filter(i=>Number(i.quantity||0)===0).map(i=>`${i.item_name} (${i.item_code})`);
-const lowAlert=document.getElementById("lowAlert"),outAlert=document.getElementById("outAlert");
-lowAlert.classList.toggle("hidden",!lowNames.length);lowAlert.textContent=lowNames.length?`LOW STOCK: ${lowNames.join(", ")}`:"";
-outAlert.classList.toggle("hidden",!outNames.length);outAlert.textContent=outNames.length?`OUT OF STOCK: ${outNames.join(", ")}`:"";
+const v=stockData.filter(i=>getDept(i)===activeDepartment);
+document.getElementById("dashItems").textContent=v.length;
+document.getElementById("dashReceived").textContent=v.reduce((s,i)=>s+Number(i.received||0),0);
+document.getElementById("dashStock").textContent=v.reduce((s,i)=>s+Number(i.quantity||0),0);
+document.getElementById("dashLow").textContent=v.filter(i=>Number(i.quantity||0)===1).length;
+document.getElementById("dashOut").textContent=v.filter(i=>Number(i.quantity||0)===0).length;
+const ln=v.filter(i=>Number(i.quantity||0)===1).map(i=>`${i.item_name} (${i.item_code})`);
+const on=v.filter(i=>Number(i.quantity||0)===0).map(i=>`${i.item_name} (${i.item_code})`);
+lowAlert.classList.toggle("hidden",!ln.length);lowAlert.textContent=ln.length?`LOW STOCK [${activeDepartment}]: ${ln.join(", ")}`:"";
+outAlert.classList.toggle("hidden",!on.length);outAlert.textContent=on.length?`OUT OF STOCK [${activeDepartment}]: ${on.join(", ")}`:"";
 }
 
 async function addStock(){
-const selectedDepartment=window.RHI_ACTIVE_DEPARTMENT||"Slide Gate";
-const name=document.getElementById("itemName").value.trim(),code=document.getElementById("itemCode").value.trim(),stock=Number(document.getElementById("stock").value)||0,received=Number(document.getElementById("received").value)||0,receivedDate=document.getElementById("receivedDate").value,remarks=document.getElementById("remarks").value.trim();
-if(!name){showStockMessage("Enter Item Name.","red");return}if(!code){showStockMessage("Enter Item Code.","red");return}if(stock<0||received<0){showStockMessage("Invalid quantity.","red");return}if(stock===0&&received===0){showStockMessage("Enter Stock or Received quantity.","red");return}
-const {data:existing,error:findError}=await supabaseClient.from("stock_items").select("*").eq("item_code",code).limit(1);
+const name=document.getElementById("itemName").value.trim(),code=document.getElementById("itemCode").value.trim();
+const stock=Number(document.getElementById("stock").value)||0,received=Number(document.getElementById("received").value)||0;
+const receivedDate=document.getElementById("receivedDate").value,remarks=document.getElementById("remarks").value.trim();
+const department=activeDepartment;
+if(!name){showStockMessage("Enter Item Name.","red");return}
+if(!code){showStockMessage("Enter Item Code.","red");return}
+if(stock<0||received<0){showStockMessage("Invalid quantity.","red");return}
+if(stock===0&&received===0){showStockMessage("Enter Stock or Received quantity.","red");return}
+const {data:existing,error:findError}=await supabaseClient.from("stock_items").select("*").eq("item_code",code).eq("department",department).limit(1);
 if(findError){showStockMessage(findError.message,"red");return}
-if(existing&&existing.length>0){
-const item=existing[0],oldTotal=Number(item.quantity||0),newTotal=oldTotal+received;
-const {error:updateError}=await supabaseClient.from("stock_items").update({item_name:name,quantity:newTotal,remarks:remarks||item.remarks||""}).eq("id",item.id);
-if(updateError){showStockMessage(updateError.message,"red");return}
-if(received>0){
-const {error:historyError}=await supabaseClient.from("received_history").insert({stock_item_id:item.id,item_name:name,item_code:code,quantity:received,received_date:receivedDate||new Date().toISOString().slice(0,10),remarks});
-if(historyError){showStockMessage(historyError.message,"red");return}
-}
-await logActivity(received>0?"RECEIVE STOCK":"UPDATE STOCK",name,code,received);showStockMessage("Existing Item Code found. Stock updated successfully.","green");clearForm();await loadAll();await loadReceivedHistory();await loadActivity();return;
-}
-const total=stock+received;
-const {data:newItem,error}=await supabaseClient.from("stock_items").insert({item_name:name,item_code:code,department:(document.getElementById("stockDepartment")?.value||window.RHI_ACTIVE_DEPARTMENT||"Slide Gate"),open_stock:stock,received,quantity:total,entry_date:receivedDate||new Date().toISOString(),remarks}).select().single();
+if(existing&&existing.length){
+const item=existing[0],newTotal=Number(item.quantity||0)+received;
+const {error}=await supabaseClient.from("stock_items").update({item_name:name,quantity:newTotal,remarks:remarks||item.remarks||""}).eq("id",item.id);
 if(error){showStockMessage(error.message,"red");return}
-if(received>0){
-const {error:historyError}=await supabaseClient.from("received_history").insert({stock_item_id:newItem.id,item_name:name,item_code:code,quantity:received,received_date:receivedDate||new Date().toISOString().slice(0,10),remarks});
-if(historyError){showStockMessage(historyError.message,"red");return}
-}
+if(received>0)await supabaseClient.from("received_history").insert({stock_item_id:item.id,item_name:name,item_code:code,department,quantity:received,received_date:receivedDate||new Date().toISOString().slice(0,10),remarks});
+await logActivity(received>0?"RECEIVE STOCK":"UPDATE STOCK",name,code,received);
+showStockMessage("Existing Item Code found. Stock updated successfully.","green");clearForm();await loadAll();await loadReceivedHistory();await loadActivity();return}
+const {data:newItem,error}=await supabaseClient.from("stock_items").insert({item_name:name,item_code:code,department,open_stock:stock,received,quantity:stock+received,entry_date:receivedDate||new Date().toISOString(),remarks}).select().single();
+if(error){showStockMessage(error.message,"red");return}
+if(received>0)await supabaseClient.from("received_history").insert({stock_item_id:newItem.id,item_name:name,item_code:code,department,quantity:received,received_date:receivedDate||new Date().toISOString().slice(0,10),remarks});
 await logActivity("ADD STOCK",name,code,stock+received);showStockMessage("Stock added successfully.","green");clearForm();await loadAll();await loadReceivedHistory();await loadActivity();
 }
 
 function renderStock(){
 if(!stockTable)return;
-const search=(document.getElementById("stockSearch")?.value||"").trim().toLowerCase(),from=document.getElementById("filterFrom")?.value||"",to=document.getElementById("filterTo")?.value||"",statusFilter=document.getElementById("statusFilter")?.value||"all";
-let rows=stockData.filter(item=>{const name=String(item.item_name||"").toLowerCase(),code=String(item.item_code||"").toLowerCase(),remarks=String(item.remarks||"").toLowerCase(),textMatch=!search||name.includes(search)||code.includes(search)||remarks.includes(search),date=formatISODate(item.entry_date),fromMatch=!from||date>=from,toMatch=!to||date<=to,q=Number(item.quantity||0),status=q===0?"out":q===1?"low":"normal",statusMatch=statusFilter==="all"||statusFilter===status;return textMatch&&fromMatch&&toMatch&&statusMatch});
-stockTable.innerHTML="";
-if(!rows.length){stockTable.innerHTML="<tr><td colspan='11'>No stock found.</td></tr>";return}
-rows.forEach((item,index)=>{const q=Number(item.quantity||0);let statusText="NORMAL",badgeClass="badge-normal";if(q===0){statusText="OUT OF STOCK";badgeClass="badge-out"}else if(q===1){statusText="LOW STOCK";badgeClass="badge-low"}const row=document.createElement("tr");row.innerHTML=`<td>${index+1}</td><td>${escapeHtml(item.item_name||"")}</td><td>${escapeHtml(item.item_code||"")}</td><td>${Number(item.open_stock||0)}</td><td>${Number(item.received||0)}</td><td>${formatISODate(item.entry_date)}</td><td><b>${q}</b></td><td><span class="badge ${badgeClass}">${statusText}</span></td><td>${escapeHtml(item.remarks||"")}</td><td><button type="button" class="action-btn consume" onclick="startConsumption('${String(item.id).replace(/'/g,"\\'")}')">CONSUME</button></td><td><button type="button" class="action-btn edit" onclick="editStock('${String(item.id).replace(/'/g,"\\'")}')">EDIT</button><button type="button" class="action-btn delete" onclick="deleteStock('${String(item.id).replace(/'/g,"\\'")}')">DELETE</button></td>`;stockTable.appendChild(row)})
-}
+const search=(document.getElementById("stockSearch")?.value||"").trim().toLowerCase(),from=document.getElementById("filterFrom")?.value||"",to=document.getElementById("filterTo")?.value||"",sf=document.getElementById("statusFilter")?.value||"all";
+let rows=stockData.filter(item=>getDept(item)===activeDepartment).filter(item=>{
+const text=(String(item.item_name||"")+" "+String(item.item_code||"")+" "+String(item.remarks||"")).toLowerCase(),date=formatISODate(item.entry_date),q=Number(item.quantity||0),status=q===0?"out":q===1?"low":"normal";
+return (!search||text.includes(search))&&(!from||date>=from)&&(!to||date<=to)&&(sf==="all"||sf===status)});
+stockTable.innerHTML="";if(!rows.length){stockTable.innerHTML="<tr><td colspan='11'>No stock found.</td></tr>";return}
+rows.forEach((item,index)=>{const q=Number(item.quantity||0);let st="NORMAL",bc="badge-normal";if(q===0){st="OUT OF STOCK";bc="badge-out"}else if(q===1){st="LOW STOCK";bc="badge-low"}const row=document.createElement("tr");row.innerHTML=`<td>${index+1}</td><td>${escapeHtml(item.item_name||"")}</td><td>${escapeHtml(item.item_code||"")}</td><td>${Number(item.open_stock||0)}</td><td>${Number(item.received||0)}</td><td>${formatISODate(item.entry_date)}</td><td><b>${q}</b></td><td><span class="badge ${bc}">${st}</span></td><td>${escapeHtml(item.remarks||"")}</td><td><button type="button" class="action-btn consume" onclick="startConsumption('${String(item.id).replace(/'/g,"\\'")}')">CONSUME</button></td><td><button type="button" class="action-btn edit" onclick="editStock('${String(item.id).replace(/'/g,"\\'")}')">EDIT</button><button type="button" class="action-btn delete" onclick="deleteStock('${String(item.id).replace(/'/g,"\\'")}')">DELETE</button></td>`;stockTable.appendChild(row)})}
 
 async function loadHistory(){const {data,error}=await supabaseClient.from("consumption_history").select("*").order("consumption_date",{ascending:false}).limit(10000);if(error){historyData=[];historyTable.innerHTML=`<tr><td colspan="6">${escapeHtml(error.message)}</td></tr>`;return}historyData=data||[];renderHistory();populateReportFilters()}
-function renderHistory(){if(!historyTable)return;const from=document.getElementById("historyFrom")?.value||"",to=document.getElementById("historyTo")?.value||"",search=(document.getElementById("historySearch")?.value||"").trim().toLowerCase(),rows=historyData.filter(item=>{const date=formatISODate(item.consumption_date),matchDate=(!from||date>=from)&&(!to||date<=to),text=(String(item.item_name||"")+" "+String(item.item_code||"")).toLowerCase();return matchDate&&(!search||text.includes(search))});historyTable.innerHTML="";if(!rows.length){historyTable.innerHTML="<tr><td colspan='6'>No consumption history.</td></tr>";return}rows.forEach(item=>{const row=document.createElement("tr");const deleteBtn=currentIsAdmin?`<button type="button" class="action-btn history-delete" onclick="deleteConsumption('${String(item.id).replace(/'/g,"\\'")}')">DELETE</button>`:"";
-row.innerHTML=`<td>${formatISODate(item.consumption_date)}</td><td>${escapeHtml(item.item_name||"")}</td><td>${escapeHtml(item.item_code||"")}</td><td><b>${Number(item.quantity||0)}</b></td><td>${escapeHtml(item.remarks||"")}</td><td>${deleteBtn}</td>`;historyTable.appendChild(row)})}
+function renderHistory(){if(!historyTable)return;const from=document.getElementById("historyFrom")?.value||"",to=document.getElementById("historyTo")?.value||"",search=(document.getElementById("historySearch")?.value||"").trim().toLowerCase(),rows=historyData.filter(item=>getDept(item)===activeDepartment).filter(item=>{const date=formatISODate(item.consumption_date),text=(String(item.item_name||"")+" "+String(item.item_code||"")).toLowerCase();return (!from||date>=from)&&(!to||date<=to)&&(!search||text.includes(search))});historyTable.innerHTML="";if(!rows.length){historyTable.innerHTML="<tr><td colspan='6'>No consumption history.</td></tr>";return}rows.forEach(item=>{const row=document.createElement("tr"),deleteBtn=currentIsAdmin?`<button type="button" class="action-btn history-delete" onclick="deleteConsumption('${String(item.id).replace(/'/g,"\\'")}')">DELETE</button>`:"";row.innerHTML=`<td>${formatISODate(item.consumption_date)}</td><td>${escapeHtml(item.item_name||"")}</td><td>${escapeHtml(item.item_code||"")}</td><td><b>${Number(item.quantity||0)}</b></td><td>${escapeHtml(item.remarks||"")}</td><td>${deleteBtn}</td>`;historyTable.appendChild(row)})}
 function startConsumption(id){document.getElementById("consumeId").value=id;document.getElementById("consumeQty").value="";document.getElementById("consumptionRemarks").value="";consumptionMessage.textContent="";consumptionBox.classList.remove("hidden");consumptionBox.scrollIntoView({behavior:"smooth",block:"center"})}
 function cancelConsumption(){consumptionBox.classList.add("hidden");document.getElementById("consumeId").value="";document.getElementById("consumeQty").value="";document.getElementById("consumptionRemarks").value="";consumptionMessage.textContent=""}
 function formatISODate(value){if(!value)return"";const s=String(value);if(/^\d{4}-\d{2}-\d{2}/.test(s))return s.slice(0,10);const d=new Date(value);if(Number.isNaN(d.getTime()))return"";return d.toISOString().slice(0,10)}
@@ -525,6 +538,7 @@ const {error}=await supabaseClient
 stock_item_id:id,
 item_name:item.item_name,
 item_code:item.item_code,
+department:getDept(item),
 quantity:qty,
 consumption_date:now.toISOString(),
 remarks
@@ -579,60 +593,7 @@ return d.toLocaleDateString("en-IN",{month:"long",year:"numeric"});
 }
 
 
-function populateReportFilters(){
-
-const itemSelect=document.getElementById("reportItem");
-const yearSelect=document.getElementById("reportYear");
-
-if(!itemSelect||!yearSelect)return;
-
-const currentItem=itemSelect.value||"all";
-const currentYear=yearSelect.value||"all";
-
-const items={};
-
-stockData.forEach(item=>{
-const code=String(item.item_code||"");
-const name=String(item.item_name||"");
-if(code)items[code]=name;
-});
-
-itemSelect.innerHTML='<option value="all">ALL ITEMS</option>';
-
-Object.keys(items).sort().forEach(code=>{
-const option=document.createElement("option");
-option.value=code;
-option.textContent=items[code]+" ("+code+")";
-itemSelect.appendChild(option);
-});
-
-if([...itemSelect.options].some(o=>o.value===currentItem))
-itemSelect.value=currentItem;
-
-const years=new Set();
-
-receivedHistoryData.forEach(item=>{
-const d=getDateOnly(item.received_date||item.created_at);
-if(d)years.add(d.slice(0,4));
-});
-
-historyData.forEach(item=>{
-const d=getDateOnly(item.consumption_date||item.created_at);
-if(d)years.add(d.slice(0,4));
-});
-
-yearSelect.innerHTML='<option value="all">ALL YEARS</option>';
-
-[...years].sort().reverse().forEach(year=>{
-const option=document.createElement("option");
-option.value=year;
-option.textContent=year;
-yearSelect.appendChild(option);
-});
-
-if([...yearSelect.options].some(o=>o.value===currentYear))
-yearSelect.value=currentYear;
-}
+function populateReportFilters(){const itemSelect=document.getElementById("reportItem"),yearSelect=document.getElementById("reportYear");if(!itemSelect||!yearSelect)return;const ci=itemSelect.value||"all",cy=yearSelect.value||"all",items={};stockData.filter(i=>getDept(i)===activeDepartment).forEach(i=>{const c=String(i.item_code||"");if(c)items[c]=String(i.item_name||"")});itemSelect.innerHTML='<option value="all">ALL ITEMS</option>';Object.keys(items).sort().forEach(c=>{const o=document.createElement("option");o.value=c;o.textContent=items[c]+" ("+c+")";itemSelect.appendChild(o)});if([...itemSelect.options].some(o=>o.value===ci))itemSelect.value=ci;const years=new Set();receivedHistoryData.filter(i=>getDept(i)===activeDepartment).forEach(i=>{const d=getDateOnly(i.received_date||i.created_at);if(d)years.add(d.slice(0,4))});historyData.filter(i=>getDept(i)===activeDepartment).forEach(i=>{const d=getDateOnly(i.consumption_date||i.created_at);if(d)years.add(d.slice(0,4))});yearSelect.innerHTML='<option value="all">ALL YEARS</option>';[...years].sort().reverse().forEach(y=>{const o=document.createElement("option");o.value=y;o.textContent=y;yearSelect.appendChild(o)});if([...yearSelect.options].some(o=>o.value===cy))yearSelect.value=cy}
 
 async function generateReport(){
 
@@ -859,7 +820,7 @@ window.print()
 }
 
 async function loadReceivedHistory(){const {data,error}=await supabaseClient.from("received_history").select("*").order("created_at",{ascending:false}).limit(10000);if(error){receivedHistoryData=[];receivedHistoryTable.innerHTML=`<tr><td colspan="5">${escapeHtml(error.message)}</td></tr>`;return}receivedHistoryData=data||[];renderReceivedHistory();populateReportFilters()}
-function renderReceivedHistory(){receivedHistoryTable.innerHTML="";if(!receivedHistoryData.length){receivedHistoryTable.innerHTML="<tr><td colspan='5'>No received history.</td></tr>";return}receivedHistoryData.forEach(item=>{const row=document.createElement("tr"),date=item.received_date?new Date(item.received_date).toLocaleDateString("en-IN"):"";row.innerHTML=`<td>${date}</td><td>${escapeHtml(item.item_name||"")}</td><td>${escapeHtml(item.item_code||"")}</td><td><b>${Number(item.quantity||0)}</b></td><td>${escapeHtml(item.remarks||"")}</td>`;receivedHistoryTable.appendChild(row)})}
+function renderReceivedHistory(){receivedHistoryTable.innerHTML="";const rows=receivedHistoryData.filter(item=>getDept(item)===activeDepartment);if(!rows.length){receivedHistoryTable.innerHTML="<tr><td colspan='5'>No received history.</td></tr>";return}rows.forEach(item=>{const row=document.createElement("tr"),date=item.received_date?new Date(item.received_date).toLocaleDateString("en-IN"):"";row.innerHTML=`<td>${date}</td><td>${escapeHtml(item.item_name||"")}</td><td>${escapeHtml(item.item_code||"")}</td><td><b>${Number(item.quantity||0)}</b></td><td>${escapeHtml(item.remarks||"")}</td>`;receivedHistoryTable.appendChild(row)})}
 async function loadActivity(){
 const {data,error}=await supabaseClient
 .from("activity_history")
@@ -951,14 +912,14 @@ await loadActivity();
 
 async function editStock(id){
 const {data,error}=await supabaseClient.from("stock_items").select("*").eq("id",id).single();if(error){alert(error.message);return}
-document.getElementById("editId").value=id;document.getElementById("editName").value=data.item_name||"";document.getElementById("editCode").value=data.item_code||"";document.getElementById("editStock").value=data.open_stock||0;document.getElementById("editReceived").value=data.received||0;document.getElementById("editReceivedDate").value=formatISODate(data.entry_date);document.getElementById("editRemarks").value=data.remarks||"";document.getElementById("editMessage").textContent="";document.getElementById("editModal").classList.remove("hidden")
+document.getElementById("editId").value=id;document.getElementById("editName").value=data.item_name||"";document.getElementById("editCode").value=data.item_code||"";document.getElementById("editStock").value=data.open_stock||0;document.getElementById("editReceived").value=data.received||0;document.getElementById("editReceivedDate").value=formatISODate(data.entry_date);if(document.getElementById("editDepartment"))document.getElementById("editDepartment").value=getDept(data);document.getElementById("editRemarks").value=data.remarks||"";document.getElementById("editMessage").textContent="";document.getElementById("editModal").classList.remove("hidden")
 }
 function closeEditModal(){document.getElementById("editModal").classList.add("hidden")}
 async function saveEdit(){
-const id=document.getElementById("editId").value,name=document.getElementById("editName").value.trim(),code=document.getElementById("editCode").value.trim(),newStock=Number(document.getElementById("editStock").value)||0,newReceived=Number(document.getElementById("editReceived").value)||0,date=document.getElementById("editReceivedDate").value,remarks=document.getElementById("editRemarks").value.trim();
+const id=document.getElementById("editId").value,name=document.getElementById("editName").value.trim(),code=document.getElementById("editCode").value.trim(),editDepartment=document.getElementById("editDepartment")?.value||activeDepartment,newStock=Number(document.getElementById("editStock").value)||0,newReceived=Number(document.getElementById("editReceived").value)||0,date=document.getElementById("editReceivedDate").value,remarks=document.getElementById("editRemarks").value.trim();
 if(!name||!code){const msg=document.getElementById("editMessage");msg.style.color="red";msg.textContent="Item Name and Item Code required.";return}
 const {data,error}=await supabaseClient.from("stock_items").select("*").eq("id",id).single();if(error){alert(error.message);return}
-const oldBase=Number(data.open_stock||0)+Number(data.received||0),oldTotal=Number(data.quantity||0),used=Math.max(0,oldBase-oldTotal),newTotal=Math.max(0,newStock+newReceived-used),update={item_name:name,item_code:code,open_stock:newStock,received:newReceived,quantity:newTotal,remarks};
+const oldBase=Number(data.open_stock||0)+Number(data.received||0),oldTotal=Number(data.quantity||0),used=Math.max(0,oldBase-oldTotal),newTotal=Math.max(0,newStock+newReceived-used),update={item_name:name,item_code:code,department:editDepartment,open_stock:newStock,received:newReceived,quantity:newTotal,remarks};
 if(date)update.entry_date=date;
 const {error:updateError}=await supabaseClient.from("stock_items").update(update).eq("id",id);if(updateError){alert(updateError.message);return}
 await logActivity("EDIT STOCK",name,code,newStock+newReceived);closeEditModal();await loadAll();await loadActivity();
@@ -1105,126 +1066,12 @@ async function checkSession(){const {data}=await supabaseClient.auth.getSession(
 checkSession();
 </script>
 
-<!-- ===== REAL DEPARTMENT FILTER ===== -->
-<style>
-#rhiDepartmentBox{max-width:430px;margin:10px auto 16px;text-align:center}
-#rhiDepartmentBox select{width:100%;padding:10px;border-radius:7px}
-.rhi-dept-tag{font-weight:700;margin-top:5px;font-size:13px}
-</style>
-
 <script>
-(function(){
-"use strict";
-const RHI_DEPTS=["Electrical","Mechanical","Tundish","Slide Gate","Furnace"];
-window.RHI_ACTIVE_DEPARTMENT=localStorage.getItem("rhi_active_department")||"Slide Gate";
-
-function rhiDept(row){
-  return row && row.department ? row.department : "Slide Gate";
-}
-window.RHI_GET_DEPARTMENT=rhiDept;
-
-function rhiSetDepartment(v){
-  if(!RHI_DEPTS.includes(v)) v="Slide Gate";
-  window.RHI_ACTIVE_DEPARTMENT=v;
-  localStorage.setItem("rhi_active_department",v);
-
-  const s=document.getElementById("rhiDepartmentSelect");
-  if(s) s.value=v;
-
-  /* Refresh the existing application. */
-  try{ if(typeof loadAll==="function") loadAll(); }catch(e){console.error(e);}
-  try{ if(typeof loadReceivedHistory==="function") loadReceivedHistory(); }catch(e){console.error(e);}
-  try{ if(typeof loadActivity==="function") loadActivity(); }catch(e){console.error(e);}
-  try{ if(typeof renderStock==="function") renderStock(); }catch(e){console.error(e);}
-  try{ if(typeof renderHistory==="function") renderHistory(); }catch(e){console.error(e);}
-  try{ if(typeof renderReceivedHistory==="function") renderReceivedHistory(); }catch(e){console.error(e);}
-  try{ if(typeof populateReportFilters==="function") populateReportFilters(); }catch(e){console.error(e);}
-}
-
-window.RHI_SET_DEPARTMENT=rhiSetDepartment;
-
-function makeDepartmentBox(){
-  if(document.getElementById("rhiDepartmentBox")) return;
-  const main=document.getElementById("mainPage");
-  if(!main) return;
-
-  const box=document.createElement("div");
-  box.id="rhiDepartmentBox";
-  box.className="no-print";
-  box.innerHTML=
-    '<label><b>SELECT DEPARTMENT</b></label>'+
-    '<select id="rhiDepartmentSelect">'+
-      RHI_DEPTS.map(x=>'<option value="'+x+'">'+x+'</option>').join("")+
-    '</select>'+
-    '<div class="rhi-dept-tag">Current: <span id="rhiDepartmentText"></span></div>';
-
-  main.insertBefore(box,main.firstChild);
-
-  const s=box.querySelector("select");
-  s.value=window.RHI_ACTIVE_DEPARTMENT;
-  s.addEventListener("change",function(){
-    rhiSetDepartment(this.value);
-    const t=document.getElementById("rhiDepartmentText");
-    if(t)t.textContent=window.RHI_ACTIVE_DEPARTMENT;
-  });
-  const t=document.getElementById("rhiDepartmentText");
-  if(t)t.textContent=window.RHI_ACTIVE_DEPARTMENT;
-}
-
-/* Convert old NULL/blank department rows to Slide Gate once. */
-async function migrateOldRows(){
-  if(typeof supabaseClient==="undefined") return;
-  for(const table of ["stock_items","received_history","consumption_history","activity_history"]){
-    try{
-      await supabaseClient.from(table)
-        .update({department:"Slide Gate"})
-        .or("department.is.null,department.eq.");
-    }catch(e){
-      console.warn("Department migration:",table,e.message);
-    }
-  }
-}
-
-/*
- * Patch DB reads at the Supabase client level. This makes existing
- * stock/history queries automatically receive only the selected department
- * without rewriting the original app's query functions.
- */
-function installQueryFilter(){
-  if(window.__RHI_QUERY_PATCHED || typeof supabaseClient==="undefined") return;
-  window.__RHI_QUERY_PATCHED=true;
-
-  const originalFrom=supabaseClient.from.bind(supabaseClient);
-  supabaseClient.from=function(table){
-    const q=originalFrom(table);
-
-    if(["stock_items","received_history","consumption_history","activity_history"].includes(table)){
-      const originalSelect=q.select.bind(q);
-      q.select=function(){
-        const result=originalSelect.apply(q,arguments);
-        try{
-          return result.eq("department",window.RHI_ACTIVE_DEPARTMENT);
-        }catch(e){ return result; }
-      };
-    }
-    return q;
-  };
-}
-
-async function init(){
-  makeDepartmentBox();
-  await migrateOldRows();
-  installQueryFilter();
-  rhiSetDepartment(window.RHI_ACTIVE_DEPARTMENT);
-}
-
-if(document.readyState==="loading"){
-  document.addEventListener("DOMContentLoaded",init);
-}else{
-  setTimeout(init,0);
-}
-})();
+let activeDepartment=localStorage.getItem("rhi_active_department")||"Slide Gate";
+function getDept(row){return row&&row.department?row.department:"Slide Gate";}
+function changeDepartment(){activeDepartment=document.getElementById("activeDepartment").value;localStorage.setItem("rhi_active_department",activeDepartment);document.getElementById("departmentLabel").textContent=activeDepartment;loadAll();loadReceivedHistory();loadHistory();loadActivity();}
+async function migrateOldDepartmentRows(){for(const t of ["stock_items","received_history","consumption_history","activity_history"]){try{await supabaseClient.from(t).update({department:"Slide Gate"}).is("department",null)}catch(e){console.warn(t,e.message)}}}
+document.addEventListener("DOMContentLoaded",async()=>{document.getElementById("activeDepartment").value=activeDepartment;document.getElementById("departmentLabel").textContent=activeDepartment;await migrateOldDepartmentRows();});
 </script>
-<!-- ===== END REAL DEPARTMENT FILTER ===== -->
 </body>
 </html>
